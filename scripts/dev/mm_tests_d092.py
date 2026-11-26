@@ -5,7 +5,7 @@
         --run4 reports/mm-d092/run4-refit --out reports/mm-d092/run5-tests
 
 Ben's go-ahead: "Can we get close to having a finalized model over night?" (2026-11-12), which covers runs
-2–6 in order. Pass rules are `lotline.model.mm_tests` (fixed in code before this script was first run), and
+2–6 in order. Pass rules are `validation.mm_tests` (fixed in code before this script was first run), and
 their thresholds are in `config/params/mm.yaml`.
 
 What it scores, for M and challengers C1, C3 and C4:
@@ -46,11 +46,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
-from lotline.model import mm_tests as mt
 from lotline.model import rule_tags
+from lotline.validation import mm_tests as mt
 
 HERE = Path(__file__).parent
 _spec = importlib.util.spec_from_file_location("d092", HERE / "calibrate_mm_d092.py")

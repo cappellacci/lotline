@@ -20,7 +20,7 @@ in-window rise in a place's unit cap, the outcome counts only the building class
 `baseline_series`), and θ_i = θ exp(b z_i) with z the centred log builder capacity (`fit_capacity`).
 
 `loo_backtest` is the V4 leave-one-place-out test. Only NumPy, pandas and the standard library; tests use
-hand-worked examples and simulated places (tests/model/test_calibrate_mm.py).
+hand-worked examples and simulated places (tests/calibrate/test_calibrate_mm.py).
 """
 
 from __future__ import annotations

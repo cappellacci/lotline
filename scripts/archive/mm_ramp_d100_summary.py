@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lotline.model import calibrate_mm as cal
+from lotline.calibrate.mm import calibrate_mm as cal
 
 
 def main(run: Path) -> None:

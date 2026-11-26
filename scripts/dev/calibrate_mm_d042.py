@@ -3,7 +3,7 @@
 
     uv run python scripts/dev/calibrate_mm_d042.py --out reports/mm-d042
 
-D-042 keeps D-038's likelihood (`lotline.model.calibrate_mm`) and changes three inputs:
+D-042 keeps D-038's likelihood (`lotline.calibrate.mm.calibrate_mm`) and changes three inputs:
 
 1. the event is a place's first in-window rise in its unit cap, and the outcome counts only the BPS building
    classes above the prior cap (`prior_cap`, `event_year`, `retarget`);
@@ -25,11 +25,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
+from lotline.calibrate.mm import mm_fitsets as fs
 from lotline.config import load_params
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
-from lotline.model import mm_fitsets as fs
 from lotline.model import rule_tags
 from lotline.model.scenarios import adu
 

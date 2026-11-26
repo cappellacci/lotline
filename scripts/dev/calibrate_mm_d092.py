@@ -37,11 +37,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate import place_types
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
+from lotline.calibrate.mm import mm_fitsets as fs
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
-from lotline.model import mm_fitsets as fs
-from lotline.model import place_types, rule_tags
+from lotline.model import rule_tags
 
 _spec = importlib.util.spec_from_file_location("d054", Path(__file__).with_name("calibrate_mm_d054.py"))
 d054 = importlib.util.module_from_spec(_spec)

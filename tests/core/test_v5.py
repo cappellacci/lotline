@@ -99,8 +99,7 @@ def test_summaries_sum_draw_by_draw():
 
 
 def test_charlotte_dose_is_zero_before_the_udo_and_the_coded_rule_after():
-    from lotline.model import estimate_mm as mm
-    from lotline.model import rule_tags
+    from lotline.model import mm_rates, rule_tags
     from lotline.model.scenarios import adu
 
     blanks = (0.8, 0.5)  # P(by right) for a blank field, units grade for a blank cap
@@ -110,7 +109,7 @@ def test_charlotte_dose_is_zero_before_the_udo_and_the_coded_rule_after():
     row = rule_tags.apply(adu.load_reforms("NC")).set_index("reform_id").loc[v5.UDO_REFORM]
     assert pd.isna(row["by_right"]) and row["unit_cap"] == 3  # cap 3 -> grade 2/3; blank by_right -> 0.8
     assert post == pytest.approx(2 / 3 * (0.8 + 0.2 * permit))
-    assert mm.units_grade(3) == pytest.approx(2 / 3)
+    assert mm_rates.units_grade(3) == pytest.approx(2 / 3)
 
 
 def test_freeze_is_written_once(tmp_path):

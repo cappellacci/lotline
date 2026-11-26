@@ -1,4 +1,4 @@
-# Missing-middle estimation panel (model/estimate_mm.py, analysis plan D-024, pre-registered). D-024 was approved
+# Missing-middle estimation panel (calibrate/mm/estimate_mm.py, analysis plan D-024, pre-registered). D-024 was approved
 # by Ben on 2026-10-20, before any estimate was run.
 
 mm_panel_first_year:
@@ -82,7 +82,7 @@ mm_teardown_share_scale:
   source: "Judgment (D-063 choice 2): new 2-4 unit buildings replace a house in proportion to the share of eligible parcels that hold one (ADU-eligible over missing-middle eligible parcels, from the same rolls); 1.0 = builders pick lots at random, 0.5 = they favour vacant lots twice as much"
   notes: "No local split of new 2-4 unit buildings by prior use is coded; Portland's RIP monitoring is the outside check (docs/research/mm-uptake-evidence.md)."
 
-# ---- D-092 counting protocol (model/mm_counts.py; D-092 (proposed) §2-§3, not yet approved by Ben) ----
+# ---- D-092 counting protocol (validation/mm_counts.py; D-092 (proposed) §2-§3, not yet approved by Ben) ----
 # Code only: no count has been run with these values.
 
 mm_strong_parcel_fill:
@@ -186,7 +186,7 @@ mm_challenger_se_margin:
   unit: paired standard errors of the held-out log score
   source: "D-092 (proposed) §5: a challenger replaces M only if its leave-one-state-out held-out log score beats M's by more than this many paired SE and it passes no fewer of tests A-C"
 
-# ---- D-092 §7 accuracy-test pass rules (model/mm_tests.py; fixed before any test was run) ----
+# ---- D-092 §7 accuracy-test pass rules (validation/mm_tests.py; fixed before any test was run) ----
 
 mm_test_a_coverage:
   value: 0.6

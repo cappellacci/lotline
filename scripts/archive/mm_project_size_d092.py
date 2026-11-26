@@ -7,7 +7,7 @@
 Reads every state's `permits` table through `holdout.apply` (St. Paul, Ramsey, Charlotte and Mecklenburg
 also dropped by GEOID and by source). The dry run prints, per source, only the share of all permits with a
 parcel ID and dated to the day, and the year range: no count by building type. The run groups 2-4 unit
-building permits into projects (`lotline.model.project_size`, same lot and same day) and reports, per source
+building permits into projects (`lotline.validation.project_size`, same lot and same day) and reports, per source
 and pooled, the inflation E[S^2]/E[S] and the share of buildings in projects of 3 or more. Offline:
 cached tables only.
 """
@@ -21,8 +21,8 @@ from pathlib import Path
 import pandas as pd
 
 from lotline.io import DataStore
-from lotline.model import project_size as ps
 from lotline.validation import holdout
+from lotline.validation import project_size as ps
 
 STATES = ("MN", "NC", "OH", "TX", "OR")
 HOLDOUT_GEOIDS = {"2758000", "27123", "3712000", "37119"}  # St. Paul, Ramsey, Charlotte, Mecklenburg

@@ -7,7 +7,7 @@ import math
 import pandas as pd
 import pytest
 
-from lotline.model import project_size as ps
+from lotline.validation import project_size as ps
 
 
 def _p(**cols):

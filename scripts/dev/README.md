@@ -28,8 +28,8 @@ running these by hand, except the steps marked "hand step" below.
 | `houston_bps_check.py` | live tool: check cited by adapters/checks/houston_permits |
 | `merge_logbook.py` | used by tests/test_merge_logbook.py |
 | `missing_input_matrix.py` | used by docs/adding_a_state.md |
-| `mm_baseline_choice_d092.py` | used by tests/model/test_mm_baseline_spread.py |
-| `mm_counts_d092.py` | used by tests/model/test_mm_counts.py |
+| `mm_baseline_choice_d092.py` | used by tests/calibrate/test_mm_baseline_spread.py |
+| `mm_counts_d092.py` | used by tests/validation/test_mm_counts.py |
 | `mm_kappa_d092.py` | imported by mm_baseline_choice_d092.py |
 | `mm_tests_d092.py` | used by docs/adding_a_state.md |
 | `mn_adu_coverage.py` | hand step adu_undercount_k |

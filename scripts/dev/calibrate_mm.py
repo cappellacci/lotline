@@ -4,7 +4,7 @@
     uv run python scripts/dev/calibrate_mm.py --out reports/mm-d038
 
 Builds the D-024 panel (`estimate_mm.build_panel`, holdout-filtered), fits θ = `mm_mature_hazard_ref`, α and
-the ramp's half-way point on the 16 fit places (`lotline.model.calibrate_mm`), runs the D-038 checks, the V4
+the ramp's half-way point on the 16 fit places (`calibrate.mm.calibrate_mm`), runs the D-038 checks, the V4
 leave-one-place-out backtest, the D-037 out-of-sample predictions, homes per building from local permit
 files and the eligible-lot check. Everything is computed before anything is written; --out gets CSVs and a
 summary (no outcome panel: outcomes stay in the data directory).
@@ -20,10 +20,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
 from lotline.config import load_params
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
 from lotline.model import rule_tags
 
 TESTS = {"2743000": "Minneapolis", "3719000": "Durham city", "37063": "Durham County", "3755000": "Raleigh"}

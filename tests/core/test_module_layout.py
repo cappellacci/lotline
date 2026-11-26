@@ -33,16 +33,8 @@ MOVING = {
     "estimate_adu": "ADU",  # on the forecast path through pooled_adu
     "fit_audit": "ADU",
     "joint_refit": "ADU",
+    "pooled_adu": "ADU",  # off the forecast path since estimate_mm moved to calibrate/mm/ (MM step 2)
     "score": "ADU",
-    # Missing middle ("Missing Middle Analysis refresh")
-    "calibrate_mm": "MM",
-    "estimate_mm": "MM",  # on the forecast path: scenarios/mm.py imports helpers from it
-    "mm_counts": "MM",
-    "mm_fitsets": "MM",
-    "mm_routes": "MM",
-    "mm_tests": "MM",
-    "place_types": "MM",
-    "project_size": "MM",
 }
 
 

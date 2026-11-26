@@ -1,4 +1,4 @@
-"""D-092 (proposed) §2–§3 counting rules (`model/mm_counts.py`), each against a hand-worked synthetic example.
+"""D-092 (proposed) §2–§3 counting rules (`validation/mm_counts.py`), each by a hand-worked synthetic example.
 
 No real data: every table here is built in the test.
 """
@@ -10,7 +10,7 @@ import math
 import pandas as pd
 import pytest
 
-from lotline.model import mm_counts as mc
+from lotline.validation import mm_counts as mc
 
 NA = pd.NA
 

@@ -7,8 +7,9 @@ import pandas as pd
 import pytest
 
 from lotline.build import eligible as eligible_rule
+from lotline.calibrate.mm import estimate_mm
 from lotline.config import CONFIG_DIR
-from lotline.model import estimate_adu, estimate_mm, rule_tags
+from lotline.model import estimate_adu, rule_tags
 from lotline.model.scenarios import adu
 
 COLUMNS = list(pd.read_csv(CONFIG_DIR / "reforms" / "mn.csv", nrows=0).columns)

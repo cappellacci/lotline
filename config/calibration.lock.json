@@ -85,7 +85,7 @@
    "decision": "D-092 (run 9)",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/mm_kappa_d092.py --form year (model/calibrate_mm.fit_noise)",
+   "script": "scripts/dev/mm_kappa_d092.py --form year (calibrate/mm/calibrate_mm.fit_noise)",
    "values": {
     "mm_hazard:mm_year_spread_phi": 13.03
    }
@@ -209,7 +209,7 @@
    "decision": "D-092 (run 10, C4)",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/calibrate_mm_d092.py --phi 13.63 (model/calibrate_mm.fit, with_phi)",
+   "script": "scripts/dev/calibrate_mm_d092.py --phi 13.63 (calibrate/mm/calibrate_mm.fit, with_phi)",
    "values": {
     "mm_hazard:mm_mature_hazard_ref": 0.0016571,
     "mm_hazard:mm_place_effect_variance": 6.1e-06,
@@ -302,7 +302,7 @@
    "decision": "D-100",
    "how": "hand",
    "status": "current",
-   "script": "scripts/archive/mm_ramp_d100.py (model/mm_routes.fit_routes)",
+   "script": "scripts/archive/mm_ramp_d100.py (calibrate/mm/mm_routes.fit_routes)",
    "values": {
     "mm_hazard:mm_ramp_half_years_fast": 0.5
    }

@@ -339,10 +339,10 @@ def mm_inputs(state: str, store, years: Sequence[int] = YEARS) -> MmInputs:
     """Every jurisdiction in the BPS universe where a by-right rule raises the missing-middle dose above
     2017's in a year of the window, with D-038's inputs as fixed by D-051."""
     from lotline.build import eligible as eligible_rule
+    from lotline.calibrate.mm import estimate_mm as mm
+    from lotline.calibrate.mm.calibrate_mm import feasibility_ratio
     from lotline.config import load_params
-    from lotline.model import estimate_mm as mm
     from lotline.model import hazard, money, rule_tags
-    from lotline.model.calibrate_mm import feasibility_ratio
     from lotline.model.scenarios import adu
 
     years = np.array(list(years))

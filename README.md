@@ -157,7 +157,7 @@ uv run lotline calibrate --run --step mm_c4    # one step (repeatable); add --wr
     small ADU inputs (the survey report rate and the covariate centres).
   - The V5 Charlotte prior is frozen for its blind test.
 - **Where things are.**
-  - Library code: the fit sets (`lotline.model.adu_fit_set`, `lotline.model.mm_fitsets`) and the step runners
+  - Library code: the fit sets (`lotline.model.adu_fit_set`, `lotline.calibrate.mm.mm_fitsets`) and the step runners
     (`lotline.calibrate`).
   - `scripts/dev/` keeps only scripts still in use ([its README](scripts/dev/README.md) says why each stays).
   - The one-off analyses behind each decision are in `scripts/archive/` with an index

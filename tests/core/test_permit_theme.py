@@ -250,7 +250,7 @@ def test_optional_columns_may_be_absent():
 def test_adu_signal_matches_the_adu_fit_and_mm_types_match_estimate_mm():
     """The classifier's ADU test is the ADU fit's `_is_adu`, and its 2-4 types are estimate_mm's, so wiring
     it in changes counts only through precedence and source rules, not through a different definition."""
-    from lotline.model import estimate_mm
+    from lotline.calibrate.mm import estimate_mm
     from lotline.model.scenarios import adu
 
     assert pt.MM_TYPES == estimate_mm.MM_TYPES

@@ -7,7 +7,7 @@ import math
 import numpy as np
 import pytest
 
-from lotline.model import calibrate_mm as cal
+from lotline.calibrate.mm import calibrate_mm as cal
 
 
 def _place(gid="a", y=(3, 5), B=(4.0, 4.0), kr=(0.0, 0.0), kappa=0.0):

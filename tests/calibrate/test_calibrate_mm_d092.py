@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from lotline.calibrate.mm import calibrate_mm as cal
 from lotline.config import CONFIG_DIR, load_params
-from lotline.model import calibrate_mm as cal
 from lotline.model import rule_tags
 from lotline.model.scenarios import adu
 

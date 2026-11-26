@@ -17,7 +17,7 @@ For each place i and scenario year t = 1 … 5, with the fitted model (`mm_hazar
 - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the roll nearest the origin, made
   non-overlapping as the ADU scenario does (D-020).
 - **d_i:** the dose of the rules in force on `baseline.rules_as_of` (31 December of the window's first
-  year, D-064) (`estimate_mm.rule_dose`: units grade × approval grade × coverage). The Handbook rule has
+  year, D-064) (`mm_rates.rule_dose`: units grade × approval grade × coverage). The Handbook rule has
   dose 1 (four or more units by right on every single-family zone); the fitted effect is per unit of dose
   increase (D-042), so the scenario adds 1 − d_i. A place with no coded rule draws d from coded places in
   its state and size band (D-022), per draw; coded county remainders stay out of those pools (D-102 (b)). A
@@ -239,7 +239,7 @@ def summarize(res: Result) -> pd.DataFrame:
 
 def current_dose(rows: pd.DataFrame, as_of: pd.Timestamp, coverage, blanks, permit_grade) -> float:
     """Dose of the strongest of one place's in-force missing-middle rules on `as_of` (0 if none is live)."""
-    from lotline.model.estimate_mm import rule_dose
+    from lotline.model.mm_rates import rule_dose
 
     live = rows[(rows["effective_date"] <= as_of) & (rows["end_date"].isna() | (rows["end_date"] > as_of))]
     return max((rule_dose(r, coverage.get(r["reform_id"], 1.0), blanks, permit_grade)[0]
@@ -307,7 +307,7 @@ def borrowed_pool(store, origin: int) -> pd.DataFrame:
     review A13, Ben 2026-11-25), instead of taking d = 0 everywhere. Bands use 2020 population and the ADU
     rule-band edges, as `place_inputs` does. Coverage and blanks as in `places_from_store`."""
     from lotline.config import load_state
-    from lotline.model import estimate_mm as emm
+    from lotline.model import mm_rates as rates
     from lotline.model import rule_tags
     from lotline.model.scenarios import adu
 
@@ -317,14 +317,14 @@ def borrowed_pool(store, origin: int) -> pd.DataFrame:
     permit_grade = sp["mm_dose_grade_permit"].value
     reforms = {st: rule_tags.apply(adu.load_reforms(st)) for st in adu.REFORM_STATES}
     every = pd.concat([r.assign(state=st) for st, r in reforms.items()], ignore_index=True)
-    blanks = emm.blank_shares(every[every["status"] == "in_force"])
+    blanks = rates.blank_shares(every[every["status"] == "in_force"])
     at_origin = pd.Timestamp(f"{origin}-12-31")
     rows = []
     for st, ref in reforms.items():
         mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]
         if mm_rows.empty:
             continue
-        cov = emm._mm_coverage(st, store, mm_rows, pa)
+        cov = rates._mm_coverage(st, store, mm_rows, pa)
         j = store.read(st, "jurisdictions").set_index("geoid")
         fips = load_state(st).fips
         for g, own in mm_rows.groupby("jurisdiction_geoid"):
@@ -346,7 +346,7 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     """
     from lotline.config import load_state
     from lotline.model import baseline, hazard, rule_tags
-    from lotline.model import estimate_mm as emm
+    from lotline.model import mm_rates as rates
     from lotline.model.scenarios import adu
 
     sp = specs()
@@ -370,10 +370,10 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
 
     reforms = {st: rule_tags.apply(r) for st, r in adu.reforms_with(state).items()}
     every = pd.concat([r.assign(state=st) for st, r in adu.pooled_states(reforms).items()], ignore_index=True)
-    blanks = emm.blank_shares(every[every["status"] == "in_force"])
+    blanks = rates.blank_shares(every[every["status"] == "in_force"])
     ref = reforms[state.upper()]
     mm_rows = ref[(ref["theme"] == "missing_middle") & (ref["status"] == "in_force")]
-    cov = emm._mm_coverage(state.upper(), store, mm_rows, pa)
+    cov = rates._mm_coverage(state.upper(), store, mm_rows, pa)
     as_of = baseline.rules_as_of(origin)  # D-064: rules already law by the end of the first window year
     coded = set(mm_rows["jurisdiction_geoid"])
     places["dose"] = [
@@ -391,7 +391,7 @@ def places_from_store(state: str, store, origin: int) -> pd.DataFrame:
     places = places.rename(columns={"size_band": "band"})
 
     ci = hazard.cost_index_by_year(store.read(state, "market_geo_year"))
-    pcr = emm.plex_price_to_cost(places["rent"], cost_index=cost_index_at(ci, origin))
+    pcr = rates.plex_price_to_cost(places["rent"], cost_index=cost_index_at(ci, origin))
     places["pcr"] = pcr
     f = pd.Series(np.where(np.isfinite(pcr), feasible_share(np.nan_to_num(pcr), margin, sigma), np.nan))
     f1 = float(feasible_share(1.0, margin, sigma))

@@ -27,11 +27,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
+from lotline.calibrate.mm import mm_fitsets as fs
 from lotline.config import load_params
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
-from lotline.model import mm_fitsets as fs
 from lotline.model.baseline import crps_from_draws
 
 _spec = importlib.util.spec_from_file_location("d042", Path(__file__).with_name("calibrate_mm_d042.py"))

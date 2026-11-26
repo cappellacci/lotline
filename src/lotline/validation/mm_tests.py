@@ -24,8 +24,8 @@ from collections.abc import Sequence
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.mm.calibrate_mm import verdict
 from lotline.config import load_params
-from lotline.model.calibrate_mm import verdict
 
 
 def _p(name: str) -> float:

@@ -1,4 +1,4 @@
-"""D-092 §7 pass rules (`lotline.model.mm_tests`), each against a hand-worked example."""
+"""D-092 §7 pass rules (`lotline.validation.mm_tests`), each against a hand-worked example."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import mm_tests as mt
+from lotline.validation import mm_tests as mt
 
 
 def test_params_are_the_d092_section_7_values():
