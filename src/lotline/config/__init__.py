@@ -99,6 +99,63 @@ class AdapterRule(_Model):
         return self
 
 
+# Two-digit Census FIPS code of every state and DC: a state file's `fips` must match its code, so a
+# typo can't build another state's data (nightly review, 2026-11-25). Codes not listed (test states) are free.
+STATE_FIPS = {
+    "AL": "01",
+    "AK": "02",
+    "AZ": "04",
+    "AR": "05",
+    "CA": "06",
+    "CO": "08",
+    "CT": "09",
+    "DE": "10",
+    "DC": "11",
+    "FL": "12",
+    "GA": "13",
+    "HI": "15",
+    "ID": "16",
+    "IL": "17",
+    "IN": "18",
+    "IA": "19",
+    "KS": "20",
+    "KY": "21",
+    "LA": "22",
+    "ME": "23",
+    "MD": "24",
+    "MA": "25",
+    "MI": "26",
+    "MN": "27",
+    "MS": "28",
+    "MO": "29",
+    "MT": "30",
+    "NE": "31",
+    "NV": "32",
+    "NH": "33",
+    "NJ": "34",
+    "NM": "35",
+    "NY": "36",
+    "NC": "37",
+    "ND": "38",
+    "OH": "39",
+    "OK": "40",
+    "OR": "41",
+    "PA": "42",
+    "RI": "44",
+    "SC": "45",
+    "SD": "46",
+    "TN": "47",
+    "TX": "48",
+    "UT": "49",
+    "VT": "50",
+    "VA": "51",
+    "WA": "53",
+    "WV": "54",
+    "WI": "55",
+    "WY": "56",
+}
+
+
 class StateConfig(_Model):
     state: str = Field(pattern=r"^[A-Z]{2}$")
     name: str
@@ -124,6 +181,15 @@ class StateConfig(_Model):
     local_jurisdictions: dict[str, str] = {}
     # Named adapter rules (WS-SCALE task 8): rule id -> AdapterRule. Read with `state_rule(state, id)`.
     rules: dict[str, AdapterRule] = {}
+
+    @model_validator(mode="after")
+    def _fips_matches_state(self) -> StateConfig:
+        want = STATE_FIPS.get(self.state)
+        if want and self.fips != want:
+            raise ValueError(
+                f"{self.state}: fips is {self.fips!r}, but {self.state}'s Census FIPS code is {want!r}"
+            )
+        return self
 
 
 class Parameter(_Model):

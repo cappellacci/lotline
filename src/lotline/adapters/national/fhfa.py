@@ -122,6 +122,11 @@ def for_state(
     """
     code = df["geo"].str.split(":").str[1]
     if level == "zip5":
+        if not zip3:
+            raise ValueError(
+                f"config/states/{state.lower()}.yaml has no zip3_ranges: list the state's 3-digit ZIP "
+                "prefixes (e.g. [[550, 567]]) so FHFA's ZIP-level index can be assigned to it"
+            )
         prefix = code.str[:3].astype(int)
         return df[pd.concat([prefix.between(lo, hi) for lo, hi in zip3], axis=1).any(axis=1)]
     if level == "cbsa":

@@ -155,3 +155,24 @@ def test_rule_range_and_lookup():
     assert state_rule("OH", "adu_repeat_days") == 730
     with pytest.raises(KeyError, match="no rule"):
         state_rule("OH", "no_such_rule")
+
+
+def test_a_state_file_with_another_states_fips_is_refused():
+    """Nightly review, 2026-11-25: a FIPS typo would silently build another state's data."""
+    from lotline.config import STATE_FIPS, StateConfig
+
+    base = {"state": "WI", "name": "Wisconsin", "fips": "55", "bps_region": "midwest"}
+    assert StateConfig.model_validate(base).fips == STATE_FIPS["WI"]
+    with pytest.raises(ValueError, match="Census FIPS code is '55'"):
+        StateConfig.model_validate({**base, "fips": "27"})
+    test_state = {**base, "state": "ZZ", "fips": "99"}  # codes outside the table (test states) are free
+    assert StateConfig.model_validate(test_state).state == "ZZ"
+
+
+def test_fhfa_zip_rows_need_the_states_zip_prefixes():
+    from lotline.adapters.national import fhfa
+
+    rows = pd.DataFrame({"geo": ["zip5:53703"], "name": ["53703"]})
+    with pytest.raises(ValueError, match="zip3_ranges"):
+        fhfa.for_state(rows, "zip5", "WI", "55", [])
+    assert len(fhfa.for_state(rows, "zip5", "WI", "55", [(530, 549)])) == 1
