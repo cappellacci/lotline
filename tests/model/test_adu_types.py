@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
 from lotline.model import adu_owner as ao
 from lotline.model import adu_screen as scr
 from lotline.model import adu_types as ty
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
 
 T_OWNER, T_OTHER, T_HB = 1, 2, 4
 GRID = (0.2, 0.4, 0.7, 1.0)
@@ -183,7 +183,7 @@ def test_config_mirrors_type_rules():
 def test_config_town_prior_follows_core_term():
     """D-089: the town prior's s is |β̂_core| / z_90, from the configured core term."""
     from lotline.config import load_params
-    from lotline.model import adu_profiles as pr
+    from lotline.validation import adu_profiles as pr
 
     p = load_params("adu_place_types")
     s = pr.town_sd(p["adu_types_core_log_multiplier"].value)

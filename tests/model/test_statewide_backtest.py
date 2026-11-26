@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_adu as cal
 
 _spec = importlib.util.spec_from_file_location(
     "calibrate_adu_script", Path(__file__).resolve().parents[2] / "scripts" / "dev" / "calibrate_adu.py"

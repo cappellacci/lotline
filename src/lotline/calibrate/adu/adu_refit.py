@@ -22,10 +22,10 @@ from dataclasses import replace
 import numpy as np
 import pandas as pd
 
-from lotline.model import adu_forecast as af
+from lotline.calibrate.adu import adu_forecast as af
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.model import adu_screen as scr
 from lotline.model import adu_types as ty
-from lotline.model import calibrate_adu as cal
 from lotline.model import hazard
 
 SLOPE_STEP = 0.1  # central ± this share of a parameter's range (as calibrate_adu.py --draw-terms)

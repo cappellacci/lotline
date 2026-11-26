@@ -1,4 +1,5 @@
-"""ADU anchor estimation (model/calibrate_adu.py): likelihood by hand and recovery on synthetic counts."""
+"""ADU anchor estimation (calibrate/adu/calibrate_adu.py): likelihood by hand and recovery on synthetic
+counts."""
 
 import dataclasses
 import math
@@ -6,7 +7,7 @@ import math
 import numpy as np
 import pytest
 
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_adu as cal
 
 
 def test_nb_loglik_by_hand():

@@ -44,7 +44,7 @@ import numpy as np
 import pandas as pd
 from numpy.polynomial.hermite import hermgauss
 
-from lotline.model.estimate_adu import (
+from lotline.calibrate.adu.estimate_adu import (
     COEF_BOUND,
     SE_FLOOR,
     WEBB,

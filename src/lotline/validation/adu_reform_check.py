@@ -20,7 +20,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_adu as cal
 
 PRIOR = 0.5  # the half-count prior on the before rate (D-090's F0, D-091, `own_rate_draws`)
 B_GRID = np.round(np.arange(-2.0, 3.0 + 1e-9, 0.05), 2)

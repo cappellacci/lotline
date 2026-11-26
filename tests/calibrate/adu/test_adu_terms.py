@@ -6,10 +6,10 @@ import math
 import numpy as np
 import pytest
 
+from lotline.calibrate.adu import adu_terms as at
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
 from lotline.model import adu_owner as ao
-from lotline.model import adu_terms as at
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
 
 T_OWNER, T_OTHER, T_HB = 1, 2, 4
 

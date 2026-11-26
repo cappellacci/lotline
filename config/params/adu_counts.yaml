@@ -1,4 +1,4 @@
-# How observed ADU permits are counted for the ADU anchor fit (D-041). Used by model/calibrate_adu.py only;
+# How observed ADU permits are counted for the ADU anchor fit (D-041). Used by calibrate/adu/calibrate_adu.py only;
 # not part of the scenario's draws.
 
 adu_cobuilt_window_years:

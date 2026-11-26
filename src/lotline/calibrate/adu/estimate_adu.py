@@ -28,7 +28,8 @@ and `permute_adoption` move a place's dose path with its adoption year (used by 
 `pooled_adu`).
 
 Only NumPy and pandas. Every equation has a test against simulated panels with known coefficients
-(tests/model/test_estimate_adu.py), including a pure common shock that must not be read as a reform effect.
+(tests/calibrate/adu/test_estimate_adu.py), including a pure common shock that must not be read as a reform
+effect.
 """
 
 from __future__ import annotations

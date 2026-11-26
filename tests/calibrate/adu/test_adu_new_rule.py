@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import adu_new_rule as nr
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import adu_new_rule as nr
+from lotline.calibrate.adu import calibrate_adu as cal
 
 
 def _rows():

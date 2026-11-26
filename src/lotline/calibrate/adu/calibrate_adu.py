@@ -410,7 +410,7 @@ def place_years(
         rho, counts = counts["report_rate"], adu_counts(permits, min(years), max(years), counts, k_adj)
     survey = counts.set_index(["geoid", "year"])["survey"]
     counts = counts.set_index(["geoid", "year"])["adu_permits"]
-    from lotline.model import estimate_adu
+    from lotline.calibrate.adu import estimate_adu
 
     counted = set(counts.index.get_level_values("geoid"))
     elig = estimate_adu.adu_panel_eligible(state, store, elig, juris, counted, remainder)

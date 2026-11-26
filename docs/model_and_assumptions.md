@@ -80,8 +80,8 @@ data-ingestion test, show that a state with thinner data can still use the metho
 | Pro forma (residual land value, 7 building prototypes) | **Built**, tested | `model/proforma.py` |
 | Real 2025 dollars; completion factors | **Built**, tested | `model/money.py`, `calibrate/completion.py` |
 | Scenario modules (ADU, missing middle, fees) | ADU **built**, tested (2026-10-20); missing middle **built**, fitted and tested (D-092's C4, 2026-11-15); fees see "The ADU scenario" section's fee notes | `model/scenarios/adu.py`, `config/params/adu.yaml`, `market.yaml` |
-| ADU effect estimation, staggered adoption (D-023) | **Built**, tested on simulated panels (2026-10-20); **not yet run** on real data (waits for the adoption-date coding) | `model/estimate_adu.py`, `scripts/dev/estimate_adu.py` |
-| ADU effect estimation, pooled hierarchical negative binomial (D-025, main model) | **Built**, tested on sparse synthetic panels (2026-10-20); run once after this entry | `model/pooled_adu.py`, `scripts/archive/estimate_pooled_adu.py` |
+| ADU effect estimation, staggered adoption (D-023) | **Built**, tested on simulated panels (2026-10-20); **not yet run** on real data (waits for the adoption-date coding) | `calibrate/adu/estimate_adu.py`, `scripts/dev/estimate_adu.py` |
+| ADU effect estimation, pooled hierarchical negative binomial (D-025, main model) | **Built**, tested on sparse synthetic panels (2026-10-20); run once after this entry | `calibrate/adu/pooled_adu.py`, `scripts/archive/estimate_pooled_adu.py` |
 | Redevelopment hazard and ramp-up (how fast feasible lots get built) | **Built for ADUs**, tested (2026-10-20); **built for missing middle** (D-092's C4, `mm_hazard.yaml`, 2026-11-15) | `model/hazard.py`, `config/params/hazard.yaml` |
 | Evidence prong (comparable places, transport) | **Planned** | `src/lotline/evidence/` is empty |
 | Combined scenarios | **Dropped** (Ben, 2026-11-17): each reform is run on its own | none |
@@ -486,7 +486,7 @@ beside the eligible parcels (numerator and denominator kept apart), the central 
 rule class and note, and the calibration distance with an outside-the-range flag. Five-year ranges are
 percentiles of each draw's sum. Places below 20 eligible parcels are not shown alone (D-015).
 
-**Estimating the anchor** (`model/calibrate_adu.py`, `scripts/dev/calibrate_adu.py`; each specification
+**Estimating the anchor** (`calibrate/adu/calibrate_adu.py`, `scripts/dev/calibrate_adu.py`; each specification
 pre-registered before it was run). **Current (D-048, adopted 2026-11-05):** D-041's fit 3 with no ramp, over 51
 places and 296 place-years in Minnesota, North Carolina, Ohio and Texas (D-039), Raleigh and Durham held out.
 Anchor 0.66 per 1,000 (0.44–1.02), place-effect variance α 2.2 (1.4–3.5), m_o 1.0, m_x 0.3. Dropping the

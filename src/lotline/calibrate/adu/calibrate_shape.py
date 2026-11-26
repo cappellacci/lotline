@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.model import hazard
 from lotline.model.adu_rates import nelder_mead  # noqa: F401
 

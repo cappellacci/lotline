@@ -12,7 +12,7 @@ import math
 import numpy as np
 import pandas as pd
 
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_adu as cal
 
 Z_90 = 1.6448536269514722  # two-sided 90%
 

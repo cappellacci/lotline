@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import estimate_adu
+from lotline.calibrate.adu import estimate_adu
 from lotline.model import estimate_mm as mm
 
 YEARS = np.arange(2010, 2026)

@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import adu_profiles as pr
 from lotline.model.scenarios import adu
+from lotline.validation import adu_profiles as pr
 
 
 def test_weighted_median_hand_worked():
