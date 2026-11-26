@@ -817,19 +817,25 @@ function fillPicker() {
 const LOADED = {};
 window.LotlineState = (b) => { LOADED[b.meta.state] = b; };
 function entryFor(state) { return DATA.states.find((e) => e.meta.state === state); }
-function loadState(state) {
-  if (LOADED[state]) return Promise.resolve(LOADED[state]);
+// The Model page needs only each state's summary tables: states/<st>.model.js is the bundle without its draws
+// (build.model_script). A state already loaded in full is used as it is.
+const LOADED_MODEL = {};
+window.LotlineModel = (b) => { LOADED_MODEL[b.meta.state] = b; };
+function loadScript(state, suffix, store) {
+  if (store[state]) return Promise.resolve(store[state]);
   // The path is rebuilt from a checked two-letter code (same rule as build.state_file), never taken from data.
   if (!entryFor(state) || !/^[A-Z]{2}$/.test(state)) return Promise.reject(new Error(`no results for ${state}`));
-  const file = `states/${state.toLowerCase()}.js`;
+  const file = `states/${state.toLowerCase()}${suffix}`;
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
     s.src = file;
-    s.onload = () => (LOADED[state] ? resolve(LOADED[state]) : reject(new Error(`${file} did not define ${state}`)));
+    s.onload = () => (store[state] ? resolve(store[state]) : reject(new Error(`${file} did not define ${state}`)));
     s.onerror = () => { s.remove(); reject(new Error(`could not load ${file}`)); };
     document.head.append(s);
   });
 }
+function loadState(state) { return loadScript(state, ".js", LOADED); }
+function loadModel(state) { return LOADED[state] ? Promise.resolve(LOADED[state]) : loadScript(state, ".model.js", LOADED_MODEL); }
 
 // ---- state map: tile grid from us_tiles.yaml, coloured by each bundle's data tier -----------------------
 // Grey tiles have no bundle and open the "Add a state" page (#add). Bundles whose code is not
@@ -2103,11 +2109,11 @@ function heldoutHtml() {
     lanes: [{ p10, p50, p90, mark: n, color: scenColor("adu") }] })),
     "ADUs counted in the hidden state's target places over the fit years: the model's range (band, tick at the midpoint) and the count (gold diamond).");
 }
-// The ADU deep dive: every state's results file, loaded when the Model page opens.
+// The ADU deep dive: every state's summary tables (states/<st>.model.js, no draws), loaded when the Model page opens.
 let DEEP = null;
 async function drawDeepDive() {
   if (DEEP) return;
-  DEEP = await Promise.all(DATA.states.map((e) => loadState(e.meta.state).catch(() => null)));
+  DEEP = await Promise.all(DATA.states.map((e) => loadModel(e.meta.state).catch(() => null)));
   const bs = DEEP.filter(Boolean);
   mmDeepDive(bs);
   const nameOf = (st) => (DATA.map.tiles.find((t) => t.code === st) || {}).name || st;
