@@ -138,6 +138,8 @@ def test_load_polygons_from_a_fake_tigerweb(tmp_path, monkeypatch):
             return httpx.Response(
                 200,
                 json={
+                    "name": "Incorporated Places",
+                    "parentLayer": {"id": 13, "name": "ACS 2025"},
                     "maxRecordCount": 100000,
                     "geometryType": "esriGeometryPolygon",
                     "objectIdField": "OBJECTID",
