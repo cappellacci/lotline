@@ -62,8 +62,8 @@ adu_drift_sigma:
   low: 1.025
   high: 1.025
   unit: SD of log drift (one multiplier per place for the whole window)
-  source: "Estimated, D-091 (2026-11-14, reports/adu-drift/summary.json sigma_all_states_reported_only F0): maximum likelihood over MN, NC, TX and OR places with own history, persistence forecasts 2021-25 from 2016-19. Leaving one state out gave 0.85-1.10 (F0). exp(1.025) = x2.8 at one SD."
-  notes: "Held fixed in the draws; the leave-one-state-out range 0.85-1.10 is the sensitivity. Learned for a 4-year fit and a 1-year lead before a 5-year window; the engine reads 3 observed years (adu_observed_years) and its own lead (forecast_lead_years), a close but not identical gap."
+  source: "Estimated, D-091 (2026-11-14, reports/adu-drift/summary.json sigma_all_states_reported_only F0): maximum likelihood over MN, NC, TX and OR places with own history, persistence forecasts 2021-25 from 2016-19. Leaving one state out gave 0.85-1.10 (F0). exp(1.025) = x2.8 at one SD. Refitted 2026-11-26 on D-096's fit set (lotline calibrate --run --step adu_drift, 42 places with history, PR #549): 1.025 again, leaving one state out 0.875-1.100."
+  notes: "Held fixed in the draws; the leave-one-state-out range 0.875-1.100 is the sensitivity. Learned for a 4-year fit and a 1-year lead before a 5-year window; the engine reads 3 observed years (adu_observed_years) and its own lead (forecast_lead_years), a close but not identical gap."
 
 adu_drift_mean_one:
   value: 1

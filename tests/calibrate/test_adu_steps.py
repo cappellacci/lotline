@@ -20,8 +20,7 @@ def test_every_ported_adu_step_names_a_runner_that_exists():
     by = {s.name: s for s in STEPS}
     for name in want:
         assert by[name].runner and callable(calibrate._resolve(by[name].runner)), name
-    for stale in ("adu_state_effect", "adu_drift", "adu_ramp_share"):  # refit in phase 5, not yet written
-        assert by[stale].status == "stale"
+    assert not [s.name for s in STEPS if s.status == "stale"]  # phase 5 refitted the last three
 
 
 def test_sig_rounds_to_significant_figures():

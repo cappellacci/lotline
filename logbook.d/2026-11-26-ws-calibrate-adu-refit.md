@@ -21,8 +21,10 @@
     toward 0 (P(τ = 0) 0.021 → 0.128). The place types now take up the difference between states.
   - Effect: none on the five fitted states (they never draw a state multiplier; MN's bundle is identical).
     Wisconsin's ADU 2027–2031: P50 506 → 505, P10 122 → 201, P90 2,088 → 1,391, mean 1,292 → 775.
-- **Decisions:** for Ben: whether to write the refit τ grid (`adu_state_effect.yaml`). Nothing was written.
+- **Decisions:** Ben, 2026-11-26 ("Yes, write it"): the three refits written by `lotline calibrate --run --write`
+  (only τ's grid changes), steps marked `current`, sources, lock and parameter table updated, dated deviation
+  entry in `docs/analysis_plan.md`.
 - **AI:** Claude Opus 5.5 wrote the code and tests and ran the refits. Checked against config by
   `lotline calibrate --run`, the no-ramp fit reproducing config's θ (0.000224), hand-worked unit tests, and
   before/after results bundles.
-- **Open / next:** on Ben's yes, `--write` `adu_state_effect` and mark the three steps `current`.
+- **Open / next:** the live app picks up the narrower range for states outside the fit at its next publish.

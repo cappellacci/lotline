@@ -132,8 +132,7 @@ STEPS: tuple[Step, ...] = (
         "hand",
         after=("adu_undercount_k",),
         runner="lotline.calibrate.adu_steps:ramp_share",
-        status="stale",
-        notes="Fitted on the D-041 form before the D-088 place types and D-096 rule rows.",
+        notes="Refitted 2026-11-26 on D-096's form (phase 5, PR #549); no ramp still wins.",
     ),
     Step(
         "adu_joint",
@@ -220,8 +219,7 @@ STEPS: tuple[Step, ...] = (
         seed=20261020,
         draws=20_000,
         runner="lotline.calibrate.adu_steps:state_effect",
-        status="stale",
-        notes="Fitted on the D-053 form, before the D-088 place types and D-096 rule rows.",
+        notes="Refitted 2026-11-26 on D-096's form (phase 5, PR #549); before that, D-053's form.",
     ),
     Step(
         "adu_drift",
@@ -232,8 +230,7 @@ STEPS: tuple[Step, ...] = (
         after=("adu_undercount_k",),
         draws=500,
         runner="lotline.calibrate.adu_steps:drift",
-        status="stale",
-        notes="From the D-090 forecast fits, not re-derived on the D-096 form.",
+        notes="Refitted 2026-11-26 on D-096's fit set (phase 5, PR #549); σ unchanged at 1.025.",
     ),
     # ---- missing middle ---------------------------------------------------------------------------
     Step(
