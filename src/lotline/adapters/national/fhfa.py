@@ -88,13 +88,16 @@ def _read_table(path: Path, _size: int, _mtime: int) -> pd.DataFrame:
 def to_canonical(raw: pd.DataFrame, level: str) -> pd.DataFrame:
     """Map one FHFA file to market_geo_year rows with a level-prefixed `geo` (all states)."""
     _, code_col, width = LEVELS[level]
+    missing = [c for c in [code_col, "Year", *RENAME] if c not in raw]
+    if missing:  # a renamed column would otherwise drop that index with no error
+        raise ValueError(f"FHFA {level} file is missing column(s) {missing}; found: {list(raw.columns)}")
     df = raw.rename(columns=RENAME)
     code = df[code_col].str.strip().str.zfill(width)
     out = pd.DataFrame(
         {
             "geo": level + ":" + code,
             "year": pd.to_numeric(df["Year"], errors="coerce").astype("Int64"),
-            **{c: pd.to_numeric(df[c], errors="coerce") for c in RENAME.values() if c in df},
+            **{c: pd.to_numeric(df[c], errors="coerce") for c in RENAME.values()},
         }
     )
     if level == "cbsa":

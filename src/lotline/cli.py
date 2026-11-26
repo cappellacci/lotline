@@ -26,14 +26,8 @@ def _fetch(args: argparse.Namespace) -> int:
     with offline_build(store) if args.offline else nullcontext() as sess:
         for state in states:
             available = registry.sources_for(state)
-            # sources a module marks RUN_LAST (place_inputs, which reads every other table) go after the rest
-            names = (
-                [args.source]
-                if args.source
-                else sorted(
-                    available, key=lambda n: (bool(getattr(available[n].module, "RUN_LAST", False)), n)
-                )
-            )
+            # each source after the tables it reads; place_inputs (RUN_LAST) after the rest
+            names = [args.source] if args.source else registry.fetch_order(available)
             unknown = [n for n in names if n not in available]
             if unknown:
                 print(
@@ -101,7 +95,7 @@ def _onboard(args: argparse.Namespace) -> int:
 
 
 def _unlisted(args: argparse.Namespace) -> int:
-    from lotline.build.jurisdictions import unlisted
+    from lotline.build.jurisdictions import config_orphans, unlisted
     from lotline.config import all_states
     from lotline.io import DataStore
 
@@ -117,7 +111,19 @@ def _unlisted(args: argparse.Namespace) -> int:
         print("then rerun `lotline fetch --source jurisdictions` and the adapters.")
     else:
         print("every GEOID your permit and parcel tables use is in the jurisdictions list")
-    return 1 if found else 0
+    blocking = 0
+    for state in [args.state.upper()] if args.state else all_states():
+        orphans = config_orphans(state, store)
+        blocking += int(orphans["blocking"].sum())
+        for r in orphans.itertuples():
+            tag = "matches nothing" if r.blocking else "not modeled (county-filed or outside the set)"
+            print(f"{state}  {r.geoid:<11} config {r.where:<20} {tag}")
+    if blocking:
+        print(
+            "Config names GEOIDs the jurisdictions table lacks (a renamed or re-keyed place?): fix the GEOID"
+        )
+        print("in config, or add the place to local_jurisdictions.")
+    return 1 if found or blocking else 0
 
 
 def _provenance(args: argparse.Namespace) -> int:
@@ -310,9 +316,15 @@ def _results(args: argparse.Namespace) -> int:
     if not args.all and not args.state:
         print("give --state XX, or --all for every state and the page")
         return 2
-    if not results.tree_is_clean():
+    clean = results.tree_state()
+    if clean is False:
         print(
             "warning: uncommitted changes; the bundle's commit_sha will not fully identify the code that ran"
+        )
+    elif clean is None:
+        print(
+            f"note: not a git checkout; the bundle's commit_sha is {results.commit_sha()[:7]} "
+            "(from LOTLINE_COMMIT or src/lotline/COMMIT; all zeros if neither is set)"
         )
 
     def one(state: str, role=None, out=None) -> Path:

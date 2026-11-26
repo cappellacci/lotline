@@ -67,6 +67,7 @@ ADAPTER = "states.or.rlis_parcels"
 VERSION = "1.1"  # 1.1: zoning from Metro's regional zoning layer
 SOURCE = "rlis_parcels"
 TABLE = "parcels"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 LICENSE = (
     "RLIS Open Database End User License Agreement (Metro, revised February 2023): copy, adapt and "
     "redistribute with attribution; compatible with CC BY 4.0 and ODC-By; personal data not licensed"

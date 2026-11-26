@@ -10,7 +10,8 @@
   - `mm_ramp_d100.py` reads φ from config instead of a hard-coded constant.
   - Tests: `tests/model/test_mm_fitsets.py` and `tests/calibrate/test_mm_steps.py`.
   - `docs/calibration.md`.
-- **Decision:** Ben, 2026-11-26: keep φ at 13.63; the drift is recorded, config is not changed.
+- **Decision:** Ben, 2026-11-26: update φ to today's fit and refit C4 and D-100 on it (he first answered
+  "keep", then corrected it as a mis-click). Deviation entry in `docs/analysis_plan.md`.
 - **What Claude did and how it was checked:**
   - A parity run on real data compared the old scripts with the library. Both give the same C4 fit set (93
     places), level set (15), prior and year-spread places.
@@ -24,3 +25,7 @@
     forecasts) where run 9 kept 483 (941), because the tables have grown since.
   - Hand-worked tests cover units per building, the event split, the year-spread exclusions and the
     significant-figure rounding.
+  - The refit wrote φ 13.03 (12.39-13.70), a mature rate of 0.0016571 (was 0.0010387) and a half-way point of
+    4.5 (was 4.0); the fast ramp is unchanged.
+  - Missing-middle five-year P50 rises 7-10% in MN, NC, OH, TX and OR. Before and after were run on the same
+    code (`lotline results`).

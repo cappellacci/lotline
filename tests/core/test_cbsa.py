@@ -28,7 +28,9 @@ def _file(tmp_path, rows):
     title = [["Table with row headers in column A"], ["List 1. CORE BASED STATISTICAL AREAS"]]
     notes = [[None], ["Note: OMB 2020 standards"], ["Source: Census Bureau"]]
     path = tmp_path / "list1.xlsx"
-    pd.DataFrame(title + [COLUMNS] + rows + notes).to_excel(path, header=False, index=False)
+    lines = title + [COLUMNS] + rows + notes
+    width = max(len(r) for r in lines)  # pad short rows: pandas 4 refuses ragged lists
+    pd.DataFrame([[*r, *[None] * (width - len(r))] for r in lines]).to_excel(path, header=False, index=False)
     return path
 
 

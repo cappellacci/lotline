@@ -8290,3 +8290,45 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   [0.7, 1.4]. Missing middle's own k is now 1.106 (check theme, not used).
 - **Effect:** tier-3 states (ACS fallback) get about 3% fewer eligible lots and a wider draw range. Approved by
   Ben in chat on 2026-11-26.
+
+### Deviation · 2026-11-26 · D-044, D-048 and D-091 refitted on D-096's form (calibrate phase 5)
+- **What changed:** `lotline calibrate --run --write` refitted the three ADU steps that were fitted on older
+  model forms, on D-096's fit set (70 places, 498 place-years), with each method unchanged
+  (PR #549):
+  - **D-044 (τ):** τ̂ 0.565 → 0, 90% upper bound 1.70 → 0.46; the grid's mass moves toward 0
+    (P(τ = 0) 0.021 → 0.128). τ is fitted with the rule shares and the core multiplier held at config, and
+    θ and α maximized at each τ.
+  - **D-091 (σ):** 1.025, unchanged; leaving one state out gives 0.875–1.100.
+  - **D-048 (ramp):** no ramp still wins (log-likelihood −1,487.8 against −1,916.5 at a half-life of 0.5
+    years, worse beyond), so `adu_ramp_share` stays 1.
+- **Why τ moved:** D-053's τ was fitted before the D-088 place types. With the core multiplier in the fit,
+  most of the difference between states is explained by their mix of place types.
+- **Effect:** none on the five fitted states, which draw no state multiplier (MN's bundle is identical). A
+  state outside the fit gets a narrower range: Wisconsin's ADU 2027–2031 P10–P90 122–2,088 → 201–1,391, P50
+  506 → 505.
+- Approved by Ben in chat on 2026-11-26 ("Yes, write it").
+
+### Deviation · 2026-11-26 · Missing middle: φ refitted on today's tables; C4 and D-100 refitted on it (calibrate phase 3)
+- **What changed:** `lotline calibrate --run --step mm_year_spread --write`, then `mm_c4` and `mm_fast_ramp`
+  in turn, each with `--write`. The method is unchanged (D-092 run 9's exclusion rules, run 10's C4 and
+  D-100's R2).
+  - `mm_year_spread_phi`: 13.63 (12.85–14.48) → 13.03 (12.39–13.70).
+  - `mm_mature_hazard_ref`: 0.0010387 (0.0001316–0.01939) → 0.0016571 (0.0001361–0.01898).
+  - `mm_ramp_half_years`: 4.0 → 4.5 (range 1.0–6.0 unchanged).
+  - Unchanged: `mm_place_effect_variance`, `mm_ramp_half_years_fast` (0.5, high 1.0) and
+    `mm_units_per_project`.
+- **Why φ moved:** the same rules now keep 713 unused places (1,379 pseudo-forecasts) where run 9 kept 483
+  (941). The tables have grown since 2026-11-15. The library port gives the same place sets as the old
+  scripts on today's tables, so the drift comes from the data, not the code.
+- **Why C4 moved:** C4 takes φ as an input. With lumpier years allowed (a lower φ), the profile favours a
+  slower ramp (4.5 years) with a higher mature rate. C4's 93 fit places and 299 place-years are unchanged.
+- **Effect** (origin 2025; five-year missing middle, homes net statewide, P10 / P50 / P90; before and after
+  on the same code):
+  - MN 170 / 1,140 / 6,911 → 194 / 1,254 / 7,451 (P50 +10.0%).
+  - NC 306 / 2,059 / 12,527 → 352 / 2,230 / 13,452 (+8.3%).
+  - OH 256 / 1,744 / 10,670 → 286 / 1,884 / 11,168 (+8.1%).
+  - TX 1,214 / 8,105 / 49,745 → 1,348 / 8,761 / 52,814 (+8.1%).
+  - OR 26 / 178 / 1,095 → 29 / 193 / 1,141 (+8.6%).
+- **Not rerun:** D-092's held-out log-score comparison of C4 against M, and the §7 tests. Both were run at
+  φ 13.63.
+- **Decision:** approved by Ben in chat on 2026-11-26 ("Update φ now"; then, in this session, "yes").

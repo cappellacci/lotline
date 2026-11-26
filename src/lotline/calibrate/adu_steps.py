@@ -312,3 +312,68 @@ def new_rule(ctx) -> dict:
             "tests A, B and D and Ben's decision are needed before adu_new_rule_share changes from 1"
         )
     return {"adu": {"adu_new_rule_share": fixed(1.0)}}
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Phase 5: the three steps fitted on older model forms, refitted on D-096's (not written without Ben)
+# ---------------------------------------------------------------------------------------------------------
+
+DRIFT_STATES = ("MN", "NC", "TX", "OR")  # D-090: Ohio has no counts before 2024
+
+
+def _shares() -> tuple[float, float]:
+    p = load_params("adu")
+    return p["adu_owner_occupancy_share"].value, p["adu_partial_rule_share"].value
+
+
+def state_effect(ctx) -> dict:
+    """D-043/D-044 on D-096's form: τ's profile on `TAU_GRID` and (θ, α, τ) by maximum likelihood, with the
+    rule shares and the core multiplier held at config (`adu_joint`), θ and α maximized at each τ. The five
+    fit states stay listed as fitted. Quick: every fifth grid point, no interval."""
+    m_o, m_x = _shares()
+    core = load_params("adu_place_types")["adu_types_core_log_multiplier"].value
+    tp = rf.typed_for_state_effect(d096(ctx.store), core)
+    grid = cal.TAU_GRID[::5] if ctx.quick else cal.TAU_GRID
+    probs = cal.tau_probabilities(cal.tau_profile(tp, m_o, m_x, grid))
+    out = {f"adu_state_effect_fitted__{s}": fixed(1) for s in fs.STATES}
+    for t, q in zip(grid, probs, strict=True):
+        out[f"adu_state_tau_prob__{t:.2f}".replace(".", "_")] = fixed(sig(q, 6))
+    if not ctx.quick:
+        sf = cal.fit_state_effect(tp, m_o, m_x)
+        out["adu_state_effect_sd"] = {"value": sig(sf.tau, 6), "low": 0, "high": sig(sf.tau_high, 6)}
+        print(f"adu_state_effect: {sf.n_places} places, {sf.n_years} place-years; τ̂ {sf.tau:.4f} "
+              f"(90% up to {sf.tau_high:.4f}), θ {sf.theta:.6g}, α {sf.alpha:.4f}, "
+              f"P(τ = 0) {probs[0]:.4f}", flush=True)  # fmt: skip
+    return {"adu_state_effect": out}
+
+
+def drift(ctx) -> dict:
+    """D-091 on D-096's fit set: σ maximizing the persistence forecaster's (F0) window likelihood with the
+    drift integrated, over every place with history in MN, NC, TX and OR (fit 2016-2019, window 2021-2025).
+    Leaving one state out gives the sensitivity range (printed, as config's notes hold it)."""
+    grids = rf.drift_grids(d096(ctx.store), DRIFT_STATES)
+    s = rf.drift_sigmas(grids, DRIFT_STATES)
+    loso = {k: v for k, v in s.items() if k != "all"}
+    each = ", ".join(f"{k} {v:.3f}" for k, v in loso.items())
+    print(f"adu_drift: {len(grids)} places with history; σ {s['all']:.3f} (leaving one state out "
+          f"{min(loso.values()):.3f}-{max(loso.values()):.3f}: {each})", flush=True)  # fmt: skip
+    return {"adu": {"adu_drift_sigma": fixed(round(s["all"], 3))}}
+
+
+def ramp_share(ctx) -> dict:
+    """D-048 on D-096's form: the fit at each half-life on D-047's grid (and no ramp), rule shares held at
+    config. D-048 keeps no ramp (share 1) while no ramp has the highest likelihood; if a ramp beats it on a
+    full run the runner stops, because config's single share cannot hold a ramp and it is Ben's decision."""
+    halves = (rf.NO_RAMP, 2.0) if ctx.quick else rf.RAMP_HALVES
+    prof = rf.ramp_profile(d096(ctx.store), _cv(), halves)
+    none = float(prof.loc[prof["half"] == rf.NO_RAMP, "loglik"].iloc[0])
+    best = prof.loc[prof["loglik"].idxmax()]
+    print("adu_ramp_share: " + "; ".join(
+        f"{'no ramp' if r.half == rf.NO_RAMP else f'half {r.half}'} ll {r.loglik:.2f} (θ {r.theta:.4g})"
+        for r in prof.itertuples()), flush=True)  # fmt: skip
+    if best["half"] != rf.NO_RAMP and not ctx.quick:
+        raise ValueError(
+            f"a ramp with half-life {best['half']} years beats no ramp by {best['loglik'] - none:.2f} in "
+            "log-likelihood on D-096's form: D-048 needs Ben's decision before adu_ramp_share changes"
+        )
+    return {"hazard": {"adu_ramp_share": fixed(1.0)}}

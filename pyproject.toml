@@ -9,6 +9,7 @@ dynamic = ["version"]
 dependencies = [
     "httpx>=0.28,<1",
     "matplotlib>=3.11.2",
+    "numpy>=2,<3",
     "openpyxl>=3.1.5",
     "pandas>=3.0,<4",
     "pandera>=0.36,<1",
@@ -47,6 +48,8 @@ packages = ["src/lotline"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["slow: a long simulation-recovery test (tests/slow_tests.txt); skip with -m \"not slow\""]
+# A pattern pandas 4 will reject fails now, not on the day pandas 4 lands.
+filterwarnings = ["error::pandas.errors.Pandas4Warning"]
 
 [tool.ruff]
 line-length = 110

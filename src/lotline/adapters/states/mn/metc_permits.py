@@ -25,6 +25,7 @@ ADAPTER = "states.mn.metc_permits"
 VERSION = "1.0"
 SOURCE = "metc_residential_permits"
 TABLE = "permits"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 LICENSE = "Public domain (Minnesota Government Data Practices Act, Minn. Stat. ch. 13)"
 LAYER_URL = (
     "https://arcgis.metc.state.mn.us/data1/rest/services/structure/Other_Structure_Public/FeatureServer/0"

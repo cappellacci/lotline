@@ -59,6 +59,7 @@ ADAPTER = "states.mn.metc_parcels"
 VERSION = "1.0"
 SOURCE = "metc_parcels"
 TABLE = "parcels"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 LICENSE = (
     "Public domain (Minnesota Government Data Practices Act); MetroGIS counties share parcel data "
     "without fee or license"

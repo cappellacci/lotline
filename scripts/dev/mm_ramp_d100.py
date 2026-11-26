@@ -4,7 +4,8 @@
     uv run python scripts/dev/mm_ramp_d100.py --out /tmp/x --dry               # route split, no fit
     uv run python scripts/dev/mm_ramp_d100.py --out reports/mm-d100/run1      # Ben's go-ahead (2026-11-16)
 
-- **R0:** C4 as on main: D-092's 93 fit places, the C0 baseline, config's φ (13.63 when D-100 ran), the θ_L prior, one ramp.
+- **R0:** C4 as on main: D-092's 93 fit places, the C0 baseline, config's φ (13.63 when D-100 ran),
+  the θ_L prior, one ramp.
 - **R1:** the same with St. Paul added (released 2026-11-16, D-098), one ramp.
 - **R2:** R1's places, one half-way point per adoption route (`lotline.model.mm_routes`): HB 2001-covered
   Oregon places (state-required) against every other place (locally adopted); θ shared.

@@ -65,6 +65,7 @@ ADAPTER = "states.nc.onemap_parcels"
 VERSION = "1.0"
 SOURCE = "onemap_parcels"
 TABLE = "parcels"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 SERVICE = "https://services.nconemap.gov/secure/rest/services"
 LAYER_URL = f"{SERVICE}/NC1Map_Parcels/MapServer/0"  # parcel points (the polygons are layer 1)
 DATES_URL = f"{SERVICE}/NC1Map_Parcels_Transform_Dates/FeatureServer/0"

@@ -33,6 +33,7 @@ from lotline.schemas import validate
 
 SOURCE = "demand"
 TABLE = "market_geo_year"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 MANIFEST_SOURCES = ["census_cbp", "census_geo_codes"]
 COLUMNS = ["demand_bartik", "demand_bartik_loo", "demand_imputed_share"]
 

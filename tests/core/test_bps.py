@@ -97,3 +97,25 @@ def test_one_bps_id_gets_one_geoid_its_latest():
         }
     )
     assert bps.backfill_geoids(df)["geoid"].tolist() == ["2718662"] * 4
+
+
+def test_a_layout_change_or_blank_count_stops_instead_of_shifting_or_zeroing():
+    """Counts are the last 24 cells of a row (names can hold commas), so the header must end with them, every
+    row must be at least as wide as the header, and a blank count is unknown, not 0."""
+    import pytest
+
+    text = (FIX / "bps_2024_style.txt").read_text()
+    head, label, *rows = text.splitlines()
+    n = len(bps.parse(text, 2024))
+    with pytest.raises(ValueError, match="header layout changed"):  # a new trailing column
+        bps.parse("\n".join([head + ",Extra", label + ",Thing", *[r + ",0" for r in rows]]), 2024)
+    with pytest.raises(ValueError, match="header layout changed"):  # sizes reordered
+        bps.parse("\n".join([head.replace("2-units", "2 units"), label, *rows]), 2024)
+    data = [r for r in rows if len(r.split(",")) > 2 and r.split(",")[1].strip()]
+    blank = data[0][: data[0].rstrip().rindex(",") + 1]  # last count (5+ rep value) emptied
+    with pytest.raises(ValueError, match="blank"):
+        bps.parse("\n".join([head, label, blank, *data[1:]]), 2024)
+    short = ",".join(data[0].split(",")[:10])
+    with pytest.raises(ValueError, match="columns, header has"):
+        bps.parse("\n".join([head, label, short, *data[1:]]), 2024)
+    assert n == len(data)

@@ -151,3 +151,41 @@ def test_folds_and_slope_arithmetic():
     assert rf.slope_bounds(0.5, 0.0, 1.0) == pytest.approx((0.4, 0.6))
     assert rf.slope_bounds(0.95, 0.0, 1.0) == pytest.approx((0.85, 1.0))
     assert rf.log_slope(1.0, math.e, 0.0, 2.0) == pytest.approx(0.5)
+
+
+# ---- phase 5: ramp, state effect, drift ----------------------------------------------------------------
+
+
+def _ramped(age, cov):
+    n = len(age)
+    pl = _pl(years=tuple(range(2016, 2016 + n)))
+    return cal.PlaceData(
+        pl.state, pl.geoid, pl.name, pl.years, pl.y, pl.base, np.zeros((1, n, 1), dtype=int),
+        np.asarray(cov, dtype=float)[:, None], pl.w, None,
+        {"age": np.asarray(age, dtype=float)[:, None], "cov": np.asarray(cov, dtype=float)[:, None]},
+    )  # fmt: skip
+
+
+def test_with_ramp_hand_worked():
+    pl = _ramped([2.0, np.nan], [0.5, 0.5])
+    assert list(rf.with_ramp(pl, 2.0).cr[:, 0]) == pytest.approx([0.25, 0.0])  # ramp(2) = 0.5; no rule: 0
+    assert list(rf.with_ramp(pl, rf.NO_RAMP).cr[:, 0]) == pytest.approx([0.5, 0.0])
+
+
+def test_typed_for_state_effect_scales_core_places_only():
+    from lotline.model import adu_types as ty
+
+    core, sub = (
+        ty.with_types(_pl("A"), ty.indicators("core")),
+        ty.with_types(_pl("B"), ty.indicators("suburb")),
+    )
+    out = rf.typed_for_state_effect([core, sub], math.log(2))
+    assert list(out[0].base) == pytest.approx([20.0] * 3) and list(out[1].base) == pytest.approx([10.0] * 3)
+
+
+def test_drift_sigmas_zero_when_every_place_sits_at_no_drift():
+    from lotline.model import adu_forecast as af
+
+    sharp = -((af.LOGD_GRID / 0.01) ** 2)  # every place's window says log d = 0 exactly
+    grids = {"a": ("MN", sharp), "b": ("NC", sharp)}
+    assert rf.drift_sigmas(grids, ("MN", "NC")) == {"all": 0.0, "without MN": 0.0, "without NC": 0.0}
