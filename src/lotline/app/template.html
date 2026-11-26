@@ -1266,7 +1266,7 @@ function feeEvidenceHtml(b, R, part = "all") {
       <p class="body-small" style="margin:0">Likely ${fmtN(x.p10)} to ${fmtN(x.p90)}${all ? `; the midpoint equals ${fmtPct(x.p50 / all.p50)} of the ${fmtN(all.p50)} homes expected with no change` : ""}.</p>`}</div>`;
   }).join("");
   const s1 = `<section><h3 class="h3">${feeDefault() ? "What cutting fees in half would add" : "What the fee change would add"}</h3>
-    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Challenge asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes.</p>
+    <p class="body-small">${esc(OUTCOME_WORDS[o][0])} in ${esc(name)} over ${esc(yrs)}, compared with no change. The Challenge asks every entry to run its benchmark; real fees in most of our states are far lower, so the real cut adds far fewer homes. The fee cut applies to houses and 2–4 unit buildings; apartments of 5 or more aren't modeled.</p>
     <div class="fee-vers">${tiles}</div></section>`;
   // 2. year by year: each version's added homes, P10–P90 whiskers with the midpoint
   const s2 = `<section><h3 class="h3">Year by year</h3>${feeYearsChart(b, o, shown)}</section>`;
@@ -1449,7 +1449,7 @@ const SECTIONS = {
           ${more(`<p class="source"><b>How to read the bars.</b> We ran the model ${esc(Number(b.meta.n_draws).toLocaleString("en-US"))} times, each time with a different plausible value for everything we are unsure about, such as how many owners build and what building costs. The number and the tick show the middle result: half the runs came out higher and half lower. The bar covers the middle 80% of runs: 1 run in 10 came out below its left end and 1 in 10 above its right end; the numbers in brackets are those two ends. A longer bar means we are less sure. The scale is logarithmic: each gridline is ten times the one before, so a bar that looks short can still span a wide range.</p><p class="source">Bars: 10th to 90th percentile (P10–P90) of the runs; tick: the median (P50). Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>`, "Graph details")}
           <details class="more" id="knobs-card"><summary>Try different assumptions</summary>
             <p class="body-small" style="margin:0">Sliders move the headline, the range for each reform above and what the reforms add in the housing-need card. The charts further down stay at the engine's estimate. <button type="button" class="linkish" id="reset-all">Reset all to the engine</button></p>
-            <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are the lowest and highest values in its draws. Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
+            <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are its P10 and P90 in the draws, the middle 80% of runs used for every range on this page (Ben, 2026-11-25: the single lowest and highest run made one slider move missing middle about 100-fold). Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
             <div id="knobs"></div></details></div>
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
@@ -1519,7 +1519,7 @@ function knobsHtml(b) {
     return `<div class="knob" data-knob="${esc(k.column)}">
       <div class="head"><label class="h3" for="k-${esc(k.column)}" style="font-size:16px">${esc(k.label)}</label><span class="val" data-val="${esc(k.column)}"></span></div>
       <p class="body-small" style="margin:var(--space-1) 0">${esc(k.why)}</p>
-      ${`<input type="range" id="k-${esc(k.column)}" min="0" max="100" step="5" value="50" data-pin="${esc(k.column)}" aria-describedby="v-${esc(k.column)}">
+      ${`<input type="range" id="k-${esc(k.column)}" min="10" max="90" step="5" value="50" data-pin="${esc(k.column)}" aria-describedby="v-${esc(k.column)}">
       <div class="ends"><span>${esc(k.low_word)}</span><button type="button" class="linkish" data-reset="${esc(k.column)}">Reset</button><span>${esc(k.high_word)}</span></div>`}
       <details><summary>Source and range</summary><ul>${params || "<li>Set by the engine run for this scenario.</li>"}</ul>
         <p>In the engine's draws: P10 ${fmtFactor(AGG.percentile(vals, 10), k.format)}, P50 ${fmtFactor(AGG.percentile(vals, 50), k.format)}, P90 ${fmtFactor(AGG.percentile(vals, 90), k.format)}.</p></details>
