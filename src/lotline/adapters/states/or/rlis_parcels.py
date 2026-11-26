@@ -188,7 +188,7 @@ def land_use(raw: pd.Series, rules: list[Rule] | None = None) -> pd.Series:
     lookup = {}
     for code in codes.dropna().unique():
         lookup[code] = next((r.land_use_std for r in rules if r.pattern.search(code)), "UNKNOWN")
-    return codes.map(lookup).fillna("UNKNOWN").astype("string")
+    return codes.map(lookup).astype("str").fillna("UNKNOWN").astype("string")
 
 
 # ---- jurisdictions ---------------------------------------------------------------------------------------

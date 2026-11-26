@@ -152,7 +152,7 @@ def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
     sub = raw["SUB_TYPE"].astype("string").str.strip()
     work = raw["WORK_TYPE"].astype("string").str.strip()
     status = raw["STATUS"].astype("string").str.strip()
-    btype = sub.map(SUB_TYPES).fillna("UNKNOWN")
+    btype = sub.map(SUB_TYPES).astype("str").fillna("UNKNOWN")
 
     new_building = (work == "New").fillna(False)
     repair = work.isin(REPAIR_WORK).fillna(False)

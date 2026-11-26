@@ -538,3 +538,9 @@ def test_outcome_column():
     assert baseline.outcome_column("1", reported_only=False) == "units_1"
     with pytest.raises(ValueError):
         baseline.outcome_column("6", reported_only=True)
+
+
+def test_an_origin_year_past_the_data_is_an_error_not_an_empty_forecast():
+    """Nightly review, 2026-11-25: a panel that stopped before the origin raised nothing, forecast nothing."""
+    with pytest.raises(ValueError, match="origin year 2031"):
+        baseline.forecast_draws(OWN, "units_1", 2031, group="state", params=PARAMS)

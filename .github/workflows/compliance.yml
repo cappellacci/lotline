@@ -22,9 +22,12 @@ jobs:
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v7
-      # --run executes commands.setup (uv sync --frozen) and commands.test from challenge.toml.
-      - name: Static + run checks
-        run: python compliance_check.py --run
+      # The setup command (commands.setup in challenge.toml) runs here; the test suite runs once, in tests.yml
+      # (both workflows are required checks), instead of a second 20-minute run here (nightly review, 2026-11-25).
+      - name: Setup (commands.setup)
+        run: uv sync --frozen
+      - name: Static checks
+        run: python compliance_check.py
       # Run inside the project venv so pip-licenses sees the project's dependencies.
       - name: Dependency licenses
         run: uv run python compliance_check.py --deps

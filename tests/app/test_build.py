@@ -165,6 +165,8 @@ def test_every_slider_is_a_draws_factor_with_its_citation_from_config():
     assert {k["column"] for k in ks} <= set(columns("results_draws"))
     for k in ks:
         assert k["label"] and k["why"] and k["low_word"] and k["high_word"]
+        # US-06: every cited scenario also has a plain-words source note, shown before the config keys
+        assert set(k["source_note"]) == set(k["params"]) and all(k["source_note"].values())
         for rows in k["params"].values():
             for r in rows:
                 p = load_params(r["file"])[r["key"]]
@@ -256,7 +258,7 @@ def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
     """Schemas 1.12 (Ben, 2026-11-09): actual yearly permits as bars beside the reform's yearly additions."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     parts = ('id="model-card"', "function recordHtml", "What gets built now, and what the reform would add")
-    for part in (*parts, "Actually permitted", "(P10–P90, line at the midpoint)"):
+    for part in (*parts, "Actually permitted", "(likely range, line at the midpoint)", "ADU permits a year"):
         assert part in html, part
     state_file = (tmp_path / "states" / "zz.js").read_text()
     doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])
@@ -415,7 +417,11 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     summary.write_text(json.dumps(SUMMARY))
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=summary).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', html, re.S)
-    dash = json.loads(m.group(1))
+    assert json.loads(m.group(1)) is True  # the page holds only a flag; the dashboard is its own file
+    script = (tmp_path / build.DASHBOARD_FILE).read_text()
+    assert script.startswith("LotlineDashboard(") and script.rstrip().endswith(");")
+    dash = json.loads(script.strip()[len("LotlineDashboard(") : -2])
+    assert "Zedland" not in html.split('id="lotline-dashboard"')[1][:200]  # not embedded in the page
     assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
     assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
@@ -435,7 +441,9 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
         assert kind in method, kind
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
-    assert json.loads(m.group(1)) is None
+    assert json.loads(m.group(1)) is False and not (tmp_path / "b" / build.DASHBOARD_FILE).exists()
+    build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None)  # rebuilt without one: the old file goes
+    assert not (tmp_path / build.DASHBOARD_FILE).exists()
 
 
 # ---------------------------------------------------------------------- section 3: how well it holds up

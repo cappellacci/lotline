@@ -209,7 +209,7 @@ def build(raw: pd.DataFrame, state: str = "OR") -> pd.DataFrame:
     # ADU rows: every IS_ADU permit, one ADU each
     adu = base.loc[is_adu].copy()
     one_unit_house = new[is_adu] & newtype[is_adu].isin(list(HOUSE_TYPES)).fillna(False) & ~split[is_adu]
-    kind = work[is_adu].map(ADU_KIND).fillna("unknown")
+    kind = work[is_adu].map(ADU_KIND).astype("str").fillna("unknown")
     adu["adu_type"] = kind.where(~one_unit_house, "detached").astype("string")
     adu["building_type_std"] = "ADU"
     adu["type_confidence"] = "high"

@@ -16,7 +16,7 @@ The three commands reviewers use to reproduce Lotline from a clean checkout. The
 | ----- | ------- | ----- |
 | Setup | `uv sync --frozen` | Installs the exact pinned dependencies from `uv.lock` into `.venv/` |
 | Run   | `uv run lotline --help` | Command-line tool for now; the interactive app arrives in Phase 5 and this row will name its command |
-| Test  | `uv run pytest -q` | Runs the automated tests (small synthetic fixtures, no downloads needed) |
+| Test  | `uv run pytest -q -n auto` | Runs every automated test in parallel (small synthetic fixtures, no downloads); about 12 minutes on a laptop. `uv run pytest -q -m "not slow" -n auto` is the 3-minute check that skips 40 long simulation-recovery fits |
 
 Commands that download data need a `.env`: copy `.env.example` to `.env` and fill in the values (see [Data](#data)).
 
@@ -128,8 +128,11 @@ a better tier under `data_tiers` in the state's config, narrows the range and da
 
 ## Tests
 
+No data or keys are needed: the tests build small synthetic inputs.
+
 ```bash
-uv run pytest -q
+uv run pytest -q -n auto                  # everything, in parallel (about 12 minutes on a laptop)
+uv run pytest -q -m "not slow" -n auto   # a 3-minute check: skips the 40 long fits in tests/slow_tests.txt
 ```
 
 Lint: `uv run ruff check .`

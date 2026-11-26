@@ -16,7 +16,7 @@ extra_scenarios = []
 
 [commands]
 setup = "uv sync --frozen"      # single documented setup command (needs uv: https://docs.astral.sh/uv/)
-test = "uv run pytest -q"
+test = "uv run pytest -q -n auto"
 
 [links]
 tool_url = "https://cappellacci.github.io/lotline/"  # deployed tool (Pages, from release app-2026-11-09)

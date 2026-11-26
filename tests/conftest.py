@@ -1,5 +1,7 @@
 """Shared test fixtures."""
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -166,3 +168,18 @@ def zz(monkeypatch, tmp_path):
 
     monkeypatch.setattr(holdout, "load_state", load_state)
     return _zz_store(tmp_path / "data")
+
+
+_SLOW = {
+    line.strip()
+    for line in (Path(__file__).with_name("slow_tests.txt")).read_text(encoding="utf-8").splitlines()
+    if line.strip() and not line.startswith("#")
+}
+
+
+def pytest_collection_modifyitems(config, items):
+    """Mark the long simulation-recovery tests listed in tests/slow_tests.txt as `slow`, so
+    `pytest -m "not slow"` gives a quick check without editing the test files themselves."""
+    for item in items:
+        if item.nodeid in _SLOW:
+            item.add_marker(pytest.mark.slow)

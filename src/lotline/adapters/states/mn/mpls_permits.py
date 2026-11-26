@@ -247,7 +247,7 @@ def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
     issued = _local_date(raw["issueDate"])
     completed = _local_date(raw["completeDate"]).where(status == "Closed")
 
-    btype = occ.map(OCCUPANCY_TYPES).fillna("UNKNOWN")
+    btype = occ.map(OCCUPANCY_TYPES).astype("str").fillna("UNKNOWN")
     builds_new = (new > 0).fillna(False) | (work == NEW_WORK).fillna(False) | wrecking
     btype = btype.mask(occ.isin(NEW_ONLY_OCCUPANCY).fillna(False) & ~builds_new, "OTHER")
     refine = occ.isin(MULTI) & (new >= 2).fillna(False)

@@ -65,7 +65,7 @@ def test_strip_numbers_trace_to_the_bundle(tmp_path):
         m = _row(doc, h, "market", "current")
         # midpoint with its range, and the dollar income beside it (S6)
         assert f"{_fmt_n(m['income'])} income" in html
-        assert f"<b>{_pct(m['ami_share'])} of AMI</b>" in html
+        assert f"<b>{_pct(m['ami_share'])} of area median income</b>" in html
         assert f"({_pct(m['ami_share_p10'])}–{_pct(m['ami_share_p90'])})" in html
         be = _row(doc, h, "break_even", "current")
         assert (

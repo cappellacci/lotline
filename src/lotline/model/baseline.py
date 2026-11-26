@@ -528,6 +528,13 @@ def forecast_draws(
     n = int(p["simulation_draws"].value)
     low, high = p["interval_low_quantile"].value, p["interval_high_quantile"].value
     seed = int(p["simulation_seed"].value)
+    if not panel.empty and not (panel["year"] == origin).any():
+        # every place needs its origin-year row, so a panel that stops early would forecast nothing, silently
+        # (nightly review, 2026-11-25: moving results_origin_year past the fetched BPS years did exactly that)
+        raise ValueError(
+            f"no {value} rows for the origin year {origin} (latest year in the panel: "
+            f"{int(panel['year'].max())}); fetch that year's Census permits or set an earlier origin"
+        )
     hist = panel[panel["year"] <= origin]
     places = level_estimates(
         hist,

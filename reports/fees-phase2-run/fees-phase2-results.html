@@ -318,10 +318,12 @@ function revenue(si,on,s){
   const w=el("waffle");w.innerHTML=cells;
   w.setAttribute("aria-label","Of 1,000 new homes: "+K.map((k,i)=>NM[k]+" "+n[i]).join(", "));
   el("mix-key").innerHTML=order.map(k=>`<span><i style="background:${COL[k]}"></i>${NM[k]}: ${n[K.indexOf(k)]}</span>`).join("");
-  el("mix-states").innerHTML=ST.map(st=>{const b=G.states[st].baseline,t=K.reduce((a,k)=>a+b[k],0);
+  // G is parsed from the page's own JSON: numbers go through Number() and the state code is escaped (CodeQL)
+  const esc=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  el("mix-states").innerHTML=ST.map(st=>{const g=G.states[st].baseline,b=Object.fromEntries(K.map(k=>[k,Number(g[k])])),t=K.reduce((a,k)=>a+b[k],0);
     const seg=K.map(k=>`<div style="flex:${b[k]};background:${COL[k]}" title="${NM[k]}: ${b[k].toLocaleString()}"></div>`).join("");
     const pc=k=>(100*b[k]/t).toFixed(1)+"%";
-    return`<div class="row"><div class="lab">${NAMES[st]||st}</div><div class="track"><div class="stack" aria-hidden="true">${seg}</div><span class="mixnum">${Math.round(t).toLocaleString()} homes · duplexes ${b["2"].toLocaleString()} (${pc("2")}) · 3–4 units ${b["3_4"].toLocaleString()} (${pc("3_4")})</span></div></div>`}).join("");
+    return`<div class="row"><div class="lab">${esc(NAMES[st]||st)}</div><div class="track"><div class="stack" aria-hidden="true">${seg}</div><span class="mixnum">${Math.round(t).toLocaleString()} homes · duplexes ${b["2"].toLocaleString()} (${pc("2")}) · 3–4 units ${b["3_4"].toLocaleString()} (${pc("3_4")})</span></div></div>`}).join("");
 })();
 slider.addEventListener("input",draw);document.querySelectorAll('input[name="target"]').forEach(i=>i.addEventListener("change",draw));draw();
 })();

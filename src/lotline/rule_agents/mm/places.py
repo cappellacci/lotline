@@ -50,7 +50,7 @@ def enumerate_places(
     if coded is not None and len(coded):
         mm = coded[coded["theme"] == THEME]
         ids = mm.groupby(mm["jurisdiction_geoid"].astype(str))["reform_id"].agg(";".join).to_dict()
-    out["coded_mm_ids"] = out["geoid"].map(ids).fillna("")
+    out["coded_mm_ids"] = out["geoid"].map(ids).astype("str").fillna("")
     if only:
         out = out[out["geoid"].isin([str(g) for g in only])]
     if skip_coded:
