@@ -14,7 +14,9 @@ def _xlsx(path, header, rows):
         ["Last updated: x"],
         ["NSA"],
     ]
-    pd.DataFrame(title + [header] + rows).to_excel(path, header=False, index=False)
+    lines = title + [header] + rows
+    width = max(len(r) for r in lines)  # pad short rows: pandas 4 refuses ragged lists
+    pd.DataFrame([[*r, *[None] * (width - len(r))] for r in lines]).to_excel(path, header=False, index=False)
     return path
 
 
