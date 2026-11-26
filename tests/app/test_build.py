@@ -165,6 +165,8 @@ def test_every_slider_is_a_draws_factor_with_its_citation_from_config():
     assert {k["column"] for k in ks} <= set(columns("results_draws"))
     for k in ks:
         assert k["label"] and k["why"] and k["low_word"] and k["high_word"]
+        # US-06: every cited scenario also has a plain-words source note, shown before the config keys
+        assert set(k["source_note"]) == set(k["params"]) and all(k["source_note"].values())
         for rows in k["params"].values():
             for r in rows:
                 p = load_params(r["file"])[r["key"]]
@@ -256,7 +258,7 @@ def test_record_chart_reads_observed_permits_and_yearly_forecasts(tmp_path):
     """Schemas 1.12 (Ben, 2026-11-09): actual yearly permits as bars beside the reform's yearly additions."""
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     parts = ('id="model-card"', "function recordHtml", "What gets built now, and what the reform would add")
-    for part in (*parts, "Actually permitted", "(P10–P90, line at the midpoint)"):
+    for part in (*parts, "Actually permitted", "(likely range, line at the midpoint)", "ADU permits a year"):
         assert part in html, part
     state_file = (tmp_path / "states" / "zz.js").read_text()
     doc = json.loads(state_file[state_file.index("(") + 1 : state_file.rindex(")")])

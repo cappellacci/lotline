@@ -7,9 +7,15 @@
 # The shift rule (each draw x P_q / P50) is provisional (Ben, 2026-11-06): revisit after feedback on the app.
 # `by_scenario` replaces the label, why and end words for scenarios where the factor means something else (the
 # fee scenarios' theta is the cut's % change in homes built, not an uptake rate).
+# `source_note` is the plain-words source per scenario (keyed like `params`), shown first under "Source and range"
+# (US-06); the config keys and their raw citations sit behind a "Technical detail" fold under it.
 theta:
   label: How often owners build, once it pays
   why: The five-year chance that an owner of an eligible lot where the project pays actually builds.
+  source_note:
+    adu: Measured from ADU permits in places in our own states that already allow ADUs, not borrowed from other markets. The setting behind it is a yearly rate for a typical suburb; the slider shows the five-year chance across this state's lots, so the two numbers differ.
+    fees: &fee_theta_note From published studies of how home building responds to fees and costs, and of how much of a fee cut landowners capture in higher land prices. The range is wide because the studies disagree.
+    fees_local_half: *fee_theta_note
   low_word: Fewer owners build
   high_word: More owners build
   format: share
@@ -28,6 +34,8 @@ theta:
 pencil_out_share:
   label: Share of legal lots where building pays
   why: Of the lots the reform makes legal, the share where expected rent or sale value covers land, construction, fees and a fair return.
+  source_note:
+    adu: Worked out for each place from national building costs, local rents and home values, and mortgage rates. The return owners need is a judgment with a wide range, because no solid public source was found.
   low_word: Pays on fewer lots
   high_word: Pays on more lots
   format: share
@@ -37,6 +45,10 @@ pencil_out_share:
 completion_factor:
   label: Permits that become finished homes
   why: Some permitted homes are never finished or are finished late. This turns permits into completed homes.
+  source_note:
+    adu: &done_note Census counts of homes finished against homes permitted, nationally over many years.
+    fees: *done_note
+    fees_local_half: *done_note
   low_word: Fewer finished
   high_word: All finished
   format: share
@@ -48,6 +60,8 @@ completion_factor:
 net_new_share:
   label: Finished units that add a home
   why: Some new units become offices, guest rooms or short-term rentals, or legalize a unit that already existed. Only the rest add a home.
+  source_note:
+    adu: From surveys of ADU owners on how the units are used, plus a judgment share for permits that only legalize a unit that already existed.
   low_word: Fewer add a home
   high_word: More add a home
   format: share
@@ -57,6 +71,10 @@ net_new_share:
 displacement_share:
   label: Homes that would have been built elsewhere in the state anyway
   why: Some new homes replace homes that would otherwise have been built in another town in the state. They count in "All new homes" but not in "Net new housing".
+  source_note:
+    adu: &moved_note A judgment range from 0 to 50%, informed by studies of zoning reforms elsewhere. Little direct evidence exists, so the range is wide.
+    fees: *moved_note
+    fees_local_half: *moved_note
   low_word: Almost none
   high_word: About half
   format: share
