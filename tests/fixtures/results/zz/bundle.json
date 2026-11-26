@@ -16,7 +16,17 @@
   "overlap_flag": "medium",
   "overlap_note": "Synthetic fixture: 20% of eligible parcels outside the calibration range",
   "caveats": null,
-  "scenarios_pending": "missing_middle, fees, fees_local_half"
+  "scenarios_pending": "missing_middle, fees, fees_local_half",
+  "scenarios": [
+   {
+    "scenario": "adu",
+    "model": "adu",
+    "title": "ADUs",
+    "definition": "Allow one accessory dwelling unit (a backyard cottage, garage or basement apartment) on every lot with one house.",
+    "handbook": "one ADU per parcel with an existing single-family building; detached/semi-detached \u2265600 sq ft allowed; no added parking.",
+    "tables": "adu_place_types, adu_baseline"
+   }
+  ]
  },
  "draws": [
   {
@@ -1892,5 +1902,6 @@
    "gap": 8056.0,
    "gap_high": 13648.0
   }
- ]
+ ],
+ "fee_types": []
 }

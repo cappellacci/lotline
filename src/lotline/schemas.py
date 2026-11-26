@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.24"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.25"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -518,6 +518,10 @@ SCENARIOS = [
     "fees",  # the Handbook benchmark: a $50,000 fee cut in half (D-065)
     "fees_local_half",  # real local fees cut in half (D-065)
 ]  # each reform is run on its own; there are no combined scenarios (Ben, 2026-11-17 and 2026-11-18)
+# The built-in scenarios above are the registry's (`lotline.model.scenarios.bundle_names()`, tested). Since
+# schemas 1.25 the results tables accept any scenario name of this form, so a new scenario module needs no
+# edit here; `results.validate_bundle` checks the names against the registry.
+SCENARIO_NAME = r"^[a-z][a-z0-9_]*$"
 STATE_ROLES = ["benchmark", "development", "transfer", "national_only", "ingestion_test"]
 OVERLAP_FLAGS = ["high", "medium", "low"]
 FUNNEL_STAGES = ["legal", "pencils", "built"]
@@ -575,7 +579,7 @@ class ResultsDraws(_Strict):
     """
 
     state: Series[str] = pa.Field(**_STATE)
-    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    scenario: Series[str] = pa.Field(str_matches=SCENARIO_NAME)
     draw: Series[pd.Int64Dtype] = pa.Field(ge=0)
     eligible_tier1: Series[float] = pa.Field(ge=0)
     eligible_tier2: Series[float] = pa.Field(ge=0)
@@ -596,7 +600,7 @@ class ResultsFunnel(_Strict):
     """Legal -> Pencils -> Built for each scenario: parcels for `legal` and `pencils`, homes for `built`."""
 
     state: Series[str] = pa.Field(**_STATE)
-    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    scenario: Series[str] = pa.Field(str_matches=SCENARIO_NAME)
     stage: Series[str] = pa.Field(isin=FUNNEL_STAGES)
     unit: Series[str] = pa.Field(isin=["parcels", "homes"])
     p10: Series[float] = pa.Field(ge=0)
@@ -610,7 +614,7 @@ class ResultsTotals(_Strict):
     (e.g. 2026-2030) or a single year."""
 
     state: Series[str] = pa.Field(**_STATE)
-    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    scenario: Series[str] = pa.Field(str_matches=SCENARIO_NAME)
     outcome: Series[str] = pa.Field(isin=RESULT_OUTCOMES)
     period: Series[str] = pa.Field(str_matches=r"^\d{4}(-\d{4})?$")
     p10: Series[float]
@@ -624,7 +628,7 @@ class ResultsNeed(_Strict):
     are never shown side by side without `label`; `is_headline` marks the one the page leads with."""
 
     state: Series[str] = pa.Field(**_STATE)
-    scenario: Series[str] = pa.Field(isin=SCENARIOS)
+    scenario: Series[str] = pa.Field(str_matches=SCENARIO_NAME)
     denominator_kind: Series[str] = pa.Field(isin=NEED_KINDS)
     label: Series[str]
     denominator: Series[float]
@@ -837,6 +841,23 @@ class ResultsFeeTypes(_Strict):
         return not df.duplicated(["state", "scenario", "size", "draw", "fee_change_share"]).any()
 
 
+class ResultsScenarios(_Strict):
+    """The scenarios in the bundle, one row each, in bundle order (schemas 1.25, #554), so the app draws its
+    tabs, picker and lanes from the data. `model` is the scenario module's `NAME` (the fee model has two
+    rows, D-065); `title`, `definition` and `handbook` its plain-language labels and the Handbook text it
+    follows; `tables` the extra bundle parts it fills (comma-separated, e.g. `fee_types`), the capability the
+    app keys a model's own cards on. An older bundle has none; the app then uses its built-in list.
+    """
+
+    state: Series[str] = pa.Field(**_STATE)
+    scenario: Series[str] = pa.Field(str_matches=SCENARIO_NAME, unique=True)
+    model: Series[str] = pa.Field(str_matches=SCENARIO_NAME)
+    title: Series[str]
+    definition: Series[str]
+    handbook: Optional[Series[str]] = pa.Field(nullable=True)
+    tables: Optional[Series[str]] = pa.Field(nullable=True)
+
+
 class ResultsScorecard(_Strict):
     """Validation scorecard rows for the state (validation plan §5): one row per check."""
 
@@ -864,6 +885,7 @@ RESULTS_TABLES: dict[str, type[pa.DataFrameModel]] = {
     "results_affordability": ResultsAffordability,
     "results_shortfall": ResultsShortfall,
     "results_fee_types": ResultsFeeTypes,
+    "results_scenarios": ResultsScenarios,
 }
 _ALL_TABLES = {**TABLES, **RESULTS_TABLES}
 
@@ -1011,6 +1033,12 @@ HISTORY = [
         "1.24",
         "results_meta: adds optional tree_clean (the run's code matched commit_sha; null if unknown) and "
         "post_test / post_test_note (released holdout tests whose outcomes the run's data include; #506)",
+    ),
+    (
+        "1.25",
+        "results_scenarios (the bundle's scenarios with their labels and extra tables, written as "
+        "`meta.scenarios` in bundle.json; #554); results tables accept any scenario name the scenario "
+        "registry declares (checked by `results.validate_bundle`), not only the built-in list",
     ),
 ]
 

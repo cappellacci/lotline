@@ -1,0 +1,13 @@
+### LB-NNN · 2026-11-26 · Build: Scenario contract and registry (modularity plan step 1, #554)
+- **Question:** can a new reform be added as one module, with no edits to the results code, the schemas or the bundle writer, and without changing any number?
+- **What I did:**
+  - Wrote the contract in `src/lotline/model/scenarios/__init__.py`: each scenario module defines `NAME`, `LABELS`, `VARIANTS` and `run(inputs, variant) -> ScenarioRun`, plus optional `ORDER`, `TABLES` and `extra_tables(run)`. Scenario modules are found by discovery, the way state data sources are (`registry.py`); a half-defined module is an error.
+  - Connected the three models through small bridge modules (`bundle_adu.py`, `bundle_mm.py`, `bundle_fees.py`) that only reshape each model's draws. The model code in `adu.py`, `mm.py` and `fees.py` is unchanged.
+  - `results.build_bundle` now loops over the registry. The three per-scenario draws functions became one, `results.scenario_draws`. `ENGINE_SCENARIOS` and `FEE_SCENARIOS` now come from the registry, and a test checks `schemas.SCENARIOS` against it.
+  - Schemas 1.25: a new `results_scenarios` part, written as `meta.scenarios` in bundle.json. Results tables now accept any well-formed scenario name, and `validate_bundle` checks names against the registry. Older bundles without `meta.scenarios` still read.
+- **Inputs:** `docs/build/modularity-plan.md` (PR #553), issue #554.
+- **Outputs:** `src/lotline/model/scenarios/{__init__,bundle_adu,bundle_mm,bundle_fees}.py`, `src/lotline/model/results.py`, `src/lotline/schemas.py`, `docs/schemas.md`, `tests/model/test_scenario_contract.py`, `tests/fixtures/scenarios/toy.py`, `docs/adding_a_state.md` §9.
+- **Findings:** a toy reform (one home per 100 eligible lots) registered in a test appears in the bundle's draws, totals and `meta.scenarios`, and the built-in scenarios' draws do not change. Every bundle part, apart from run-time metadata, is byte-identical before and after on the synthetic state and on all six states (MN, NC, OH, TX, OR, WI; per-part sha256 in the PR).
+- **Decisions:** proposed in the PR (run signature takes one `inputs` object; bridge modules; scenario names in schemas opened to a pattern).
+- **AI:** Claude Code wrote the code and tests. Checked by the full test suite, `compliance_check.py` (0 FAIL), and per-part sha256 of bundles built from `main` and from this branch for each state.
+- **Open / next:** the app and dashboard read tabs, picker and lanes from `meta.scenarios` (step 1.4, next PR). ADU and MM owners may fold their bridge module into their model (step 1.5). The context tables (overlap flag, gut check, affordability) still read the ADU, MM and fee runs by name.

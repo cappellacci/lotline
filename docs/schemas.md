@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.24** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.25** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -365,7 +365,7 @@ Table checks: `one_row_per_key`
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
+| `scenario` | text | yes | no | matches `^[a-z][a-z0-9_]*$` |
 | `draw` | integer | yes | no | ≥ 0 |
 | `eligible_tier1` | number | yes | no | ≥ 0 |
 | `eligible_tier2` | number | yes | no | ≥ 0 |
@@ -384,7 +384,7 @@ Legal -> Pencils -> Built for each scenario: parcels for `legal` and `pencils`, 
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
+| `scenario` | text | yes | no | matches `^[a-z][a-z0-9_]*$` |
 | `stage` | text | yes | no | one of `legal`, `pencils`, `built` |
 | `unit` | text | yes | no | one of `parcels`, `homes` |
 | `p10` | number | yes | no | ≥ 0 |
@@ -398,7 +398,7 @@ The parity target: statewide P10/P50/P90 and mean per scenario, outcome and peri
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
+| `scenario` | text | yes | no | matches `^[a-z][a-z0-9_]*$` |
 | `outcome` | text | yes | no | one of `permits_added`, `homes_in_place`, `homes_net_statewide` |
 | `period` | text | yes | no | matches `^\d{4}(-\d{4})?$` |
 | `p10` | number | yes | no |  |
@@ -413,7 +413,7 @@ Share of housing need (D-057): one row per scenario and denominator kind the sta
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
 | `state` | text | yes | no | matches `^[A-Z]{2}$` |
-| `scenario` | text | yes | no | one of `adu`, `missing_middle`, `fees`, `fees_local_half` |
+| `scenario` | text | yes | no | matches `^[a-z][a-z0-9_]*$` |
 | `denominator_kind` | text | yes | no | one of `household_growth_5y`, `shortage_stock` |
 | `label` | text | yes | no |  |
 | `denominator` | number | yes | no |  |
@@ -585,6 +585,20 @@ Table checks: `one_row_per_key`
 | `completion_factor` | number | yes | no | ≥ 0 |
 | `baseline_homes` | number | yes | no | ≥ 0 |
 
+## `results_scenarios`
+
+The scenarios in the bundle, one row each, in bundle order (schemas 1.25, #554), so the app draws its tabs, picker and lanes from the data. `model` is the scenario module's `NAME` (the fee model has two rows, D-065); `title`, `definition` and `handbook` its plain-language labels and the Handbook text it follows; `tables` the extra bundle parts it fills (comma-separated, e.g. `fee_types`), the capability the app keys a model's own cards on. An older bundle has none; the app then uses its built-in list.
+
+| Column | Type | Required | Nullable | Rule |
+|---|---|---|---|---|
+| `state` | text | yes | no | matches `^[A-Z]{2}$` |
+| `scenario` | text | yes | no | matches `^[a-z][a-z0-9_]*$`; unique |
+| `model` | text | yes | no | matches `^[a-z][a-z0-9_]*$` |
+| `title` | text | yes | no |  |
+| `definition` | text | yes | no |  |
+| `handbook` | text | no | yes |  |
+| `tables` | text | no | yes |  |
+
 ## Version history
 
 | Version | Change |
@@ -614,3 +628,4 @@ Table checks: `one_row_per_key`
 | 1.22 | results_fee_types: a size whose homes are not linear in the fee change (houses on the lot-feasibility route) carries every slider stop, not only the half cut; fee_change_share may be negative (a rise) |
 | 1.23 | results_meta.state_role: adds ingestion_test, a state shown for transparency that is not part of the model's core evidence (Wisconsin) |
 | 1.24 | results_meta: adds optional tree_clean (the run's code matched commit_sha; null if unknown) and post_test / post_test_note (released holdout tests whose outcomes the run's data include; #506) |
+| 1.25 | results_scenarios (the bundle's scenarios with their labels and extra tables, written as `meta.scenarios` in bundle.json; #554); results tables accept any scenario name the scenario registry declares (checked by `results.validate_bundle`), not only the built-in list |
