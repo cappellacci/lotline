@@ -35,7 +35,7 @@ import httpx
 import pandas as pd
 
 from lotline.io import offline
-from lotline.io.http import client, fetch
+from lotline.io.http import HtmlNotDataError, client, fetch
 from lotline.io.store import DataStore, query_folder
 
 GEOMETRY_MODES = {"none", "point", "centroid", "polygon"}
@@ -96,20 +96,25 @@ class _Ctx:
             return offline.read_cached(self.raw_dir / name)  # type: ignore[return-value]
         for attempt in range(self.retries + 1):
             cached = (self.raw_dir / name).exists() and not self.refresh
-            path = fetch(
-                url,
-                self.raw_dir / name,
-                store=self.store,
-                source=self.source,
-                license=self.license,
-                adapter=self.adapter,
-                adapter_version=self.adapter_version,
-                http=self.http,
-                refresh=self.refresh,
-            )
+            try:
+                path = fetch(
+                    url,
+                    self.raw_dir / name,
+                    store=self.store,
+                    source=self.source,
+                    license=self.license,
+                    adapter=self.adapter,
+                    adapter_version=self.adapter_version,
+                    http=self.http,
+                    refresh=self.refresh,
+                )
+            except HtmlNotDataError:  # a block or error page: fetch saved nothing, so retry like a bad body
+                path = None
             if self.pause and not cached:
                 time.sleep(self.pause)  # be polite to small municipal servers (a cached page sent nothing)
             try:
+                if path is None:
+                    raise ArcGISError(f"not JSON (an error or block page?): {name}")
                 return _json(path)  # an error page is deleted, so the next attempt downloads again
             except ArcGISError:
                 if attempt == self.retries:
