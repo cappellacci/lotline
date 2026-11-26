@@ -101,7 +101,7 @@ def _onboard(args: argparse.Namespace) -> int:
 
 
 def _unlisted(args: argparse.Namespace) -> int:
-    from lotline.build.jurisdictions import unlisted
+    from lotline.build.jurisdictions import config_orphans, unlisted
     from lotline.config import all_states
     from lotline.io import DataStore
 
@@ -117,7 +117,19 @@ def _unlisted(args: argparse.Namespace) -> int:
         print("then rerun `lotline fetch --source jurisdictions` and the adapters.")
     else:
         print("every GEOID your permit and parcel tables use is in the jurisdictions list")
-    return 1 if found else 0
+    blocking = 0
+    for state in [args.state.upper()] if args.state else all_states():
+        orphans = config_orphans(state, store)
+        blocking += int(orphans["blocking"].sum())
+        for r in orphans.itertuples():
+            tag = "matches nothing" if r.blocking else "not modeled (county-filed or outside the set)"
+            print(f"{state}  {r.geoid:<11} config {r.where:<20} {tag}")
+    if blocking:
+        print(
+            "Config names GEOIDs the jurisdictions table lacks (a renamed or re-keyed place?): fix the GEOID"
+        )
+        print("in config, or add the place to local_jurisdictions.")
+    return 1 if found or blocking else 0
 
 
 def _provenance(args: argparse.Namespace) -> int:
