@@ -107,9 +107,17 @@ def test_reader_sees_relative_and_function_imports():
 
 def test_model_never_imports_calibrate():
     """Fitting code may use the engine, never the other way round. (Importing `validation.holdout`, the
-    holdout filter, is allowed: it guards data, it is not a check.)"""
+    holdout filter, is allowed: it guards data, it is not a check.)
+
+    A module still in `MOVING` is fitting code on its way out, so it may import fitting code that has already
+    moved; this lets the ADU and MM owners move in either order. Once `MOVING` is empty the rule is absolute.
+    """
     bad = {m: sorted(i for i in imports_of(m) if i.startswith("lotline.calibrate")) for m in MODULES}
-    bad = {m: v for m, v in bad.items() if v and m.startswith("lotline.model")}
+    bad = {
+        m: v
+        for m, v in bad.items()
+        if v and m.startswith("lotline.model") and m.removeprefix("lotline.model.") not in MOVING
+    }
     assert not bad, f"the forecast must not depend on fitting code: {bad}"
 
 
