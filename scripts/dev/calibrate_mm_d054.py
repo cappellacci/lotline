@@ -32,7 +32,7 @@ from lotline.io import DataStore
 from lotline.model import calibrate_mm as cal
 from lotline.model import estimate_mm as mm
 from lotline.model import mm_fitsets as fs
-from lotline.model.baseline import crps_from_draws
+from lotline.validation.baseline_scores import crps_from_draws
 
 _spec = importlib.util.spec_from_file_location("d042", Path(__file__).with_name("calibrate_mm_d042.py"))
 d042 = importlib.util.module_from_spec(_spec)

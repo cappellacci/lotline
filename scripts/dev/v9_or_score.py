@@ -32,8 +32,8 @@ from lotline.adapters.national import bps
 from lotline.io import DataStore
 from lotline.model import calibrate_adu
 from lotline.model import estimate_mm as mm
-from lotline.model.baseline import crps_from_draws, randomized_coverage
 from lotline.validation import v9
+from lotline.validation.baseline_scores import crps_from_draws, randomized_coverage
 
 REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "reports" / "v9-oregon"

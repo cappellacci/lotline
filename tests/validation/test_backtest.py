@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 from lotline.config import load_params
-from lotline.model import baseline
 from lotline.validation import backtest
+from lotline.validation import baseline_scores as scores
 
 PARAMS = load_params("baseline")
 
@@ -79,13 +79,13 @@ def test_no_post_2022_years_is_not_a_bias_failure():
 def test_crps_by_hand():
     """Docstring example: draws 0, 2 and y = 1 -> 0.5. All draws at y -> 0. All at 3, y = 1 -> |3 − 1| = 2."""
     draws = np.array([[0, 2], [1, 1], [3, 3]])
-    assert baseline.crps_from_draws(draws, np.array([1, 1, 1])) == pytest.approx([0.5, 0.0, 2.0])
+    assert scores.crps_from_draws(draws, np.array([1, 1, 1])) == pytest.approx([0.5, 0.0, 2.0])
 
 
 def test_pit_histogram_by_hand():
     """Draws 0, 0, 0, 1 and y = 0: the PIT step is [0, 0.75], so each decile below 0.7 gets 0.1 / 0.75 =
     0.1333, 0.7-0.8 gets 0.05 / 0.75 = 0.0667 and the top two none. The masses sum to 1."""
-    lo, hi = baseline.pit_step(np.array([[0, 0, 0, 1]]), np.array([0]))
+    lo, hi = scores.pit_step(np.array([[0, 0, 0, 1]]), np.array([0]))
     states = pd.DataFrame({"scope": ["year"], "pit_lo": lo, "pit_hi": hi})
     h = backtest.pit_histogram(states).drop(columns="scope").iloc[0].to_numpy()
     assert h == pytest.approx([0.4 / 3] * 7 + [0.2 / 3, 0.0, 0.0])
