@@ -81,12 +81,18 @@ def double_a(ctx):
     return {"p": {"a": {"value": 2.0, "low": 1.5, "high": 2.5} if not ctx.quick else 1.9}}
 
 
-def test_run_compares_and_writes_only_the_value_line(tmp_path):
+def test_run_compares_and_writes_only_the_value_line(tmp_path, monkeypatch):
+    import sys
+    import types
+
+    runners = types.ModuleType("calibrate_test_runners")  # importable by name wherever pytest runs from
+    runners.double_a = double_a
+    monkeypatch.setitem(sys.modules, "calibrate_test_runners", runners)
     cfg = _config(tmp_path, {"a": EST, "b": JUDGE})
     text = (cfg / "params" / "p.yaml").read_text()
     (cfg / "params" / "p.yaml").write_text("# a comment that must survive\n" + text)
     steps = (
-        Step("fit_a", "D-1", {"p": ("a",)}, "s", "hand", runner="tests.calibrate.test_registry:double_a"),
+        Step("fit_a", "D-1", {"p": ("a",)}, "s", "hand", runner="calibrate_test_runners:double_a"),
         Step("fit_b", "D-1", {"p": ("b",)}, "s", "hand"),
     )
     calibrate.write_lock(cfg, steps)
