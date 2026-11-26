@@ -1219,7 +1219,7 @@ function howKit(b, d, first) {
 }
 
 // Missing middle's steps (Ben, 2026-11-17: "a similar section" to the ADU card's). The factors are the engine's
-// (results.mm_draws): θ is five-year homes permitted per lot where building pays; net-new share is 1 − houses
+// (scenarios/bundle_mm.from_result): θ is five-year homes permitted per lot where building pays; net-new share is 1 − houses
 // torn down ÷ homes permitted. The ramp note (Ben, 2026-11-25, in place of #448): D-100's fast-ramp run gave five-year
 // totals 3.61 times C4's in every state (ramp sums 4.204 at half-way 0.5 years, mm_ramp_half_years_fast, against
 // 1.163 at 4.0, mm_ramp_half_years); the ratio depends only on the two ramps, so it holds for every state.
@@ -1243,7 +1243,7 @@ function mmHowHtml(b, R) {
 
 // The fee card (Ben, 2026-11-17). The slider and the "which homes" choice live in "Try a different fee change"
 // above it (results_fee_types, 2026-11-22); the card's real-local-fee tile follows them. Results files carry two versions: the Challenge benchmark and real local fees
-// halved. The fee model opens no lots, so the engine's first stage is the homes built anyway (results.fee_rows).
+// halved. The fee model opens no lots, so the engine's first stage is the homes built anyway (scenarios/bundle_fees.from_sim).
 const FEE_VERSIONS = [
   ["fees", "The Challenge benchmark", "Every city assumed to charge $50,000 a home, cut to $25,000."],
   ["fees_local_half", "Real local fees, halved", "Each city's own fees for houses, duplexes and fourplexes, cut by half."],

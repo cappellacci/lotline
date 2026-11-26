@@ -14,8 +14,8 @@ import pytest
 from pandera import errors as pa_errors
 
 from lotline.config import Parameter
-from lotline.model import affordability, aggregate, results
-from lotline.model.scenarios import adu
+from lotline.model import affordability, aggregate, results, scenarios
+from lotline.model.scenarios import adu, bundle_adu, bundle_fees, bundle_mm
 from lotline.schemas import SCENARIOS, columns
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "results" / "zz" / "bundle.json"
@@ -70,13 +70,23 @@ def _run_draws(n=4, places=3, years=5, seed=0):
     }
 
 
+def _rows(run, name, rng):
+    """`results_draws` rows for a scenario run labelled `name` (what `build_bundle` does per variant)."""
+    run.scenario = name
+    return results.scenario_draws(run, rng)
+
+
+def adu_rows(places, rd, rng):
+    return _rows(bundle_adu.from_draws(places, rd), "adu", rng)
+
+
 def _places():
     return pd.DataFrame({"geoid": ["1", "2", "3"], "data_tier": [1, 1, 3]})
 
 
 def test_theta_back_solve_reproduces_engine_permits_and_homes():
     rd = _run_draws()
-    d = results.adu_draws(_places(), rd, np.random.default_rng(1))
+    d = adu_rows(_places(), rd, np.random.default_rng(1))
     h = aggregate.homes_from_draws(d)
     assert h["permits_added"] == pytest.approx(rd["added"].sum(axis=(1, 2)))
     engine_homes = rd["homes"].sum(axis=(1, 2))
@@ -148,7 +158,7 @@ def make_fixture() -> dict[str, pd.DataFrame]:
     """A small synthetic bundle for state ZZ (20 draws, ADU), with both housing-need kinds and a baseline."""
     n = 20
     rd = _run_draws(n=n, seed=7)
-    d = results.adu_draws(_places(), rd, np.random.default_rng(11)).assign(state="ZZ")
+    d = adu_rows(_places(), rd, np.random.default_rng(11)).assign(state="ZZ")
     parts = results.summarize("ZZ", d, 2025, {"adu": results.year_shares(rd)}, need_params=NEED)
     meta = pd.DataFrame(
         [
@@ -214,6 +224,7 @@ def make_fixture() -> dict[str, pd.DataFrame]:
         ),
         "shortfall": results.shortfall_table("ZZ", base, _acs_stock(), 2025, need_params=NEED, fips="99"),
         "fee_types": pd.DataFrame(columns=columns("results_fee_types")),  # ADU-only fixture: no fee slider
+        "scenarios": results.scenarios_table("ZZ", {"adu": (scenarios.get("adu"), None)}),
     }
 
 
@@ -341,8 +352,10 @@ def test_an_older_bundle_without_the_adu_parts_still_reads(tmp_path):
     doc = json.loads(path.read_text())
     for part in ("adu_place_types", "adu_baseline", "affordability", "shortfall", "fee_types"):
         del doc[part]
+    del doc["meta"]["scenarios"]  # before schemas 1.25
     path.write_text(json.dumps(doc))
     back = results.read_bundle(path)
+    assert back["scenarios"].empty
     assert (
         back["adu_place_types"].empty
         and back["adu_baseline"].empty
@@ -392,9 +405,12 @@ def test_invalid_bundle_is_refused():
     b = make_fixture()
     with pytest.raises(KeyError):
         results.validate_bundle({k: v for k, v in b.items() if k != "need"})
-    bad = dict(b, draws=b["draws"].assign(scenario="parking"))
+    bad = dict(b, draws=b["draws"].assign(scenario="Parking!"))  # not a scenario name
     with pytest.raises(pa_errors.SchemaErrors):
         results.validate_bundle(bad)
+    unknown = dict(b, draws=b["draws"].assign(scenario="parking"))  # well formed, but no module declares it
+    with pytest.raises(ValueError, match="unknown scenarios"):
+        results.validate_bundle(unknown)
 
 
 if __name__ == "__main__":
@@ -472,7 +488,7 @@ def test_mm_draws_by_hand():
         teardowns=np.array([[6.0, 0, 0, 0, 0]]), places=pd.DataFrame(),
         legal=np.array([[1000.0, 0.0, 0.0]]), pencils=np.array([400.0]),
     )  # fmt: skip
-    d = results.mm_draws(res, np.random.default_rng(1)).iloc[0]
+    d = _rows(bundle_mm.from_result(res), "missing_middle", np.random.default_rng(1)).iloc[0]
     assert d["scenario"] == "missing_middle"
     assert d["theta"] == pytest.approx(0.05)  # 20 / 400
     assert d["pencil_out_share"] == pytest.approx(0.4)
@@ -491,7 +507,8 @@ def test_mm_draws_reproduce_the_scenario():
     draws = pd.DataFrame({"theta": np.full(300, 0.002), "alpha": np.full(300, 2.0),
                           "units": np.full(300, 2.2), "teardown_scale": np.full(300, 0.8)})  # fmt: skip
     res = mm.simulate(places, draws, 0.5, 0.75, seed=4)
-    d = results.mm_draws(res, np.random.default_rng(2))
+    run = bundle_mm.from_result(res)
+    d = _rows(run, "missing_middle", np.random.default_rng(2))
     h = aggregate.homes_from_draws(d)
     assert h["permits_added"] == pytest.approx(res.homes_gross.sum(axis=1))
     net = res.homes_net.sum(axis=1)
@@ -499,7 +516,7 @@ def test_mm_draws_reproduce_the_scenario():
     # legal by tier: a 5,000 + b 20,000 × 0.5 in tier 1; c 800 × (1 − its band draw) in tier 3
     assert d["eligible_tier1"].to_numpy() == pytest.approx(np.full(300, 15000.0))
     assert (d["eligible_tier2"] == 0).all()
-    shares = results.mm_year_shares(res)
+    shares = run.year_shares
     assert shares.sum(axis=1)[res.homes_gross.sum(axis=1) > 0] == pytest.approx(1.0)
 
 
@@ -537,14 +554,15 @@ def test_fee_rows_by_hand():
     with mock.patch.object(
         results, "triangular", lambda name, n, rng, file="aggregate": np.full(n, vals[name])
     ):
-        rows = results.fee_rows("fees", sim, 2, Fixed())
+        run = bundle_fees.from_sim(sim, 2)
+        rows = _rows(run, "fees", Fixed())
     r = rows.iloc[0]
     assert (r.eligible_tier1, r.eligible_tier2, r.eligible_tier3) == (0, 10_000, 0)  # 5+ units take no dose
     assert r.theta == pytest.approx(0.015) and r.pencil_out_share == 1 and r.net_new_share == 1
     assert r.completion_factor == pytest.approx(0.93)
     h = aggregate.homes_from_draws(rows)
     assert h["permits_added"][0] == pytest.approx(150) and h["homes_in_place"][0] == pytest.approx(139.5)
-    assert results.fee_year_shares(sim)[0] == pytest.approx(np.full(yrs, 0.2))
+    assert run.year_shares[0] == pytest.approx(np.full(yrs, 0.2))
 
 
 def test_fee_types_by_hand():
@@ -566,8 +584,12 @@ def test_fee_types_by_hand():
     with mock.patch.object(
         results, "triangular", lambda name, n, rng, file="aggregate": np.full(n, vals[name])
     ):
-        rows, types = results.fee_rows_and_types("fees_local_half", sim, 2, None)
-        _, none = results.fee_rows_and_types("fees", sim, 2, None)
+        local = bundle_fees.from_sim(sim, 2, "local_half")
+        rows = _rows(local, "fees_local_half", None)
+        types = bundle_fees.size_types(local)
+        bench = bundle_fees.from_sim(sim, 2, "handbook")
+        _rows(bench, "fees", None)
+        none = bundle_fees.size_types(bench)
     assert none.empty  # only the real-local-fee scenario gets the slider table
     t = types.set_index("size")
     assert t.loc["1", "units_added"] == pytest.approx(120) and t.loc["2", "units_added"] == pytest.approx(20)

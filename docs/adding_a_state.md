@@ -717,3 +717,31 @@ what the table above and `config/params/` do.
 the way owners did in the fitted states once rents and prices are accounted for. Its range covers how much
 the fitted states differed; it cannot cover a way the new state differs from all of them. The bundle's
 `overlap_flag` says when a place sits outside the fitted range, and the guide's step 11 asks you to report it.
+
+## 9. Adding a scenario (a new reform)
+
+A new reform (parking, for example) is **one new module** in `src/lotline/model/scenarios/` plus its
+parameters in `config/params/`. You do not edit `results.py`, `schemas.py` or the bundle code: the module is
+found the same way a state's data sources are (the scenario contract, #554; `scenarios/__init__.py`).
+
+The module defines:
+
+| Name | What it is |
+|---|---|
+| `NAME` | the reform's id, lower case, e.g. `"parking"` |
+| `LABELS` | `{"title": ..., "definition": ..., "handbook": ...}`: a plain-language title, a one-line definition and the Handbook text it follows (None if none) |
+| `VARIANTS` | the runs it adds, `{bundle name: variant}`; most reforms have one, e.g. `{"parking": "handbook"}` |
+| `run(inputs, variant)` | returns a `ScenarioRun`: per draw, the funnel's first stage by data tier, θ, the pencil-out and net-new shares, the added homes by completion class, and each year's share of the five years |
+| `ORDER` (optional) | where it sits in the bundle; new reforms go after the built-in ones (90) so their draws stay the same |
+| `TABLES`, `extra_tables(run)` (optional) | extra bundle parts it fills, such as the fee section's `fee_types` |
+
+`inputs` carries the state, the data store, the origin year, the number of draws and the state's place
+table (`inputs.places`). `lotline results --state XX` then runs the new reform with the others. It gets its own
+rows in `results_draws`, `results_funnel`, `results_totals` and `results_need`, and a row in
+`meta.scenarios` with its labels.
+
+The test `tests/model/test_scenario_contract.py` proves this with a toy reform
+(`tests/fixtures/scenarios/toy.py`, one home per 100 eligible lots). Registered and with nothing else
+edited, the toy reform shows up in the bundle, and the built-in reforms' draws do not change. Every
+parameter a new reform reads still needs a cited source in `config/params/`, and each equation needs a
+hand-worked test (`CLAUDE.md`).

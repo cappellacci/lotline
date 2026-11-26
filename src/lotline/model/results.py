@@ -1,6 +1,6 @@
 """The results bundle: what `lotline results --state XX` writes for the static app (#310; WS-ENGINE brief).
 
-`reports/results/<st>/bundle.json` holds eight tables (schemas `results_*`, schemas.py 1.12):
+`reports/results/<st>/bundle.json` holds these tables (schemas `results_*`, schemas.py 1.25):
 
 - `meta`: one row: commit, run time, engine and schema versions, config hash, origin, draws, seed, the state's
   role, data tier, overlap flag and caveats, and which scenarios the engine cannot run yet.
@@ -20,7 +20,9 @@
 - `observed`: what was actually permitted in the years before the window (`observed_table`): ADU permits where
   local data flag them, and homes in 2-4 unit buildings from BPS.
 
-Which scenarios: the engine runs the ADU and missing-middle (D-063) scenarios statewide, and the fee scenario
+Which scenarios: every module in the scenario registry (`lotline.model.scenarios.all()`, #554), each through
+the one contract there; `meta.scenarios` (`results_scenarios`) lists them with their labels. Today the
+engine runs the ADU and missing-middle (D-063) scenarios statewide, and the fee scenario
 over every place the baseline forecasts (D-076) twice, as D-065 labels them: `fees`, the Handbook benchmark
 ($50,000 cut in half), and `fees_local_half`, real local fees cut in half. Each reform is run on its own
 (Ben, 2026-11-17). A scenario the engine cannot run is listed in `meta.scenarios_pending`, never filled with
@@ -41,6 +43,7 @@ import re
 import subprocess
 from collections.abc import Mapping
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -51,6 +54,9 @@ from lotline.config import CONFIG_DIR, load_params
 from lotline.model import aggregate, baseline, gutcheck
 from lotline.model import eligible_proxy as proxy
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
+
+if TYPE_CHECKING:
+    from lotline.model.scenarios import ScenarioRun
 
 PARTS = (
     "meta",
@@ -66,11 +72,24 @@ PARTS = (
     "affordability",
     "shortfall",
     "fee_types",
+    "scenarios",
 )
 TABLE = {part: f"results_{part}" for part in PARTS}
-ENGINE_SCENARIOS = ("adu", "missing_middle", "fees", "fees_local_half")  # scenarios `build_bundle` can fill
-# D-065: the bundle's fee scenarios and the `scenarios.fees` mode behind each
-FEE_SCENARIOS = {"fees": "handbook", "fees_local_half": "local_half"}
+SCENARIO_PARTS = ("adu_place_types", "adu_baseline", "fee_types")  # filled by a scenario's extra_tables
+
+
+def __getattr__(name: str):
+    """`ENGINE_SCENARIOS` (every scenario `build_bundle` fills) and `FEE_SCENARIOS` (D-065: the fee model's
+    bundle scenarios and the `scenarios.fees` mode behind each), derived from the scenario registry."""
+    from lotline.model import scenarios
+
+    if name == "ENGINE_SCENARIOS":
+        return scenarios.bundle_names()
+    if name == "FEE_SCENARIOS":
+        return scenarios.get("fees").variants
+    raise AttributeError(name)
+
+
 REPO = Path(__file__).resolve().parents[3]
 
 
@@ -182,149 +201,43 @@ def triangular(name: str, n: int, rng: np.random.Generator, file: str = "aggrega
     return np.full(n, s.value) if s.low == s.high else rng.triangular(s.low, s.value, s.high, n)
 
 
-def adu_draws(places: pd.DataFrame, run_draws: Mapping, rng: np.random.Generator) -> pd.DataFrame:
-    """`results_draws` rows for the ADU scenario from `adu.run(..., return_draws=True)`'s last element.
+def scenario_draws(run: ScenarioRun, rng: np.random.Generator) -> pd.DataFrame:
+    """`results_draws` rows for one scenario run (the scenario contract's `ScenarioRun`, #554).
 
-    Per draw d: eligible by data tier (after the D-056 scale where applied); pencil-out share = the eligible-
-    weighted mean of the pro forma's feasible share; θ = five-year permits added ÷ (eligible × pencil-out);
-    net-new share = adu_net_new_share × (1 − adu_formalization_share) of that draw; completion and
-    displacement drawn here.
+    The scenario gives eligible by tier, θ, pencil-out share and net-new share. Drawn here from the shared
+    `rng`, triangular over config/params/aggregate.yaml, in this order: one completion factor per completion
+    class the run lists (`completion_factor_<class>`), then the displacement share. With one class the
+    factor is used as drawn; with several it is the mean weighted by each class's added homes in that draw
+    (the first class's draw where none are added). Stored on `run.completion_draws` for `extra_tables`.
+
+    By hand: 120 houses and 30 homes in 2-4 unit buildings added, completion 0.95 and 0.85 -> 0.93.
     """
-    elig = np.asarray(run_draws["eligible"], dtype=float)  # draws x places
-    n = elig.shape[0]
-    tiers = places["data_tier"].to_numpy() if "data_tier" in places else np.full(elig.shape[1], 3)
-    by_tier = {t: elig[:, tiers == t].sum(axis=1) for t in (1, 2, 3)}
-    total = elig.sum(axis=1)
-    pencils = (elig * np.asarray(run_draws["pencil"], dtype=float)).sum(axis=1)
-    pencil_share = np.divide(pencils, total, out=np.zeros(n), where=total > 0)
-    added = np.asarray(run_draws["added"], dtype=float).sum(axis=(1, 2))
-    theta = np.divide(added, pencils, out=np.zeros(n), where=pencils > 0)
-    sets = run_draws["params"]
-    net_new = np.array([p["adu_net_new_share"] * (1 - p["adu_formalization_share"]) for p in sets])
+    n = len(np.asarray(run.year_shares))
+    c = {k: triangular(f"completion_factor_{k}", n, rng) for k in run.completion}
+    run.completion_draws = c
+    if len(c) == 1:
+        completion = next(iter(c.values()))
+    else:
+        first = next(iter(c))
+        added = sum(np.asarray(w, dtype=float) for w in run.completion.values())
+        num = sum(np.asarray(run.completion[k], dtype=float) * c[k] for k in c)
+        completion = np.divide(num, added, out=c[first].copy(), where=added > 0)
+    t1, t2, t3 = run.eligible
     return pd.DataFrame(
         {
-            "scenario": "adu",
+            "scenario": run.scenario,
             "draw": np.arange(n),
-            "eligible_tier1": by_tier[1],
-            "eligible_tier2": by_tier[2],
-            "eligible_tier3": by_tier[3],
-            "theta": theta,
-            "pencil_out_share": pencil_share,
-            "completion_factor": triangular("completion_factor_single_family", n, rng),
-            "net_new_share": net_new,
-            "displacement_share": triangular("displacement_share", n, rng),
-            "overlap_share": np.nan,
-        }
-    )
-
-
-def mm_draws(res, rng: np.random.Generator) -> pd.DataFrame:
-    """`results_draws` rows for the missing-middle scenario from `scenarios.mm.simulate`'s `Result` (D-063).
-
-    Per draw d: legal = parcels the Handbook rule newly opens, E × (1 − current dose), by data tier;
-    pencil-out share = their feasible-share-weighted mean F(PCR); θ = five-year homes permitted (gross, in
-    the added 2-4 unit buildings) ÷ pencil-out parcels; net-new share = 1 − houses torn down ÷ homes
-    permitted, that draw's; completion (2+ unit buildings) and displacement drawn here.
-
-    By hand: legal 1,000 in tier 1, pencils 400, 20 homes in 8 buildings that replace 6 houses -> θ 0.05,
-    pencil-out 0.4, net-new 0.7; `aggregate.homes_from_draws` then gives 20 permits and 14 × completion homes.
-    """
-    legal = np.asarray(res.legal, dtype=float)
-    n = legal.shape[0]
-    total = legal.sum(axis=1)
-    pencils = np.asarray(res.pencils, dtype=float)
-    gross = res.homes_gross.sum(axis=1)
-    torn = res.teardowns.sum(axis=1)
-    return pd.DataFrame(
-        {
-            "scenario": "missing_middle",
-            "draw": np.arange(n),
-            "eligible_tier1": legal[:, 0],
-            "eligible_tier2": legal[:, 1],
-            "eligible_tier3": legal[:, 2],
-            "theta": np.divide(gross, pencils, out=np.zeros(n), where=pencils > 0),
-            "pencil_out_share": np.divide(pencils, total, out=np.zeros(n), where=total > 0),
-            "completion_factor": triangular("completion_factor_multifamily", n, rng),
-            "net_new_share": np.divide(gross - torn, gross, out=np.ones(n), where=gross > 0),
-            "displacement_share": triangular("displacement_share", n, rng),
-            "overlap_share": np.nan,
-        }
-    )
-
-
-def fee_rows(scenario: str, sim: Mapping, tier: int, rng: np.random.Generator) -> pd.DataFrame:
-    """`results_draws` rows for a fee scenario (`fee_rows_and_types` without the size table)."""
-    return fee_rows_and_types(scenario, sim, tier, rng)[0]
-
-
-def fee_rows_and_types(
-    scenario: str, sim: Mapping, tier: int, rng: np.random.Generator
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """`results_draws` rows for a fee scenario from `scenarios.fees.simulate` (D-065, D-076).
-
-    A fee cut opens no lots, so the funnel's first stage holds homes instead: eligible = the five-year
-    baseline homes in the building sizes a cut covers (1, 2 and 3-4 units; 5+ take no dose, D-073), all in
-    the state's data tier; pencil-out share = 1; θ = five-year homes added ÷ those homes (the cut's % change,
-    ramp included). Completion is drawn here per class (single-family for 1-unit, multifamily for 2-4) and
-    weighted by that draw's added homes; net-new share = 1 (the model adds new buildings and tears none
-    down); displacement drawn here.
-
-    By hand: 10,000 covered homes, 150 added (120 houses, 30 in 2-4 unit buildings), completion 0.95 and
-    0.85 -> θ 0.015, completion 0.93; `aggregate.homes_from_draws` gives 150 permits and 139.5 homes in place.
-
-    The second table is `results_fee_types` for `fees_local_half` (empty otherwise, or without a size split):
-    per size and draw the homes added, that size's completion draw (the same draws as above) and baseline.
-    """
-    n = sim["n"]
-    by_class = sim["added_by_class"]
-    if by_class:
-        covered = sum(sim["by_size"][c].sum() for c in by_class)
-        sf = by_class["1"].sum(axis=(1, 2))
-        mf = sum(by_class[c].sum(axis=(1, 2)) for c in by_class if c != "1")
-    else:  # no size split: every unit takes the house's dose (D-032)
-        covered = sim["base"].sum()
-        sf = sim["added"].sum(axis=(1, 2))
-        mf = np.zeros(n)
-    added = sf + mf
-    c_sf = triangular("completion_factor_single_family", n, rng)
-    c_mf = triangular("completion_factor_multifamily", n, rng)
-    completion = np.divide(sf * c_sf + mf * c_mf, added, out=c_sf.copy(), where=added > 0)
-    tiers = {t: (covered if t == tier else 0.0) for t in (1, 2, 3)}
-    types = pd.DataFrame(columns=[c for c in _columns("fee_types")])
-    if scenario == "fees_local_half" and by_class:
-        types = pd.concat(
-            [
-                pd.DataFrame(
-                    {
-                        "scenario": scenario,
-                        "size": c,
-                        "draw": np.arange(n),
-                        "fee_change_share": 0.5,
-                        "units_added": by_class[c].sum(axis=(1, 2)),
-                        "completion_factor": c_sf if c == "1" else c_mf,
-                        "baseline_homes": float(sim["by_size"][c].sum()),
-                    }
-                )
-                for c in by_class
-            ],
-            ignore_index=True,
-        )
-    rows = pd.DataFrame(
-        {
-            "scenario": scenario,
-            "draw": np.arange(n),
-            "eligible_tier1": tiers[1],
-            "eligible_tier2": tiers[2],
-            "eligible_tier3": tiers[3],
-            "theta": added / covered if covered > 0 else np.zeros(n),
-            "pencil_out_share": 1.0,
+            "eligible_tier1": t1,
+            "eligible_tier2": t2,
+            "eligible_tier3": t3,
+            "theta": run.theta,
+            "pencil_out_share": run.pencil_out_share,
             "completion_factor": completion,
-            "net_new_share": 1.0,
+            "net_new_share": run.net_new_share,
             "displacement_share": triangular("displacement_share", n, rng),
             "overlap_share": np.nan,
         }
     )
-    return rows, types
 
 
 FEE_STOPS = tuple(round(x / 10, 1) for x in range(-5, 11) if x != 0)  # the slider: up 50% to abolished
@@ -363,11 +276,6 @@ def fee_types_with_stops(places: pd.DataFrame, origin: int, draws: int, types: p
             at_s = ws[s].reindex(half.index).to_numpy(float)
             extra.append(half.assign(fee_change_share=s, units_added=at_s).reset_index().assign(size=size))
     return pd.concat([types, *extra], ignore_index=True) if extra else types
-
-
-def fee_year_shares(sim: Mapping) -> np.ndarray:
-    """Each draw's fee-scenario homes by year as a share of its five-year total (draws x years)."""
-    return year_shares({"added": sim["added"]})
 
 
 def adu_place_type_table(state: str, places: pd.DataFrame, run_draws: Mapping) -> pd.DataFrame:
@@ -500,18 +408,11 @@ def shortfall_table(
     return pd.DataFrame([row], columns=cols).astype({"stock_year": "Int64"})
 
 
-def mm_year_shares(res) -> np.ndarray:
-    """Each draw's gross missing-middle homes by year as a share of its five-year total (draws x years)."""
-    by_year = np.asarray(res.homes_gross, dtype=float)
-    tot = by_year.sum(axis=1, keepdims=True)
-    return np.divide(by_year, tot, out=np.zeros_like(by_year), where=tot > 0)
-
-
 def year_shares(run_draws: Mapping) -> np.ndarray:
     """Each draw's permits by year as a share of its five-year total (draws x years)."""
-    by_year = np.asarray(run_draws["added"], dtype=float).sum(axis=1)
-    tot = by_year.sum(axis=1, keepdims=True)
-    return np.divide(by_year, tot, out=np.zeros_like(by_year), where=tot > 0)
+    from lotline.model.scenarios import year_shares_of
+
+    return year_shares_of(np.asarray(run_draws["added"], dtype=float).sum(axis=1))
 
 
 def _pct(a) -> dict[str, float]:
@@ -788,7 +689,9 @@ def validate_bundle(bundle: Mapping[str, pd.DataFrame]) -> dict[str, pd.DataFram
     out = {part: validate(bundle[part].reset_index(drop=True), TABLE[part]) for part in PARTS}
     if len(out["meta"]) != 1:
         raise ValueError("a bundle has exactly one meta row")
-    unknown = set(out["draws"]["scenario"]) - set(SCENARIOS)
+    from lotline.model import scenarios
+
+    unknown = set(out["draws"]["scenario"]) - set(scenarios.bundle_names())
     if unknown:
         raise ValueError(f"unknown scenarios {sorted(unknown)}")
     return out
@@ -802,7 +705,8 @@ def _records(df: pd.DataFrame) -> list[dict]:
 def write_bundle(bundle: Mapping[str, pd.DataFrame], path: Path) -> Path:
     """Validate and write `bundle.json`: {meta: {...}, draws: [...], funnel: [...], ...}."""
     b = validate_bundle(bundle)
-    doc = {"meta": _records(b["meta"])[0]} | {part: _records(b[part]) for part in PARTS if part != "meta"}
+    meta = _records(b["meta"])[0] | {"scenarios": _records(b["scenarios"].drop(columns="state"))}
+    doc = {"meta": meta} | {part: _records(b[part]) for part in PARTS if part not in ("meta", "scenarios")}
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(doc, indent=1, sort_keys=False) + "\n")
@@ -814,7 +718,11 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
     from lotline.schemas import columns
 
     doc = json.loads(Path(path).read_text())
-    raw = {"meta": pd.DataFrame([doc["meta"]])} | {  # parts added later read as empty in older bundles
+    meta = dict(doc["meta"])
+    listed = meta.pop("scenarios", None)  # `meta.scenarios` (schemas 1.25); none in older bundles
+    if listed:
+        doc["scenarios"] = [{"state": meta["state"], **row} for row in listed]
+    raw = {"meta": pd.DataFrame([meta])} | {  # parts added later read as empty in older bundles
         part: pd.DataFrame(doc.get(part) or [], columns=columns(TABLE[part]) if not doc.get(part) else None)
         for part in PARTS
         if part != "meta"
@@ -822,10 +730,35 @@ def read_bundle(path: Path) -> dict[str, pd.DataFrame]:
     return validate_bundle(raw)
 
 
+def scenarios_table(state: str, runs: Mapping[str, tuple]) -> pd.DataFrame:
+    """`results_scenarios` (written as `meta.scenarios`): one row per scenario run, in bundle order."""
+    rows = []
+    for name, (sc, _) in runs.items():
+        lab = sc.labels(name)
+        rows.append(
+            {
+                "state": state,
+                "scenario": name,
+                "model": sc.name,
+                "title": lab["title"],
+                "definition": lab["definition"],
+                "handbook": lab.get("handbook"),
+                "tables": ", ".join(sc.tables) or None,
+            }
+        )
+    return pd.DataFrame(rows, columns=["state", *_columns("scenarios")])
+
+
 def build_bundle(state: str, store, *, role: str | None = None, origin: int | None = None, draws=None):
-    """Run every scenario the engine supports for one state and assemble the eight tables (unwritten)."""
-    from lotline.model import fee_inputs
-    from lotline.model.scenarios import adu, fees, mm
+    """Run every scenario in the registry (`lotline.model.scenarios.all()`, #554) for one state and assemble
+    the bundle's tables (unwritten).
+
+    Each scenario's variants run in bundle order; their draws share one completion-and-displacement `rng`
+    (`scenario_draws`), so the order is part of the result. The ADU, missing-middle and fee runs also feed
+    the bundle's context tables (overlap flag, gut check, affordability), which read them by name.
+    """
+    from lotline.model import scenarios
+    from lotline.model.scenarios import adu
 
     st = state.upper()
     agg = load_params("aggregate")
@@ -845,21 +778,29 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
         )
     places["state"] = st
     tier3 = bool(proxy.proxy_states(places))
-    _, totals_adu, run_draws = adu.run(places, origin, draws=n, eligible_proxy=tier3, return_draws=True)
-    d_adu = adu_draws(places, run_draws, rng)
-    _, res_mm, _ = mm.run(st, store, origin, n=n)
     tier_parcels = places.groupby("data_tier")["eligible_parcels"].sum() if "data_tier" in places else None
     tier = int(tier_parcels.idxmax()) if tier_parcels is not None and len(tier_parcels) else 3
-    fee_places = fee_inputs.statewide_places(st, store, origin)
-    fee_sims = {k: fees.simulate(fee_places, origin, mode=m, draws=n) for k, m in FEE_SCENARIOS.items()}
-    d_mm = mm_draws(res_mm, rng)  # the shared rng's order: ADU, missing middle, then each fee scenario
-    fee_parts = [fee_rows_and_types(k, sim, tier, rng) for k, sim in fee_sims.items()]
-    d = pd.concat([d_adu, d_mm, *(rows for rows, _ in fee_parts)], ignore_index=True).assign(state=st)
-    fee_types = pd.concat([types for _, types in fee_parts], ignore_index=True).assign(state=st)
-    fee_types = fee_types_with_stops(fee_places, origin, n, fee_types)
-    shares = {"adu": year_shares(run_draws), "missing_middle": mm_year_shares(res_mm)}
-    shares.update({k: fee_year_shares(sim) for k, sim in fee_sims.items()})
+    inputs = scenarios.Inputs(st, store, origin, n, places=places, data_tier=tier, eligible_proxy=tier3)
+
+    runs = {}  # bundle scenario name -> (Scenario, ScenarioRun)
+    for sc in scenarios.all():
+        for name in sc.variants:
+            runs[name] = (sc, sc.run(inputs, name))
+    d = pd.concat([scenario_draws(r, rng) for _, r in runs.values()], ignore_index=True).assign(state=st)
+    extra: dict[str, list[pd.DataFrame]] = {}
+    for sc, r in runs.values():
+        for part, table in sc.extra_tables(r).items():
+            extra.setdefault(part, []).append(table)
+    filled = {
+        part: (got[0] if len(got) == 1 else pd.concat(got, ignore_index=True)).assign(state=st)
+        for part, got in extra.items()
+    }
+    shares = {name: r.year_shares for name, (_, r) in runs.items()}
     parts = summarize(st, d, origin, shares)
+    run_adu = runs["adu"][1].raw
+    run_draws, totals_adu = run_adu["draws"], run_adu["totals"]
+    res_mm = runs["missing_middle"][1].raw if "missing_middle" in runs else None
+    fee_places = inputs.shared("fee_places", lambda: None)
 
     flag, median_distance = overlap_flag(places["eligible_parcels"], totals_adu["calibration_distance"])
     caveats = []
@@ -881,14 +822,14 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "schemas_version": SCHEMAS_VERSION,
                 "config_hash": config_hash(),
                 "origin_year": origin,
-                "horizon_years": int(np.asarray(run_draws["added"]).shape[2]),
+                "horizon_years": runs["adu"][1].horizon,
                 "n_draws": n,
                 "seed": seed,
                 "eligible_proxy": tier3,
                 "overlap_flag": flag,
                 "overlap_note": f"median calibration distance {median_distance:.2f} (0 = inside the range)",
                 "caveats": " ".join(caveats) or None,
-                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in ENGINE_SCENARIOS) or None,
+                "scenarios_pending": ", ".join(s for s in SCENARIOS if s not in runs) or None,
                 "tree_clean": tree_state(),
                 "post_test": tested[0],
                 "post_test_note": tested[1],
@@ -913,11 +854,9 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
         "scorecard": scorecard,
         "baseline": base,
         "observed": seen,
-        "adu_place_types": adu_place_type_table(st, places, run_draws),
-        "adu_baseline": adu_baseline_years(
-            st, run_draws, origin, own=places["observed_rate"].notna().to_numpy()
-        ),
         "affordability": affordability_table(st, places, run_draws, res_mm, fee_places, store),
         "shortfall": shortfall_table(st, base, store.read(st, "acs_geo_year"), origin),
-        "fee_types": fee_types,
+        **{p: pd.DataFrame(columns=["state", *_columns(p)]) for p in SCENARIO_PARTS},  # none filled them
+        **filled,
+        "scenarios": scenarios_table(st, runs),
     }
