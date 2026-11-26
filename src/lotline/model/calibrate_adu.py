@@ -22,8 +22,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-CHI2_90 = 2.705543  # 90% point of chi-square with 1 degree of freedom
-Z_95 = 1.644854  # standard normal 95th percentile
+from lotline.model.adu_rates import CHI2_90, GRID3, Z_95, Fit3, PlaceData, _cvals  # noqa: F401
 
 
 def nb_loglik(y, mu, alpha: float) -> float:
@@ -496,38 +495,6 @@ def place_years(
 # ---------------------------------------------------------------------------------------------------------
 
 
-@dataclass
-class PlaceData:
-    """One place's fit inputs. base[t] = parcels × h_m(θ = 1); for each blank-field combination c (weight
-    w[c]) and rule r in force in year t, the rule's type index types[c, t, r] and coverage × ramp cr[t, r]."""
-
-    state: str
-    geoid: str
-    name: str
-    years: np.ndarray
-    y: np.ndarray
-    base: np.ndarray
-    types: np.ndarray
-    cr: np.ndarray
-    w: np.ndarray
-    detached: np.ndarray | None = None  # D-046: (C, T, R) True where the rule forbids detached ADUs
-    extra: dict | None = None  # D-047: per-year inputs (rent, value, rate, parcels, report, cov, age)
-
-    @property
-    def log_fact(self) -> float:
-        return float(sum(math.lgamma(v + 1) for v in self.y))
-
-    def k(self, cvals: np.ndarray, m_d: float = 1.0) -> np.ndarray:
-        """Expected counts at θ = 1 and u = 1 for each combination: (C, T) = base × max_r c(type) × cr.
-
-        With `detached` set (D-046), c also carries m_d where the rule forbids detached ADUs; `types` then
-        leave that restriction out."""
-        c = cvals[self.types]
-        if self.detached is not None:
-            c = c * np.where(self.detached, m_d, 1.0)
-        return self.base[None, :] * (c * self.cr[None, :, :]).max(axis=2)
-
-
 def frailty_loglik_place(y, k, theta: float, alpha: float, log_fact: float | None = None) -> float:
     """log P(y_1..T) for one place with u ~ Gamma(mean 1, variance α), y_t | u ~ Poisson(θ u k_t).
 
@@ -566,34 +533,6 @@ def frailty_loglik(
         ]
         total += float(np.logaddexp.reduce(terms))
     return total
-
-
-GRID3 = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)  # m_o and m_x grid, pre-registered
-
-
-@dataclass(frozen=True)
-class Fit3:
-    theta: float
-    low: float
-    high: float
-    alpha: float
-    m_owner: float
-    m_other: float
-    owner_interval: tuple[float, float]
-    other_interval: tuple[float, float]
-    owner_estimated: bool
-    other_estimated: bool
-    loglik: float
-    n_places: int
-    n_years: int
-
-    @property
-    def log_se(self) -> float:
-        return (math.log(self.high) - math.log(self.low)) / (2 * Z_95)
-
-
-def _cvals(m_owner: float, m_other: float) -> np.ndarray:
-    return np.array([0.0, m_owner, m_other, m_owner * m_other, 1.0])
 
 
 def fit3(

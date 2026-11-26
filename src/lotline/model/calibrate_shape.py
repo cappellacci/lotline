@@ -18,6 +18,7 @@ import numpy as np
 
 from lotline.model import calibrate_adu as cal
 from lotline.model import hazard
+from lotline.model.adu_rates import nelder_mead  # noqa: F401
 
 NO_RAMP = -1.0  # half-life code for "no ramp": ramp = 1 from the first year
 RAMP_SLOPE = 0.75  # D-047 held the slope at its then-central value (hazard.PRE_D048_RAMP)
@@ -209,39 +210,6 @@ def emp_loglik(params: np.ndarray, d: EmpData) -> float:
         (cal._lgamma(y_sum + r) - math.lgamma(r) + r * math.log(r) - (y_sum + r) * np.log(r + m_sum)).sum()
     )
     return out
-
-
-def nelder_mead(f, x0, step=0.5, iters: int = 5000, tol: float = 1e-10) -> tuple[np.ndarray, float]:
-    """Minimize f from x0 (standard Nelder-Mead: reflection 1, expansion 2, contraction 0.5, shrink 0.5)."""
-    n = len(x0)
-    pts = [np.asarray(x0, dtype=float)] + [
-        np.asarray(x0, dtype=float) + step * np.eye(n)[i] for i in range(n)
-    ]
-    vals = [f(q) for q in pts]
-    for _ in range(iters):
-        order = np.argsort(vals)
-        pts, vals = [pts[i] for i in order], [vals[i] for i in order]
-        if abs(vals[-1] - vals[0]) < tol:
-            break
-        c = np.mean(pts[:-1], axis=0)
-        xr = c + (c - pts[-1])
-        fr = f(xr)
-        if fr < vals[0]:
-            xe = c + 2 * (c - pts[-1])
-            fe = f(xe)
-            pts[-1], vals[-1] = (xe, fe) if fe < fr else (xr, fr)
-        elif fr < vals[-2]:
-            pts[-1], vals[-1] = xr, fr
-        else:
-            xc = c + 0.5 * (pts[-1] - c)
-            fc = f(xc)
-            if fc < vals[-1]:
-                pts[-1], vals[-1] = xc, fc
-            else:
-                pts = [pts[0]] + [pts[0] + 0.5 * (q - pts[0]) for q in pts[1:]]
-                vals = [vals[0]] + [f(q) for q in pts[1:]]
-    i = int(np.argmin(vals))
-    return pts[i], vals[i]
 
 
 def hessian(f, x, step: float = 1e-3) -> np.ndarray:
