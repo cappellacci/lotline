@@ -201,7 +201,8 @@ def test_results_open_with_the_state_headline_and_one_range_box_per_reform(tmp_p
     assert "const sum = Array.from({ length: n }, (_, i) => per.reduce((t, a) => t + a[i], 0));" in js
     assert "const x = tot ? tot.p50 : NaN;" in js  # all three together (Ben, 2026-11-17)
     assert "Each reform was estimated on its own" in js  # the note says the reforms were run separately
-    assert 'const HERO = ["adu", "missing_middle", "fees"];' in html
+    assert "const HERO = [...new Set(Object.values(DATA.scenarios).map((s) => s.model" in html  # #554
+    assert list(build.payload([json.loads(FIXTURE.read_text())], "t")["scenarios"]) == ["adu"]
     # the headline comes first, ahead of the detail card; each model card ends with "How accurate is our
     # model" (Ben, 2026-11-19); the overlap flag is on the Model page
     body = html[html.index("results(b) {") :]
@@ -308,9 +309,9 @@ def test_missing_middle_and_fees_have_their_own_evidence_cards(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     ev = html[html.index("function evidenceHtml") :]
     assert "${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;" in ev
-    assert (
-        'if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R, '
-        'feeSplit(b) ? "rest" : "all") + accuracyHtml(b, d);' in ev
+    assert (  # keyed by the capability the bundle declares (#554), not the scenario's name
+        'if (hasTable(d, "fee_types")) return feeEvidenceHtml(b, R, feeSplit(b) ? "rest" : "all") + '
+        "accuracyHtml(b, d);" in ev
     )
     mm = html[html.index("function mmHowHtml") : html.index("const FEE_VERSIONS")]
     fee = html[html.index("function feeEvidenceHtml") : html.index("function feeYearsChart")]
