@@ -1,0 +1,13 @@
+### LB-NNN · 2026-11-26 · Build: Smaller engine files, shared part (modularity plan step 3)
+- **Question:** can the two largest engine files no model owns be split by what they do, without changing a number, and can a test stop engine files from growing back?
+- **What I did:**
+  - `model/results.py` (862 lines) became three files: `results.py` (485: draws, assembly, validation, bundle read and write), `results_tables.py` (context tables: overlap flag, fee slider grid, ADU place types, affordability, shortfall) and `results_baseline.py` (baseline, observed record, gut check). `results.<name>` still works, so callers are unchanged.
+  - `model/baseline.py` (667) → 570: V1's two benchmarks and the coverage, PIT and CRPS scores moved to `validation/baseline_scores.py`. Only the backtest, the V5 and V9 checks, scripts and tests use them, and their imports now point there.
+  - Added `test_engine_modules_stay_small` to `tests/core/test_module_layout.py`: an engine module over 620 lines fails unless `OVERSIZE` lists it with its owner (today `scenarios/adu.py` and `pooled_adu.py`, ADU).
+  - Sent the ADU and MM owners briefs for their splits.
+- **Inputs:** `docs/build/modularity-plan.md` step 3.
+- **Outputs:** `src/lotline/model/{results,results_tables,results_baseline,baseline}.py`, `src/lotline/validation/baseline_scores.py`, `tests/core/test_module_layout.py`, `docs/build/modularity-plan.md` (step 3 progress).
+- **Findings:** the only shared engine files over about 600 lines were `results.py` and `baseline.py`. `scenarios/fees.py` (604) was left as it is.
+- **Decisions:** the limit is 620 lines ("about 600"); proposed in the PR.
+- **AI:** Claude Code cut the files with an `ast`-based script, so function bodies moved byte for byte, and wrote the guard. Checked by the full test suite, `compliance_check.py`, and per-part sha256 of every state's bundle built before and after.
+- **Open / next:** ADU splits `scenarios/adu.py` and `pooled_adu.py`, and MM splits `calibrate_mm.py` and `estimate_mm.py` after their step 2 moves. The plan has no step 4.

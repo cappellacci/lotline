@@ -17,12 +17,11 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.COMPLIANCE_TOKEN }}   # fine-grained PAT with repo security read access (optional)
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7
         with:
           python-version: "3.12"
-      - uses: astral-sh/setup-uv@v7
-      # The setup command (commands.setup in challenge.toml) runs here; the test suite runs once, in tests.yml
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78  # v7; The setup command (commands.setup in challenge.toml) runs here; the test suite runs once, in tests.yml
       # (both workflows are required checks), instead of a second 20-minute run here (nightly review, 2026-11-25).
       - name: Setup (commands.setup)
         run: uv sync --frozen

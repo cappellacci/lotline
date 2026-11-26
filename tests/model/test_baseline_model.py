@@ -8,6 +8,7 @@ import pytest
 
 from lotline.config import load_params
 from lotline.model import baseline
+from lotline.validation import baseline_scores as scores
 
 # The hand-worked examples here check the mechanics with the forecast starting right after the origin (lead 0,
 # the V1 registration). The forward run's one-year lead (D-061) is tested in test_forecast_window.py.
@@ -336,9 +337,9 @@ def test_state_totals_are_calibrated_under_a_common_cycle():
     for state, g in table.groupby("state"):
         for _, gy in g.groupby("year"):
             s = draws[gy.index].sum(axis=0)
-            year_cov.append(baseline.randomized_coverage(s[None], np.array([gy["obs"].sum()]), 0.1, 0.9)[0])
+            year_cov.append(scores.randomized_coverage(s[None], np.array([gy["obs"].sum()]), 0.1, 0.9)[0])
         total = draws[g.index].sum(axis=0)
-        total_cov.append(baseline.randomized_coverage(total[None], np.array([g["obs"].sum()]), 0.1, 0.9)[0])
+        total_cov.append(scores.randomized_coverage(total[None], np.array([g["obs"].sum()]), 0.1, 0.9)[0])
         log_err[state] = np.log(g["obs"].sum() / total.mean())
     window = panel[panel["year"].between(2014, 2018)].groupby(["state", "year"])["units_1"].sum().unstack()
     gap = np.log(window[2018] / window.mean(axis=1))
@@ -387,7 +388,7 @@ def test_randomized_coverage_by_hand():
     """Docstring example: draws 0, 0, 0, 1; y = 0 -> 0.65 / 0.75; y = 1 -> 0.15 / 0.25; y = 5 (never drawn,
     F = 1 outside the band) -> 0."""
     draws = np.array([[0, 0, 0, 1]] * 3)
-    cov = baseline.randomized_coverage(draws, np.array([0, 1, 5]), 0.1, 0.9)
+    cov = scores.randomized_coverage(draws, np.array([0, 1, 5]), 0.1, 0.9)
     assert cov == pytest.approx([0.65 / 0.75, 0.15 / 0.25, 0.0])
 
 
@@ -396,7 +397,7 @@ def test_randomized_coverage_is_80_percent_for_a_calibrated_count_forecast():
     rng = np.random.default_rng(1)
     draws = rng.poisson(0.7, size=(1, 20000)).repeat(4000, axis=0)
     observed = rng.poisson(0.7, size=4000)
-    assert baseline.randomized_coverage(draws, observed, 0.1, 0.9).mean() == pytest.approx(0.8, abs=0.02)
+    assert scores.randomized_coverage(draws, observed, 0.1, 0.9).mean() == pytest.approx(0.8, abs=0.02)
 
 
 def test_simulation_without_level_noise_or_cycle_is_poisson():

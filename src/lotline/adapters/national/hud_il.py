@@ -95,6 +95,10 @@ def to_canonical(raw: pd.DataFrame, fiscal_year: int = FISCAL_YEAR) -> pd.DataFr
     """
     fips = _find(raw.columns, r"fips(2010)?")
     mfi = _find(raw.columns, rf"median({fiscal_year})?") or _find(raw.columns, r"median\d{4}")
+    # the dollars are that column's fiscal year: a FY2027 file read as FY2026 would mislabel every value
+    labelled = re.fullmatch(r"median(\d{4})", str(mfi).strip(), flags=re.IGNORECASE) if mfi else None
+    if labelled:
+        fiscal_year = int(labelled.group(1))
     limits = {n: _find(raw.columns, rf"l50_{n}") for n in SIZES}
     missing = [name for name, c in [("fips", fips), ("median", mfi), *limits.items()] if c is None]
     if missing:
@@ -113,6 +117,13 @@ def to_canonical(raw: pd.DataFrame, fiscal_year: int = FISCAL_YEAR) -> pd.DataFr
         }
     )
     return out.dropna(subset=["hud_mfi"]).drop_duplicates("geo").reset_index(drop=True)
+
+
+def vintage_year(entry) -> int:
+    """The fiscal year a file was registered as (`--vintage fy2027`, kept in its path
+    `raw/<source>/fy2027/<file>`), else `FISCAL_YEAR`."""
+    m = re.search(r"/fy(\d{4})/", "/" + str(entry.path), flags=re.IGNORECASE)
+    return int(m.group(1)) if m else FISCAL_YEAR
 
 
 def for_state(df: pd.DataFrame, fips: str) -> pd.DataFrame:
@@ -142,5 +153,5 @@ def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame
     entry = found[-1]
     if store.is_stale(entry):
         raise FileNotFoundError(f"registered HUD income limits file missing or changed: {entry.path}")
-    df = for_state(to_canonical(read(store.root / entry.path)), load_state(state).fips)
+    df = for_state(to_canonical(read(store.root / entry.path), vintage_year(entry)), load_state(state).fips)
     return validate(df, TABLE)
