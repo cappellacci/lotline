@@ -345,7 +345,9 @@ def test_a_diverging_reassignment_is_counted_as_failed_not_a_crash(monkeypatch):
             )
         return real(*a, **kw)
 
-    monkeypatch.setattr(mm, "fit_re", flaky)
+    from lotline.calibrate.mm import estimate
+
+    monkeypatch.setattr(estimate, "fit_re", flaky)  # looked up where `estimate` calls it
     att, p_val, dist, failed = mm.randomization_inference(
         p, permutations=6, seed=0, method="re", modifiers=()
     )
