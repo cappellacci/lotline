@@ -143,7 +143,7 @@ def to_permits(raw: pd.DataFrame, jurisdictions: pd.DataFrame, state: str = "MN"
     known = gain | loss | same
 
     htype = raw["HOUSING_TYPE"].astype("string").str.strip().str.upper()
-    std = htype.map(HOUSING_TYPES).fillna("UNKNOWN")
+    std = htype.map(HOUSING_TYPES).astype("str").fillna("UNKNOWN")
     county = raw["CO_CODE"].astype("string").str.zfill(3)
 
     df = pd.DataFrame(
