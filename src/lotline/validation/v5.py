@@ -330,7 +330,7 @@ def verdict(ob: float, p10: float, p50: float, p90: float) -> str:
 def score(draws_: np.ndarray, observed: float, bench: np.ndarray | None = None) -> dict:
     """Pass rule (observed within P10-P90 of the draws), D-040's verdict, randomized coverage (D-003), the
     observed value's predictive percentile, and CRPS against a benchmark's draws if given."""
-    from lotline.model.baseline import crps_from_draws, randomized_coverage
+    from lotline.validation.baseline_scores import crps_from_draws, randomized_coverage
 
     x = np.asarray(draws_, float)
     s = stats(x)
