@@ -14,6 +14,7 @@ theta:
   why: The five-year chance that an owner of an eligible lot where the project pays actually builds.
   source_note:
     adu: Measured from ADU permits in places in our own states that already allow ADUs, not borrowed from other markets. The setting behind it is a yearly rate for a typical suburb; the slider shows the five-year chance across this state's lots, so the two numbers differ.
+    missing_middle: Measured from Census building permits for 2-4 unit buildings in places in our own states that allow them, with how fast building picks up after a reform and how many homes a typical project holds.
     fees: &fee_theta_note From published studies of how home building responds to fees and costs, and of how much of a fee cut landowners capture in higher land prices. The range is wide because the studies disagree.
     fees_local_half: *fee_theta_note
   low_word: Fewer owners build
@@ -36,6 +37,7 @@ pencil_out_share:
   why: Of the lots the reform makes legal, the share where expected rent or sale value covers land, construction, fees and a fair return.
   source_note:
     adu: Worked out for each place from national building costs, local rents and home values, and mortgage rates. The return owners need is a judgment with a wide range, because no solid public source was found.
+    missing_middle: Worked out from national building costs; how much lots differ in cost and value is a judgment with a wide range, because no published spread was found.
   low_word: Pays on fewer lots
   high_word: Pays on more lots
   format: share
@@ -47,6 +49,7 @@ completion_factor:
   why: Some permitted homes are never finished or are finished late. This turns permits into completed homes.
   source_note:
     adu: &done_note Census counts of homes finished against homes permitted, nationally over many years.
+    missing_middle: *done_note
     fees: *done_note
     fees_local_half: *done_note
   low_word: Fewer finished
@@ -62,6 +65,7 @@ net_new_share:
   why: Some new units become offices, guest rooms or short-term rentals, or legalize a unit that already existed. Only the rest add a home.
   source_note:
     adu: From surveys of ADU owners on how the units are used, plus a judgment share for permits that only legalize a unit that already existed.
+    missing_middle: A judgment on how often a new 2-4 unit building replaces an existing house, based on the share of eligible lots that already hold one.
   low_word: Fewer add a home
   high_word: More add a home
   format: share
@@ -73,6 +77,7 @@ displacement_share:
   why: Some new homes replace homes that would otherwise have been built in another town in the state. They count in "All new homes" but not in "Net new housing".
   source_note:
     adu: &moved_note A judgment range from 0 to 50%, informed by studies of zoning reforms elsewhere. Little direct evidence exists, so the range is wide.
+    missing_middle: *moved_note
     fees: *moved_note
     fees_local_half: *moved_note
   low_word: Almost none
