@@ -1,7 +1,7 @@
 # Modularity plan: scenario contract, engine vs fitting, smaller files
 
-Drafted 2026-11-26 in the code-review thread (handoff 17) at Ben's request. Status: **plan only; nothing
-started.** Every step here changes model code, so each one is done by that model's owner session (ADU =
+Drafted 2026-11-26 in the code-review thread (handoff 17) at Ben's request. Status: **step 1 adopted by Ben
+2026-11-26 ("Yes, adopt step 1"); steps 2 and 3 not yet decided.** Every step here changes model code, so each one is done by that model's owner session (ADU =
 "ADU statewide prediction methodology", MM = "Missing Middle Analysis refresh") or by WS-CORE for the shared
 parts. No step changes a number: each one must leave every results bundle the same, draw for draw.
 
