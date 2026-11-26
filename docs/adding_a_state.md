@@ -435,8 +435,10 @@ from your data directory (see the note at the end of section 3).
    - `PROVENANCE`: title, landing URL, table, cleaning steps, limitations;
    - `load(state, store, *, refresh=False)`, which returns the canonical table.
    
-   Existing adapters also set `ADAPTER` and `VERSION`; keep that convention. Add
-   `src/lotline/adapters/states/xx/__init__.py`.
+   Existing adapters also set `ADAPTER` and `VERSION`; keep that convention. An adapter that reads another
+   table from the store (most parcel adapters read the jurisdictions list through `geo.known_geoids`) sets
+   `READS = ("jurisdictions",)`, so a plain `lotline fetch` builds that table first
+   (`registry.fetch_order`). Add `src/lotline/adapters/states/xx/__init__.py`.
 2. **Download through the IO layer** (`lotline.io`: `fetch`, `arcgis` or `socrata` into `store.raw(...)`) so
    the file lands in the manifest. For a file you can only download in a browser, register it:
    ```bash

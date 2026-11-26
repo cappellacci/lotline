@@ -26,14 +26,8 @@ def _fetch(args: argparse.Namespace) -> int:
     with offline_build(store) if args.offline else nullcontext() as sess:
         for state in states:
             available = registry.sources_for(state)
-            # sources a module marks RUN_LAST (place_inputs, which reads every other table) go after the rest
-            names = (
-                [args.source]
-                if args.source
-                else sorted(
-                    available, key=lambda n: (bool(getattr(available[n].module, "RUN_LAST", False)), n)
-                )
-            )
+            # each source after the tables it reads; place_inputs (RUN_LAST) after the rest
+            names = [args.source] if args.source else registry.fetch_order(available)
             unknown = [n for n in names if n not in available]
             if unknown:
                 print(

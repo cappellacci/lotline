@@ -13,7 +13,11 @@ A source module must define:
   optionally `attribution`
 - `load(state, store, *, refresh=False) -> DataFrame`: returns the validated table, holdouts already removed
 
-Optional: `MANIFEST_SOURCES`, the manifest ids a build step reads (default `[SOURCE]`).
+Optional: `MANIFEST_SOURCES`, the manifest ids a build step reads (default `[SOURCE]`). For the run order of
+a plain `lotline fetch` (`fetch_order`): `READS`, the canonical tables `load` reads from the store, so it runs
+after the sources that build them; `RERUN_AFTER`, tables whose later rebuild means this source runs once more
+(the jurisdictions list takes its data tiers from the parcels, whose readers need the list first); and
+`RUN_LAST` (place_inputs, which reads every table).
 """
 
 from __future__ import annotations
@@ -126,3 +130,40 @@ def provenance_modules(package: str = STATES_PACKAGE) -> dict[str, ModuleType]:
     """Manifest source id -> module carrying its PROVENANCE, for docs/data_provenance.md."""
     modules = [s.module for s in all_sources(package)] + documented_only()
     return {m.SOURCE: m for m in modules if hasattr(m, "PROVENANCE")}
+
+
+def fetch_order(available: dict[str, Source]) -> list[str]:
+    """The order a plain `lotline fetch` runs a state's sources: each after the sources building the tables it
+    `READS`, otherwise by name, `RUN_LAST` sources at the end. A source with `RERUN_AFTER` tables runs again
+    right after the last source building one of them, and its readers wait for that second run.
+
+    Raises RegistryError on a dependency loop, naming the sources in it.
+    """
+    attr = lambda n, a: tuple(getattr(available[n].module, a, ()))  # noqa: E731
+    makers: dict[str, set[str]] = {}
+    for n, src in available.items():
+        makers.setdefault(src.table, set()).add(n)
+    needs = {n: {m for t in attr(n, "READS") for m in makers.get(t, ()) if m != n} for n in available}
+    for n in available:  # readers of a rerun source wait for what triggers the rerun, except those triggers
+        later = {m for t in attr(n, "RERUN_AFTER") for m in makers.get(t, ()) if m != n}
+        for r in set(available) - later - {n}:
+            if available[n].table in attr(r, "READS"):
+                needs[r] |= later
+    last = {n for n in available if getattr(available[n].module, "RUN_LAST", False)}
+    for n in last:
+        needs[n] |= set(available) - last
+
+    order: list[str] = []
+    todo = set(available)
+    while todo:
+        ready = sorted(n for n in todo if not needs[n] & todo)
+        if not ready:
+            raise RegistryError(f"fetch sources depend on each other in a loop: {', '.join(sorted(todo))}")
+        order.append(ready[0])
+        todo.remove(ready[0])
+
+    for n in [n for n in order if attr(n, "RERUN_AFTER")]:
+        triggers = [i for i, m in enumerate(order) if available[m].table in attr(n, "RERUN_AFTER") and m != n]
+        if triggers and max(triggers) > order.index(n):
+            order.insert(max(triggers) + 1, n)
+    return order

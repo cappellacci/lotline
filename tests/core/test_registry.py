@@ -105,3 +105,80 @@ def test_central_guard_catches_an_adapter_that_forgot_the_holdout_filter():
         holdout.assert_no_leak(permits, "permits", "MN")
     holdout.assert_no_leak(permits.iloc[[1]], "permits", "MN")  # filtered output passes
     holdout.assert_no_leak(permits, "market_geo_year", "MN")  # not an outcome table: not checked
+
+
+# ---- fetch order ----------------------------------------------------------------------------------------
+def _fake_sources(spec):
+    """{name: (table, reads, rerun_after, run_last)} -> registry Sources with stub modules."""
+    import types
+
+    return {
+        n: registry.Source(n, types.SimpleNamespace(READS=r, RERUN_AFTER=ra, RUN_LAST=last), t, None)
+        for n, (t, r, ra, last) in spec.items()
+    }
+
+
+def test_fetch_order_builds_jurisdictions_parcels_then_their_readers():
+    """Alphabetical order would run `demand` and `eligible` before `jurisdictions` and the parcel rolls, so
+    they would read last run's tables. Readers go after what they read; jurisdictions runs again after the
+    parcel rolls (its data tiers come from them) and its readers wait for that second run."""
+    src = _fake_sources(
+        {
+            "acs": ("acs_geo_year", (), (), False),
+            "bps": ("bps_place_year", (), (), False),
+            "demand": ("market_geo_year", ("jurisdictions",), (), False),
+            "eligible": ("eligible_parcels", ("jurisdictions", "acs_geo_year", "parcels"), (), False),
+            "jurisdictions": ("jurisdictions", ("bps_place_year",), ("parcels",), False),
+            "a_parcels": ("parcels", ("jurisdictions",), (), False),
+            "z_parcels": ("parcels", ("jurisdictions",), (), False),
+            "b_permits": ("permits", ("parcels",), (), False),
+            "c_permits": ("permits", (), (), False),
+            "place_inputs": ("place_inputs", (), (), True),
+        }
+    )
+    order = registry.fetch_order(src)
+    assert order == [
+        "acs", "bps", "c_permits", "jurisdictions", "a_parcels", "z_parcels", "jurisdictions",
+        "b_permits", "demand", "eligible", "place_inputs",
+    ]  # fmt: skip
+
+
+def test_fetch_order_without_declarations_is_by_name_and_a_loop_stops():
+    src = _fake_sources({n: (n, (), (), False) for n in ("b", "a", "c")})
+    assert registry.fetch_order(src) == ["a", "b", "c"]
+    loop = _fake_sources({"a": ("ta", ("tb",), (), False), "b": ("tb", ("ta",), (), False)})
+    with pytest.raises(registry.RegistryError, match="loop: a, b"):
+        registry.fetch_order(loop)
+
+
+def test_every_real_state_has_a_fetch_order_with_readers_after_jurisdictions():
+    from lotline.config import all_states
+
+    for st in all_states():
+        order = registry.fetch_order(registry.sources_for(st))
+        last_j = len(order) - 1 - order[::-1].index("jurisdictions")
+        assert order.index("bps") < order.index("jurisdictions"), st
+        assert order.index("eligible") > last_j and order.index("demand") > last_j, st
+        assert order[-1] == "place_inputs", st
+
+
+def test_adapters_that_read_the_jurisdictions_list_declare_it():
+    """An adapter that tags rows through `geo.known_geoids` / `jurisdictions_table` (or opens the stored
+    table) must say so in `READS`, or a plain fetch could run it before the list is rebuilt."""
+    import inspect
+
+    from lotline.config import all_states
+
+    bad = set()
+    for st in all_states():
+        for name, src in registry.sources_for(st).items():
+            text = inspect.getsource(src.module)
+            uses = any(k in text for k in ("known_geoids(", "jurisdictions_table(", '"jurisdictions")'))
+            if (
+                uses
+                and src.table != "jurisdictions"
+                and "jurisdictions" not in getattr(src.module, "READS", ())
+                and not getattr(src.module, "RUN_LAST", False)  # place_inputs runs after everything
+            ):
+                bad.add(name)
+    assert not bad, f"declare READS = ('jurisdictions',) in: {sorted(bad)}"

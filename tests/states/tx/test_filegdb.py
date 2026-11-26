@@ -131,6 +131,7 @@ PARCEL_FIELDS = [
     ("OBJECTID", 6, False), ("SHAPE", 7, True), ("PROP_ID", 4, True), ("OWNER_NAME", 4, True),
     ("LEGAL_AREA", 3, True), ("LGL_AREA_UNIT", 4, True), ("STAT_LAND_USE", 4, True),
     ("LAND_VALUE", 13, True), ("IMP_VALUE", 13, True), ("FIPS", 4, True), ("TAX_YEAR", 4, True),
+    ("YEAR_BUILT", 4, True),
     ("SHAPE_Length", 3, True), ("SHAPE_Area", 3, True),
 ]  # fmt: skip
 

@@ -34,6 +34,7 @@ ADAPTER = "states.mn.ramsey_parcels"
 VERSION = "1.0"
 SOURCE = "ramsey_parcels"
 TABLE = "parcels"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 LICENSE = "Public data (Ramsey County GIS open data; no license terms stated, Minn. Stat. ch. 13)"
 LAYER_URL = (
     "https://gis.ramseycountymn.gov/server/rest/services/Cadastral/"

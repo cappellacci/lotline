@@ -409,7 +409,7 @@ table.checks td:last-child { min-width: 260px; }
         <tr><td><b>Households and the shortage</b></td><td>How many homes the state needs, and how much of that is left after what gets built anyway.</td><td>Each state demographer's population projections, turned into households with Census survey data; published estimates of the existing shortage (Up for Growth, Freddie Mac); the state's housing stock (Census survey) and the share lost each year (Census and HUD's American Housing Survey).</td><td>Growth from mid-2026 to mid-2031; shortage as last estimated; stock 2020–2024</td></tr>
         <tr><td><b>Household income</b></td><td>What income a household needs to live in each kind of new home, against the area's median income (AMI).</td><td>HUD's income limits for every county (Section 8, area median family income by household size), saved by hand from HUD's site because it blocks automatic downloads.</td><td>Fiscal year 2026</td></tr>
       </tbody></table></div>
-      <p class="body-small"><b>The time line.</b> The model learns from permits through <b>2025</b>, the last full year of data, and forecasts the five years <b>2027–2031</b>, when a reform passed in 2027 could act. 2026 falls in between and is not reported. A few places' most recent years are hidden from the model so its forecasts for them can be tested blind.</p>
+      <p class="body-small"><b>The time line.</b> The model learns from permits through <b>__ORIGIN_YEAR__</b>, the last full year of data, and forecasts the five years <b>__WINDOW__</b>, when a reform passed in __REFORM_YEAR__ could act.__GAP_SENTENCE__ A few places' most recent years are hidden from the model so its forecasts for them can be tested blind.</p>
     </div>
     <div id="data-body"></div>
     <div id="dash-host" hidden>
@@ -533,7 +533,7 @@ uv run lotline results --state XX --role transfer</code></pre>
 
     <div class="step" id="step-goal"><p class="step-n" aria-hidden="true">1</p><div class="step-body">
       <h3 class="h2">The goal: exactly what we measure</h3>
-      <p><b>The question.</b> If a state passed one of three reforms, how many more homes would it gain over the five years <b>2027–2031</b> than under the rules already in place? The headline counts net new housing: homes finished, minus houses torn down to build them and homes that would have been built elsewhere in the state anyway.</p>
+      <p><b>The question.</b> If a state passed one of three reforms, how many more homes would it gain over the five years <b>__WINDOW__</b> than under the rules already in place? The headline counts net new housing: homes finished, minus houses torn down to build them and homes that would have been built elsewhere in the state anyway.</p>
       <details class="more"><summary>The reforms, the comparison, the unit and the ranges</summary><p class="body-small">The three reforms follow the Challenge Handbook to the letter. The ADU reform allows one backyard home per house, at least 600 sq ft, with no parking required. Missing middle allows 2–6 homes, up to three stories, on lots now zoned for one house. The fee reform cuts development fees in half, and we show it two ways: the Challenge benchmark, which assumes a $50,000 fee everywhere and cuts it to $25,000, and each city's real fees cut in half.</p><p class="body-small">We always compare a reform with no reform. "No reform" keeps every city's own rules, including laws already passed that take effect by the end of 2027, so a reform is never credited with homes that current law will produce anyway.</p><p class="body-small">We count homes in building permits and add them up place by place to a state total. That total gives two numbers. <b>All new homes</b> are permits that get finished and add a home someone can live in. <b>Net new housing</b> is all new homes minus those that would have been built elsewhere in the state anyway; that share is a quarter by default, and anywhere from none to half.</p><p class="body-small">Every answer is a range. The model runs 1,000 times, each time with different plausible values for everything it is unsure about, and the page shows the middle 80% of those runs (P10 to P90) and the midpoint.</p></details>
     </div></div>
 
@@ -560,7 +560,7 @@ uv run lotline results --state XX --role transfer</code></pre>
 
       <h4 class="h3">3c. What gets built anyway</h4>
       <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">A reform only gets credit for homes beyond what each place would build anyway, so we forecast that first.</p>
-      <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over 2021–2025. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
+      <p class="body-small">Each place keeps its own recent pace: homes permitted per 1,000 eligible lots over __PACE_YEARS__. Small places with lumpy records are pulled toward their county's pace. On top of that runs the state's building cycle. The model replays year-to-year swings drawn from the state's last 25 years, so some runs see a boom and others a bust. This baseline is what every reform is measured against.</p>
 
     </div></div>
 
@@ -726,7 +726,7 @@ uv run lotline results --state XX --role transfer</code></pre>
       <h4 class="h3">5a. Comparing our models across our five study states</h4>
       <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">Side by side, the states show where each reform adds the most homes, and how sure we can be in each.</p>
       <p class="body-small">Each row is one state and one reform: net new homes over the five years, read like the chart in 4c. The tick is the midpoint of the runs and the band covers the middle 80%, on the same log scale. Missing middle's bands are the widest because its reform effect is the least pinned down. Oregon adds few ADUs because its state law already allows what the reform asks.</p>
-      <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes 2027 to 2031 by state and reform, P10 to P90 with the midpoint"></svg></div>
+      <div class="scroll"><svg class="allstates" id="allstates" role="img" aria-label="Net new homes __WINDOW_WORDS__ by state and reform, P10 to P90 with the midpoint"></svg></div>
       <div class="map-legend" id="allstates-key" style="display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4)"></div>
 
       <h4 class="h3">5b. Adding a new state</h4>
@@ -1178,7 +1178,7 @@ function evidenceHtml(b, d, R) {
   const { fbar, scale } = howKit(b, "adu", legal && legal.p50);
   // 1. year by year
   const s1 = `<section>${recordHtml(b, "adu")}
-    ${more(`<p class="body-small muted">Before 2026 the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From 2027, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p>`, "How to read this chart")}</section>`;
+    ${more(`<p class="body-small muted">Through ${esc(String(b.meta.origin_year))} the bars are ADU permits actually counted, in the places whose records mark them; the model does not estimate past years for places without counts. From ${esc(((AGG.windowLabel(b) || "").match(/^\d{4}/) || ["the forecast window"])[0])}, ${(b.adu_baseline || []).length ? "each year stacks the ADUs expected statewide with no reform (grey) and what the reform adds on top (blue band)" : "the no-reform forecast is not in this state's results yet"}.</p>`, "How to read this chart")}</section>`;
   // 3. place types (D-088): built anyway and added by the reform, ADUs a year; read from the bundle when exported
   const s3 = `<section><h3 class="h3">Where ADUs would go</h3>
     <p class="body-small">We divided every place in the state into one of three types using Census metro and micro areas, so that the model works in any state. This helps us show where the most growth would occur.</p>
@@ -2095,7 +2095,7 @@ async function drawDeepDive() {
     ${more(`<p class="body-small" style="margin:0">The same split, by core cities, suburbs and towns: grey is built anyway, blue is added by the reform.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${types}</div>`, "By place type, state by state")}
     ${more(`<div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">ADUs with no reform</th><th class="n">ADUs added by the reform</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
-    <p class="source">Midpoints, with P10–P90 below. "ADUs with no reform" adds the five yearly midpoints. "Net new homes" counts only ADUs that add a home the state would not otherwise get. Every figure comes from the state's results file.</p>`, "Statewide totals, 2027–2031")}`;
+    <p class="source">Midpoints, with P10–P90 below. "ADUs with no reform" adds the five yearly midpoints. "Net new homes" counts only ADUs that add a home the state would not otherwise get. Every figure comes from the state's results file.</p>`, `Statewide totals, ${AGG.windowLabel(bs[0]) || "the five forecast years"}`)}`;
 }
 // The missing-middle deep dive (Ben, 2026-11-17), from the same results files as the ADU one: 2–4 unit homes a
 // year with and without the reform, each state's record and forecast, and the lots-to-homes steps by state.
@@ -2122,7 +2122,7 @@ function mmDeepDive(bs) {
     ${laneChart(rows, "Homes in 2–4 unit buildings a year: the average of each window year's P10, midpoint and P90. With the reform: the no-reform midpoint plus the reform's range.")}
     <p class="body-small" style="margin-top:var(--space-5)"><b>Each state's record and forecast.</b> Homes permitted in 2–4 unit buildings each year (bars, every city and town), then the no-reform forecast (grey) with the reform's range on top.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4)">${years}</div>
-    <p class="body-small" style="margin-top:var(--space-5)"><b>From lots to homes, 2027–2031.</b></p>
+    <p class="body-small" style="margin-top:var(--space-5)"><b>From lots to homes, ${esc(AGG.windowLabel(bs[0]) || "the five forecast years")}.</b></p>
     <div class="scroll"><table class="body-small"><thead><tr><th>State</th><th class="n">Lots where 2–4 homes become legal</th><th class="n">Lots where building pays</th><th class="n">Homes permitted</th><th class="n">Net new homes</th></tr></thead><tbody>${tbl}</tbody></table></div>
     <p class="source">Midpoints, with P10–P90 below. Every figure comes from the state's results file. The steps are explained on the Results page under "How we get these numbers".</p>`;
 }
@@ -2198,7 +2198,7 @@ function drawRuns() {
   el.innerHTML = band + bars + `<line x1="${L}" x2="${W - R}" y1="${T + Hc}" y2="${T + Hc}" stroke="var(--rule)"></line>` + ticks.join("")
     + mark(p10, "P10", "end") + mark(p50, "Midpoint", "middle") + mark(p90, "P90", "start");
   const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
-  $("runs-title").textContent = `${v.length.toLocaleString("en-US")} runs of ${scenLabel(s)} in ${named}: net new homes, 2027–2031`;
+  $("runs-title").textContent = `${v.length.toLocaleString("en-US")} runs of ${scenLabel(s)} in ${named}: net new homes, ${AGG.windowLabel(UI.b) || "the five forecast years"}`;
   $("runs-read").textContent = `Each bar counts the runs that landed at about that number. The lowest run came out at ${fmtN(Math.min(...v))} homes and the highest at ${fmtN(Math.max(...v))}. Half landed below ${fmtN(p50)}, the midpoint. 1 run in 10 came out below ${fmtN(p10)} and 1 in 10 above ${fmtN(p90)}, so the range we report is ${fmtN(p10)} to ${fmtN(p90)} (the shaded part).`;
 }
 function drawTornado() {

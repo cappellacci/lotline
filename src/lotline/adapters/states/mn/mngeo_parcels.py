@@ -48,6 +48,7 @@ ADAPTER = "states.mn.mngeo_parcels"
 VERSION = "1.0"
 SOURCE = "mngeo_parcels"
 TABLE = "parcels"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 LICENSE = "MnGeo compilation of opt-in county open data; item license 'None' (provided as is)"
 SERVICE = (
     "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_mngeo/plan_parcels_open/FeatureServer"

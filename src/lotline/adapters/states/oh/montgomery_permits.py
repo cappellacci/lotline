@@ -54,6 +54,7 @@ VERSION = "1.0"
 SOURCE = "montgomery_permits"
 NAME = "montgomery_permits"
 TABLE = "permits"
+READS = ("parcels",)  # `lotline fetch` runs the parcel rolls first (registry.fetch_order)
 LANDING_URL = "https://go.mcohio.org/applications/treasurer/search/filedownloads.cfm"
 LICENSE = (
     "Montgomery County Auditor/Treasurer public records (disclaimer 'as is'; no reuse restrictions stated, "

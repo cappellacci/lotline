@@ -120,6 +120,7 @@ ADAPTER = "states.oh.oh_parcels"
 VERSION = "1.0"
 SOURCE = "oh_parcels"
 TABLE = "parcels"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 LAYER_URL = (
     "https://services2.arcgis.com/MlJ0G8iWUyC7jAmu/arcgis/rest/services/"
     "OhioStatewidePacels_full_view/FeatureServer/0"

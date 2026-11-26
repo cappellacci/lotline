@@ -86,6 +86,7 @@ ADAPTER = "states.tx.stratmap_parcels"
 VERSION = "1.0"
 SOURCE = "stratmap_parcels"
 TABLE = "parcels"
+READS = ("jurisdictions",)  # `lotline fetch` builds the jurisdictions list first (registry.fetch_order)
 LANDING_URL = "https://data.geographic.texas.gov/collection/?c=1d33dafb-6e9c-40ac-887d-f4577909ed9b"
 LICENSE = "CC0 1.0 (TxGIO StratMap Land Parcels)"
 COLLECTION_URL = "https://data.geographic.texas.gov/collection/?c={}"
@@ -99,6 +100,9 @@ FIELDS = [
     "prop_id", "geo_id", "fips", "county", "tax_year", "stat_land_use", "loc_land_use", "legal_area",
     "lgl_area_unit", "gis_area", "gis_area_unit", "land_value", "imp_value", "year_built",
 ]  # fmt: skip
+# Columns the parcels rows are built from; a roll without one of them stops (geo_id and loc_land_use are only
+# fallbacks, and the area columns may be absent because the polygon area is the last fallback).
+REQUIRED_FIELDS = ("prop_id", "fips", "stat_land_use", "land_value", "imp_value", "year_built")
 PERSONAL = {
     "owner_name", "name_care", "mail_addr", "mail_line1", "mail_line2", "mail_city", "mail_stat", "mail_zip",
     "situs_addr", "situs_num", "situs_stre", "situs_st_1", "situs_st_2", "situs_city", "situs_stat",
@@ -253,6 +257,10 @@ def rows(df: pd.DataFrame, *, vintage: int | None, vintage_date=None, sqm_per_un
     """Attribute rows → parcels rows with their polygon area (`_area`), one per polygon."""
     crosswalk = load_land_use_crosswalk()
     local = load_county_land_use()
+    required = [*REQUIRED_FIELDS, *(["tax_year"] if vintage is None else [])]
+    missing = [c for c in required if c not in df]
+    if missing:  # a renamed column would otherwise turn every parcel UNKNOWN or drop it, with no error
+        raise ValueError(f"StratMap roll is missing column(s) {missing}; fields found: {sorted(df.columns)}")
     get = lambda c: df[c].astype("string").fillna("") if c in df else pd.Series("", index=df.index)  # noqa: E731
     fips = get("fips").str.replace(r"\D", "", regex=True).str[-3:].str.zfill(3)
     county = ("48" + fips).where(fips.str.fullmatch(r"\d{3}") & (fips != "000"))

@@ -355,3 +355,13 @@ def test_county_land_use_fills_unknown_from_listed_codes(tmp_path):
     got = sm.county_land_use(std, county, code, local)
     # only an UNKNOWN parcel in the listed county with a listed code changes
     assert got.tolist() == ["SF_DETACHED", "UNKNOWN", "COMMERCIAL", "UNKNOWN"]
+
+
+@pytest.mark.parametrize("dropped", sm.REQUIRED_FIELDS)
+def test_a_missing_column_stops_instead_of_making_unknown_parcels(dropped):
+    df = pd.DataFrame({c: ["1"] for c in sm.REQUIRED_FIELDS}).assign(lon=-97.7, lat=30.3, area=1.0)
+    sm.rows(df, vintage=2026)  # all present: builds
+    with pytest.raises(ValueError, match=f"missing column.*{dropped}"):
+        sm.rows(df.drop(columns=dropped), vintage=2026)
+    with pytest.raises(ValueError, match="tax_year"):
+        sm.rows(df, vintage=None)  # no registered vintage: the roll's own tax year is needed
