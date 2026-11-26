@@ -385,6 +385,7 @@ source = { editable = "." }
 dependencies = [
     { name = "httpx" },
     { name = "matplotlib" },
+    { name = "numpy" },
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "pandera" },
@@ -407,6 +408,7 @@ dev = [
 requires-dist = [
     { name = "httpx", specifier = ">=0.28,<1" },
     { name = "matplotlib", specifier = ">=3.11.2" },
+    { name = "numpy", specifier = ">=2,<3" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas", specifier = ">=3.0,<4" },
     { name = "pandera", specifier = ">=0.36,<1" },

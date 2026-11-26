@@ -149,6 +149,21 @@ the dated D-entries are the pre-registration) · #42, #44, #47 V3 studies · #46
   - `Claude outputs/` (three logo option PNGs), `.handoff/fees-coverage`, `.worktrees/` (`adu-drift-mean`, an
     old PR body), `.claude/launch.json`: local only. Proposal: keep `launch.json`, delete the rest.
 
-### B4. HANDOFF status table
+### B4. HANDOFF status table (draft for thread 6, 2026-11-24)
 
-To be drafted as a PR description once B1–B3 are settled (thread 6 folds it).
+A proposed replacement for HANDOFF §1 "Where we are". Rows marked *(Ben to confirm)* repeat what HANDOFF
+says today, because nothing in the repo records a change.
+
+| Item | Status |
+|---|---|
+| Registration | Done (2026-10-04). Welcome email and platform access for E5: *(Ben to confirm)*. |
+| Eligibility | U.S. legal residency and a U.S. bank account (E1): *(Ben to confirm)*. |
+| Team | *(Ben to confirm)*: roster locked when registration closed (Oct 7). |
+| States | **Benchmark: Minnesota** (Ben, 2026-11-24, #40, #521): tier 1 data, highest reassessment score. Development states: NC, OH, TX and OR (OR joined Nov 4). **Wisconsin** is in the app as a data-ingestion test, not core: V8 was frozen blind and scored a fail (×1.49, 5+ units missed; D-105, not rescored). |
+| Tool | Live at https://cappellacci.github.io/lotline/ (release `app-2026-11-24f`, six states). It is a static page built from results bundles (decision 2026-11-06) with model tabs over a results map. Reforms are shown one at a time, not combined. |
+| Scenarios | Baseline plus ADUs, missing middle and fees (Handbook definitions; fees shown as the $50k → $25k benchmark and as half of real local fees). Parking was not built. |
+| Outcome metric | Building permits (BPS), kept after choosing MN. Window 2027–2031 (D-061). |
+| Model status | ADUs: Form A + place types, own counts with drift where a place has them (D-088 to D-097), calibration range from the fit set (D-060, ported 2026-11-24). Missing middle: C4 (D-092). Fees: dose by building size (D-073 to D-077). V9 Oregon scored (missing middle inside; ADU targets missed). |
+| Uncertainty | Every result is P10–P90 over 1,000 runs. What drives each range is measured (#54, #522): the missing-middle uptake rate (96%), builders' response to fees (74–93%), ADU uptake and partial-rule share. |
+| Code review | Thread 17: `reports/review/2026-11-code-review.md`. All open PRs cleared; 37 issues closed. Part A (area-by-area review at high) next. |
+| Still to do for submission | Slides PDF and demo video (D2, D3; #57); SBOM (T7); three empty sections of the Policy Scenario Comparison (D6; #56); check that the Model & Assumptions doc fits 25 pages (D4); `stage = "submission"` in `challenge.toml` before submitting. |

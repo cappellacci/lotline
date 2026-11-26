@@ -222,13 +222,20 @@ def _permits_built(state, store):
 
 
 def _no_unlisted_geoids(state, store):
-    from lotline.build.jurisdictions import unlisted
+    from lotline.build.jurisdictions import config_orphans, unlisted
 
     if store is None:
         return Status(False, "no data directory")
     df = unlisted(state, store)
+    orphans = config_orphans(state, store)
+    bad = orphans[orphans["blocking"]]
+    if not bad.empty:
+        where = ", ".join(sorted(set(bad["where"])))
+        return Status(
+            False, f"{bad['geoid'].nunique()} GEOIDs named in config ({where}) are not jurisdictions"
+        )
     if df.empty:
-        return Status(True, "every GEOID in the local data is a jurisdiction")
+        return Status(True, "every GEOID in the local data and the config lists is a jurisdiction")
     return Status(False, f"{df['geoid'].nunique()} GEOIDs in the local data are not jurisdictions yet")
 
 

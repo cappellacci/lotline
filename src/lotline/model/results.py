@@ -36,6 +36,8 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
+import os
+import re
 import subprocess
 from collections.abc import Mapping
 from pathlib import Path
@@ -85,13 +87,31 @@ def config_hash(config_dir: Path = CONFIG_DIR) -> str:
     return h.hexdigest()
 
 
+UNKNOWN_COMMIT = "0" * 40  # all zeros: git's own "no commit" id
+_SHA = re.compile(r"^[0-9a-f]{7,40}$")
+
+
 def commit_sha(repo: Path = REPO) -> str:
-    out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True, check=True)
-    return out.stdout.strip()
+    """The commit the code came from, for `results_meta.commit_sha`. In order: `git rev-parse HEAD`; the
+    `LOTLINE_COMMIT` environment variable; `src/lotline/COMMIT`, which `git archive` and GitHub's "Download
+    ZIP" fill in (`.gitattributes` export-subst); else all zeros, with `tree_clean` then null (unknown)."""
+    try:
+        out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True)
+        if out.returncode == 0 and _SHA.match(out.stdout.strip()):
+            return out.stdout.strip()
+    except OSError:  # no git installed
+        pass
+    env = os.environ.get("LOTLINE_COMMIT", "").strip().lower()
+    if _SHA.match(env):
+        return env
+    stamp = Path(__file__).resolve().parents[1] / "COMMIT"
+    text = stamp.read_text(encoding="utf-8").strip() if stamp.exists() else ""
+    return text if _SHA.match(text) else UNKNOWN_COMMIT
 
 
 def tree_state(repo: Path = REPO) -> bool | None:
-    """`tree_is_clean`, but None when git can't tell (no repository, no git): `results_meta.tree_clean`."""
+    """`results_meta.tree_clean`: True when tracked files match HEAD (so `commit_sha` fully identifies the
+    code that ran), False when they don't, None when git can't tell (no repository, no git)."""
     try:
         out = subprocess.run(
             ["git", "status", "--porcelain", "--untracked-files=no"], cwd=repo, capture_output=True, text=True
@@ -124,14 +144,6 @@ def post_test(state: str, origin: int, config_dir: Path | None = None) -> tuple[
         for h in hits
     ]
     return ", ".join(h.test_id for h in hits), "Built after " + "; and after ".join(notes) + "."
-
-
-def tree_is_clean(repo: Path = REPO) -> bool:
-    """True when tracked files match HEAD, so `commit_sha` fully identifies the code that ran."""
-    out = subprocess.run(
-        ["git", "status", "--porcelain", "--untracked-files=no"], cwd=repo, capture_output=True, text=True
-    )
-    return out.returncode == 0 and not out.stdout.strip()
 
 
 def weighted_median(x, w) -> float:

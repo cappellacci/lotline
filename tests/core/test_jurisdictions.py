@@ -110,6 +110,50 @@ def test_unlisted_reports_geoids_the_data_uses_but_the_list_lacks(tmp_path):
     assert out.to_dict("records") == [{"geoid": "3700002", "table": "permits", "rows": 2}]
 
 
+def test_config_orphans_flag_a_renamed_place_in_config(tmp_path):
+    """A GEOID in config that the jurisdictions table lacks (say the permit survey re-keyed a town) is listed;
+    in fees or the state file's lists it blocks, in reforms it is only listed (county-filed places, D-021)."""
+    import shutil
+
+    from lotline.build.jurisdictions import config_orphans
+    from lotline.config import CONFIG_DIR
+    from lotline.io import DataStore
+
+    cfg = tmp_path / "config"
+    (cfg / "states").mkdir(parents=True)
+    shutil.copy(CONFIG_DIR / "states" / "nc.yaml", cfg / "states" / "nc.yaml")
+    fees = pd.read_csv(CONFIG_DIR / "fees" / "nc.csv", dtype=str).head(1)
+    (cfg / "fees").mkdir()
+    fees.assign(jurisdiction_geoid="3799999").to_csv(cfg / "fees" / "nc.csv", index=False)
+    (cfg / "reforms").mkdir()
+    pd.DataFrame({"jurisdiction_geoid": ["3799998"]}).to_csv(cfg / "reforms" / "nc.csv", index=False)
+
+    store = DataStore(tmp_path / "data")
+    state = jurisdictions.load_state("NC", cfg)
+    known = [
+        *state.local_jurisdictions,
+        *state.data_tiers,
+        *state.train_until,
+        *[h.geoid for h in state.holdouts],
+    ]
+    path = store.processed("NC", "jurisdictions", "x")
+    path.parent.mkdir(parents=True)
+    pd.DataFrame({"geoid": sorted(set(known))}).to_parquet(path)
+
+    out = config_orphans("NC", store, cfg).sort_values("geoid").to_dict("records")
+    assert out == [
+        {"geoid": "3799998", "where": "reforms", "blocking": False},
+        {"geoid": "3799999", "where": "fees", "blocking": True},
+    ]
+
+
+def test_config_orphans_are_empty_before_jurisdictions_are_built(tmp_path):
+    from lotline.build.jurisdictions import config_orphans
+    from lotline.io import DataStore
+
+    assert config_orphans("NC", DataStore(tmp_path)).empty
+
+
 def test_tiers_follow_the_loaded_parcels():
     from lotline.build.jurisdictions import tiers_from_parcels
 
