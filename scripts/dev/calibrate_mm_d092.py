@@ -37,33 +37,21 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import calibrate_mm as cal
 from lotline.model import estimate_mm as mm
+from lotline.model import mm_fitsets as fs
 from lotline.model import place_types, rule_tags
-from lotline.model.scenarios import adu
 
 _spec = importlib.util.spec_from_file_location("d054", Path(__file__).with_name("calibrate_mm_d054.py"))
 d054 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(d054)
 d042 = d054.d042
 
-STATES = ("MN", "NC", "OH", "TX", "OR")
-TESTS = d042.TESTS  # Minneapolis, Durham city, Durham County, Raleigh (scored as in D-054 to D-059)
-HOLDOUTS = {
-    "2758000": "St. Paul",
-    "27123": "Ramsey County",
-    "3712000": "Charlotte",
-    "37119": "Mecklenburg County",
-}
-EXCLUDE = {  # out of the fit, the targets and the level set
-    "4845000": "Lubbock",  # D-059: no usable source for its pre-UDC rule (#398 confirms)
-    "2754214": "Richfield",  # D-092 §1b: no cap rise, and its effective date is unresolved
-}
-FIRST, LAST = d042.FIT_FIRST, d042.FIT_LAST  # D-042's event window, 2013-2025
+# the fit sets live in the library (calibration phase 3); the names stay for scripts that import this one
+STATES, TESTS, HOLDOUTS, EXCLUDE = fs.STATES, fs.TESTS, fs.HOLDOUTS, fs.EXCLUDE
+FIRST, LAST, LEVEL_YEARS = fs.FIRST, fs.LAST, fs.LEVEL_YEARS
 EVENT_YEARS = range(FIRST, LAST + 1)
-LEVEL_YEARS = range(2016, 2026)  # the level model's years: the D-054 fit's outcome years
 DRAWS, SEED = d054.DRAWS, d054.SEED
 CHALLENGERS = ("C1", "C3", "C4")
 # D-092 deviation 2026-11-15: the place-level rate multiplier's variance κ (0 = runs 4-5), set by --kappa, and
@@ -96,62 +84,11 @@ def kap(places):
 TAGS = tuple(rule_tags.SENSITIVITIES)
 
 
-def params() -> dict:
-    pm = load_params("mm")
-    return {
-        "margin": {k: v.value for k, v in load_params("proforma").items()}["developer_margin"],
-        "sigma": load_params("mm_hazard")["mm_feasibility_dispersion"].value,
-        "s_dose": pm["mm_standards_dose_increase"].value,
-        "s_dose_high": pm["mm_standards_dose_increase"].high,
-        "pool_min": int(pm["mm_level_pool_min_places"].value),
-        "widening": pm["mm_level_prior_widening"].value,
-        "se_margin": pm["mm_challenger_se_margin"].value,
-    }
+params, rule_rows, events_d092 = fs.params, fs.rule_rows, fs.events_d092
 
 
 def bps_classes(store: DataStore, places: set[str]) -> pd.DataFrame:
-    """`calibrate_mm_d042.bps_classes` over the five states (it reads the four D-024 states only)."""
-    cols = ["bldgs_2", "bldgs_3_4", "units_2", "units_3_4"]
-    out = []
-    for st in STATES:
-        b = store.read(st, "bps_place_year")
-        b = b[b["geoid"].isin(places)]
-        out.append(b.groupby(["geoid", "year"])[cols].sum(min_count=1))
-    return pd.concat(out).sort_index()
-
-
-def rule_rows(store: DataStore, states) -> dict:
-    """Per state: raw in-force missing-middle rows, the same after `rule_tags.apply`, and their coverage."""
-    pa = {k: v.value for k, v in load_params("adu").items()}
-    out = {}
-    for st in states:
-        raw = adu.load_reforms(st)
-        raw = raw[(raw["theme"] == "missing_middle") & (raw["status"] == "in_force")]
-        applied = rule_tags.apply(raw)
-        out[st] = {"raw": raw, "applied": applied, "cov": mm._mm_coverage(st, store, applied, pa)}
-    return out
-
-
-def events_d092(panel: pd.DataFrame, rules: dict) -> tuple[dict[str, cal.Event], dict]:
-    """geoid -> Event for every panel place with a D-092 event in the window (the first cap rise or standards
-    row at or after its first in-window dose change, `calibrate_mm.first_event`); and the places with a dose
-    change but no event (geoid -> (year, prior cap, cap after) at that first change)."""
-    events, no_event = {}, {}
-    for st, d_st in panel.groupby("state"):
-        r = rules[st]
-        for g, d in d_st.groupby("place"):
-            mine = r["applied"][r["applied"]["jurisdiction_geoid"].astype(str) == g]
-            E = cal.event_year(d["T"].iloc[0], d.set_index("year")["dose"].to_dict(), FIRST, LAST)
-            Es = cal.standards_year(mine, FIRST, LAST)
-            cands = [x for x in (E, Es) if pd.notna(x)]
-            if not cands:
-                continue
-            ev, misses = cal.first_event(mine, min(cands), r["cov"], LAST)
-            if ev is None:
-                no_event[g] = misses[0]
-            else:
-                events[g] = ev
-    return events, no_event
+    return fs.bps_classes(store, places, STATES)
 
 
 def tag_drops(rules: dict, drop, rule: str) -> set[str]:
@@ -164,9 +101,9 @@ def tag_drops(rules: dict, drop, rule: str) -> set[str]:
 
 
 def build_m(panel, classes, events, p, s_dose):
-    """M's places (D-059 (b')): own-growth baseline, fixed window, zero floor; S events at `s_dose`."""
-    rp = cal.retarget_events(panel, classes, events, s_dose)
-    return kap(cal.place_inputs(rp, list(events), p["margin"], p["sigma"], growth="own", zero_floor=True)), rp
+    """M's places (`mm_fitsets.build_m`) with the run's noise (`kap`)."""
+    places, rp = fs.build_m(panel, classes, events, p, s_dose)
+    return kap(places), rp
 
 
 def build_c1(panel, classes, events, all_events, p, s_dose):

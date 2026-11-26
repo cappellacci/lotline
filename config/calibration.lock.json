@@ -87,7 +87,7 @@
    "status": "current",
    "script": "scripts/dev/mm_kappa_d092.py --form year (model/calibrate_mm.fit_noise)",
    "values": {
-    "mm_hazard:mm_year_spread_phi": 13.63
+    "mm_hazard:mm_year_spread_phi": 13.03
    }
   },
   "mm_units_per_project": {
@@ -211,9 +211,9 @@
    "status": "current",
    "script": "scripts/dev/calibrate_mm_d092.py --phi 13.63 (model/calibrate_mm.fit, with_phi)",
    "values": {
-    "mm_hazard:mm_mature_hazard_ref": 0.0010387,
+    "mm_hazard:mm_mature_hazard_ref": 0.0016571,
     "mm_hazard:mm_place_effect_variance": 6.1e-06,
-    "mm_hazard:mm_ramp_half_years": 4.0
+    "mm_hazard:mm_ramp_half_years": 4.5
    }
   },
   "adu_partial_share_grid": {

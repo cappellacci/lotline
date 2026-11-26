@@ -240,18 +240,20 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/mm_kappa_d092.py --form year (model/calibrate_mm.fit_noise)",
         "hand",
         reads=("bps", "parcels", "reforms"),
-        notes="Also passed to later scripts as --phi 13.63.",
+        notes="Read from config by C4 and D-100 (13.03 since 2026-11-26; run 9 gave 13.63).",
+        runner="lotline.calibrate.mm_steps:mm_year_spread",
     ),
     Step(
         "mm_c4",
         "D-092 (run 10, C4)",
         {"mm_hazard": ("mm_mature_hazard_ref", "mm_place_effect_variance", "mm_ramp_half_years")},
-        "scripts/dev/calibrate_mm_d092.py --phi 13.63 (model/calibrate_mm.fit, with_phi)",
+        "scripts/dev/calibrate_mm_d092.py --phi <config φ> (model/calibrate_mm.fit, with_phi)",
         "hand",
         reads=("bps", "parcels", "reforms", "acs_housing"),
         after=("mm_year_spread",),
         seed=20261106,
         draws=20_000,
+        runner="lotline.calibrate.mm_steps:mm_c4",
     ),
     Step(
         "mm_fast_ramp",
@@ -260,6 +262,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/mm_ramp_d100.py (model/mm_routes.fit_routes)",
         "hand",
         after=("mm_c4",),
+        runner="lotline.calibrate.mm_steps:mm_fast_ramp",
     ),
     Step(
         "mm_units_per_project",
@@ -268,6 +271,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/calibrate_mm.py",
         "hand",
         reads=("bps",),
+        runner="lotline.calibrate.mm_steps:mm_units_per_project",
     ),
     # ---- frozen validation inputs -----------------------------------------------------------------
     Step(

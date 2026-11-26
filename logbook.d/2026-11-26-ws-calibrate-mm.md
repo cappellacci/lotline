@@ -1,0 +1,31 @@
+### LB-NNN · 2026-11-26 · Calibration · Phase 3: the missing-middle steps run from code; φ has drifted
+
+- **Question:** Do the four missing-middle calibration steps re-derive config from today's tables with one
+  command, no number changing?
+- **Outputs:**
+  - `src/lotline/calibrate/mm_steps.py`: runners for `mm_units_per_project`, `mm_year_spread`, `mm_c4` and
+    `mm_fast_ramp`, wired in `steps.py`.
+  - `src/lotline/model/mm_fitsets.py`: the fit sets moved out of `scripts/dev/calibrate_mm_d092.py`,
+    `mm_kappa_d092.py`, `calibrate_mm_d054.py` and `calibrate_mm_d042.py`. The scripts now import them.
+  - `mm_ramp_d100.py` reads φ from config instead of a hard-coded constant.
+  - Tests: `tests/model/test_mm_fitsets.py` and `tests/calibrate/test_mm_steps.py`.
+  - `docs/calibration.md`.
+- **Decision:** Ben, 2026-11-26: update φ to today's fit and refit C4 and D-100 on it (he first answered
+  "keep", then corrected it as a mis-click). Deviation entry in `docs/analysis_plan.md`.
+- **What Claude did and how it was checked:**
+  - A parity run on real data compared the old scripts with the library. Both give the same C4 fit set (93
+    places), level set (15), prior and year-spread places.
+  - Full runs reproduce 15 of 18 numbers exactly once rounded half up to config's precision:
+    - units per project 2.08 (2.04-2.75);
+    - mature rate 0.0010387 (0.0001316-0.01939);
+    - place-effect variance 6.1e-06 (6.1e-06 to 1.92);
+    - half-way point 4.0 (1.0-6.0);
+    - fast half-way point 0.5 (0.5-1.0).
+  - φ gives 13.03 (12.39-13.70) against 13.63 (12.85-14.48). The same rules now keep 713 places (1,379
+    forecasts) where run 9 kept 483 (941), because the tables have grown since.
+  - Hand-worked tests cover units per building, the event split, the year-spread exclusions and the
+    significant-figure rounding.
+  - The refit wrote φ 13.03 (12.39-13.70), a mature rate of 0.0016571 (was 0.0010387) and a half-way point of
+    4.5 (was 4.0); the fast ramp is unchanged.
+  - Missing-middle five-year P50 rises 7-10% in MN, NC, OH, TX and OR. Before and after were run on the same
+    code (`lotline results`).

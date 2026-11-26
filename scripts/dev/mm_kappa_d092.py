@@ -29,51 +29,22 @@ import pandas as pd
 from lotline.io import DataStore
 from lotline.model import calibrate_mm as cal
 from lotline.model import estimate_mm as mm
-from lotline.model import rule_tags
+from lotline.model import mm_fitsets as fs
 
 _spec = importlib.util.spec_from_file_location("d092", Path(__file__).with_name("calibrate_mm_d092.py"))
 d092 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(d092)
 
-STATES = ("MN", "NC", "OH", "TX")
-ORIGINS = (2016, 2021)
-HORIZON = 5
-FRANKLIN = "39049"  # test C's Franklin County places (as mm_tests_d092.py)
+STATES, ORIGINS, HORIZON = fs.SPREAD_STATES, fs.SPREAD_ORIGINS, fs.HORIZON
 
 
 def kept_ids(panel: pd.DataFrame, store: DataStore) -> tuple[list[str], dict]:
-    """The uncoded places κ is learned from, and what was removed (counts by reason)."""
-    rules = d092.rule_rows(store, d092.STATES)
-    all_events, _ = d092.events_d092(panel, rules)
-    none_ids = set().union(*(rule_tags.none_places(r["raw"]) for r in rules.values()))
-    always = set().union(*(rule_tags.always_allowed_places(r["raw"]) for r in rules.values()))
-    oh_bps = store.read("OH", "bps_place_year")
-    franklin = set(oh_bps.loc[oh_bps["county_geoid"].astype(str) == FRANKLIN, "geoid"].dropna().astype(str))
-    max_dose = panel.groupby("place")["dose"].max().fillna(0.0)
-    status = panel.groupby("place")["status"].first()
-    state = panel.groupby("place")["state"].first()
-    pool = sorted(g for g in status.index if status[g] == "uncoded" and state[g] in STATES)
-    drop = {
-        "event": set(all_events),
-        "dose": {g for g in pool if max_dose.get(g, 0.0) > 0},
-        "tests": set(d092.TESTS),
-        "test_c": none_ids | franklin,
-        "level_set": always,
-        "excluded": set(d092.EXCLUDE),
-        "holdouts": set(d092.HOLDOUTS),
-    }
-    removed = {k: len(set(pool) & v) for k, v in drop.items()}
-    keep = [g for g in pool if not any(g in v for v in drop.values())]
-    return keep, removed
+    """The uncoded places κ is learned from, and what was removed (`mm_fitsets.spread_ids`)."""
+    return fs.spread_ids(panel, fs.rule_rows(store), fs.franklin_places(store))
 
 
 def pseudo_places(panel: pd.DataFrame, ids: list[str], origin: int, p: dict) -> list[cal.Place]:
-    """Test C's no-reform baseline at `origin`, scored over origin … origin + 4."""
-    sub = panel[panel["place"].isin(ids)].copy()
-    sub["T"], sub["dose"] = float(origin), 0.0
-    sub["eligible"] = sub["eligible"].where(sub["eligible"] > 0, 1.0)
-    out = cal.place_inputs(sub, ids, p["margin"], p["sigma"], growth="own", zero_floor=True)
-    return [q for q in (q.upto(origin + HORIZON - 1) for q in out) if len(q.years)]
+    return fs.pseudo_places(panel, ids, origin, p)
 
 
 def row(f: cal.KappaFit) -> dict:

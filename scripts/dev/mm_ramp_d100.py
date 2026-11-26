@@ -4,7 +4,8 @@
     uv run python scripts/dev/mm_ramp_d100.py --out /tmp/x --dry               # route split, no fit
     uv run python scripts/dev/mm_ramp_d100.py --out reports/mm-d100/run1      # Ben's go-ahead (2026-11-16)
 
-- **R0:** C4 as on main: D-092's 93 fit places, the C0 baseline, φ 13.63, the θ_L prior, one ramp.
+- **R0:** C4 as on main: D-092's 93 fit places, the C0 baseline, config's φ (13.63 when D-100 ran),
+  the θ_L prior, one ramp.
 - **R1:** the same with St. Paul added (released 2026-11-16, D-098), one ramp.
 - **R2:** R1's places, one half-way point per adoption route (`lotline.model.mm_routes`): HB 2001-covered
   Oregon places (state-required) against every other place (locally adopted); θ shared.
@@ -27,6 +28,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import calibrate_mm as cal
 from lotline.model import estimate_mm as mm
@@ -43,7 +45,7 @@ def _load(name: str, file: str):
 d092 = _load("d092", "calibrate_mm_d092.py")
 d054 = d092.d054
 ST_PAUL = "2758000"
-PHI = 13.632980572972555  # run 9 (D-092 deviation (b)); C4 in config
+PHI = load_params("mm_hazard")["mm_year_spread_phi"].value  # run 9 (D-092 deviation (b)), as C4 in config
 MODELS = ("R0", "R1", "R2")
 
 

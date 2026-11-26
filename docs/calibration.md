@@ -59,6 +59,40 @@ central differences). These used to live only in development scripts that loaded
 Heavy steps run in a process pool of `LOTLINE_CALIBRATE_WORKERS` workers (default 4). The grid step returns
 the whole CSV; `--run` compares it row by row and `--write` writes it.
 
+## The missing-middle chain (phase 3)
+
+Four missing-middle steps rerun from the fetched data with one command:
+
+- `mm_units_per_project`: D-038's homes per 2-4 unit building.
+- `mm_year_spread`: D-092 run 9's per-year spread φ.
+- `mm_c4`: D-092 run 10, challenger C4. It fits the mature rate, the place-effect variance and the ramp's
+  half-way point.
+- `mm_fast_ramp`: D-100's half-way point for locally adopted places.
+
+```bash
+uv run lotline calibrate --run --quick --step mm_c4   # minutes: a coarse half-way-point grid
+uv run lotline calibrate --run --step mm_c4           # the full fit (5-17 minutes, depending on machine load)
+```
+
+The fit sets are library code in `lotline.model.mm_fitsets`: D-092's panel, events, fit and test split, the
+always-allowed level set, the year-spread places, and D-038's named places. They used to live only in
+development scripts, which now import them. Every fit is deterministic (grid and golden-section search), so a
+full run on unchanged tables reproduces config. C4 and D-100 read φ from config rather than refitting it in
+the same run.
+
+On 2026-11-26, three steps reproduced config exactly. φ did not. Run 9 fitted 941 pseudo-forecasts of 483
+places. Today's tables give 1,379 forecasts of 713 places under the same rules, and φ comes out at 13.03
+(12.39-13.70) against run 9's 13.63 (12.85-14.48). Ben chose to update it (2026-11-26), so φ, C4 and D-100
+were rewritten with `--write`:
+
+- φ: 13.63 (12.85-14.48) → 13.03 (12.39-13.70).
+- Mature rate: 0.0010387 (0.0001316-0.01939) → 0.0016571 (0.0001361-0.01898).
+- Ramp half-way point: 4.0 → 4.5 years (range 1.0-6.0 unchanged).
+- Place-effect variance, the fast ramp (0.5) and units per project are unchanged.
+
+The missing-middle five-year P50 rises 7-10% in each fitted state: the higher rate is mostly offset by the
+slower ramp. The analysis plan's deviation entry of 2026-11-26 has the before and after ranges.
+
 ## The three older ADU fits (phase 5)
 
 `adu_state_effect`, `adu_drift` and `adu_ramp_share` were fitted on older model forms. Each now has a runner

@@ -22,8 +22,8 @@ def _place(geoid="1", eligible=1000.0, dose=0.25, band=2, f_ratio=1.2, house_sha
 
 def test_log_sd_by_hand():
     s = load_params("mm_hazard")["mm_mature_hazard_ref"]
-    # D-092 C4: (ln 0.01939 − ln 0.0001316) / 3.2897 = 4.9927 / 3.2897 = 1.5177
-    assert mm.log_sd(s) == pytest.approx(1.5177, abs=1e-4)
+    # D-092 C4 on φ 13.03 (2026-11-26): (ln 0.01898 − ln 0.0001361) / 3.2897 = 4.9378 / 3.2897 = 1.5010
+    assert mm.log_sd(s) == pytest.approx(1.5010, abs=1e-4)
 
 
 def test_year_shape_by_hand():
@@ -171,7 +171,7 @@ def test_no_phi_is_poisson_and_unchanged():
 
 def test_ramp_half_picks_the_main_or_fast_ramp_from_config():
     sp = mm.specs()
-    assert mm.ramp_half(sp) == 4.0  # C4
+    assert mm.ramp_half(sp) == 4.5  # C4 (refitted on φ 13.03, 2026-11-26)
     assert mm.ramp_half(sp, "fast") == 0.5  # D-100 R2, places that adopted on their own
     assert mm.ramp_half(sp, "fast", "high") == 1.0  # C4's low end, D-100's cheaper alternative
     with pytest.raises(ValueError):
