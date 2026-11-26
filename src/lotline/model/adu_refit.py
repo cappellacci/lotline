@@ -8,18 +8,25 @@ scripts share one copy:
   over the leave-one-state-out folds of each fold's normalized profile likelihood (`grid_weights`).
 - `slope_bounds` and `log_slope` (D-030): central differences at the central value ± 10% of the parameter's
   range, clipped to the range.
+- `with_ramp` and `ramp_profile` (D-048, phase 5): the D-096 fit at each ramp half-life on D-047's grid.
+- `typed_for_state_effect` (D-043/D-044, phase 5): the D-096 places with the core multiplier folded in, as the
+  state-effect likelihood reads them.
+- `drift_sigmas` (D-091, phase 5): σ from the persistence forecaster's log scores on the drift grid.
 """
 
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 import numpy as np
 import pandas as pd
 
+from lotline.model import adu_forecast as af
 from lotline.model import adu_screen as scr
 from lotline.model import adu_types as ty
 from lotline.model import calibrate_adu as cal
+from lotline.model import hazard
 
 SLOPE_STEP = 0.1  # central ± this share of a parameter's range (as calibrate_adu.py --draw-terms)
 
@@ -89,3 +96,56 @@ def slope_bounds(value: float, low: float, high: float, step: float = SLOPE_STEP
 def log_slope(f_lo: float, f_hi: float, lo: float, hi: float) -> float:
     """d log f / dp by a central difference. By hand: f 1 at p 0 and e at p 2 -> 0.5."""
     return (math.log(f_hi) - math.log(f_lo)) / (hi - lo)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Phase 5: the three steps fitted on older forms
+# ---------------------------------------------------------------------------------------------------------
+
+NO_RAMP = -1.0  # half-life code for "no ramp" (as calibrate_shape.NO_RAMP)
+RAMP_HALVES = (NO_RAMP, 0.5, 1.0, 2.0, 3.5, 6.0)  # D-047's pre-registered grid of half-lives
+RAMP_SLOPE = 0.75  # D-047 held the slope at its then-central value
+
+
+def with_ramp(pl, half: float, slope: float = RAMP_SLOPE):
+    """The place with each rule's coverage × ramp(age) in place of coverage × 1 (D-048's form). NO_RAMP gives
+    coverage alone where a rule is in force. By hand: coverage 0.5 at age 2, half 2 -> 0.5 × 0.5 = 0.25."""
+    age, cov = pl.extra["age"], pl.extra["cov"]
+    live = ~np.isnan(age)
+    r = np.ones_like(age) if half == NO_RAMP else hazard.ramp(np.nan_to_num(age), half, slope)
+    return replace(pl, cr=np.where(live, cov * r, 0.0))
+
+
+def ramp_profile(places, cvals, halves=RAMP_HALVES) -> pd.DataFrame:
+    """θ, α, β_core and the log-likelihood at each half-life, rule shares held at `cvals` (D-096's form)."""
+    zm = type_columns(places)
+    rows = []
+    for h in halves:
+        f = ty._maximize(scr.prepare([with_ramp(p, h) for p in places], cvals), zm)
+        rows.append({"half": h, "theta": math.exp(f.lt), "alpha": math.exp(f.la), "core": float(f.b[0]),
+                     "loglik": f.loglik})  # fmt: skip
+    return pd.DataFrame(rows)
+
+
+def typed_for_state_effect(places, core: float):
+    """Each place's exposure × exp(β_core × core), the town term at 0 (as `adu_joint`'s information SEs)."""
+    return [ty.typed_scaled(p, 0.0, np.array([core, 0.0])) for p in places]
+
+
+def drift_grids(places, states) -> dict[str, tuple[str, np.ndarray]]:
+    """{geoid: (state, F0 log scores on `adu_forecast.LOGD_GRID`)} for the places with history (D-090's class)
+    in `states`: fit 2016-2019, window 2021-2025."""
+    out = {}
+    for p in places:
+        if p.state in states and af.place_class(p) == "history":
+            fp, wp = af.split(p)
+            out[p.geoid] = (p.state, np.array([af.f0_log_score(fp, wp, ld) for ld in af.LOGD_GRID]))
+    return out
+
+
+def drift_sigmas(grids: dict, states) -> dict[str, float]:
+    """D-091's σ (F0): {"all": every state's places, "without XX": leaving XX out}."""
+    out = {"all": af.fit_sigma([g for _, g in grids.values()])}
+    for s in states:
+        out[f"without {s}"] = af.fit_sigma([g for st, g in grids.values() if st != s])
+    return out

@@ -15,12 +15,13 @@ from lotline.config import load_params
 
 def test_every_ported_adu_step_names_a_runner_that_exists():
     want = {"adu_joint", "adu_partial_share_grid", "adu_anchor_slopes", "adu_calibration_range",
-            "adu_town_prior_sd", "adu_new_rule"}  # fmt: skip
+            "adu_town_prior_sd", "adu_new_rule", "adu_state_effect", "adu_drift",
+            "adu_ramp_share"}  # fmt: skip
     by = {s.name: s for s in STEPS}
     for name in want:
         assert by[name].runner and callable(calibrate._resolve(by[name].runner)), name
-    for stale in ("adu_state_effect", "adu_drift", "adu_ramp_share"):  # phase 5, Ben's call
-        assert by[stale].runner is None
+    for stale in ("adu_state_effect", "adu_drift", "adu_ramp_share"):  # refit in phase 5, not yet written
+        assert by[stale].status == "stale"
 
 
 def test_sig_rounds_to_significant_figures():

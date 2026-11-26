@@ -65,5 +65,17 @@ central differences). These used to live only in development scripts that loaded
 Heavy steps run in a process pool of `LOTLINE_CALIBRATE_WORKERS` workers (default 4). The grid step returns
 the whole CSV; `--run` compares it row by row and `--write` writes it.
 
-Three ADU steps are left unported because they were fitted on an older model form: `adu_state_effect`,
-`adu_drift` and `adu_ramp_share`. Refitting them is phase 5.
+## The three older ADU fits (phase 5)
+
+`adu_state_effect`, `adu_drift` and `adu_ramp_share` were fitted on older model forms. Each now has a runner
+that refits it on D-096's form, the same 70 places and 498 place-years as the chain above:
+
+- `adu_state_effect` (D-043/D-044): τ's profile and maximum likelihood on the places with the core
+  multiplier folded in, rule shares held at config.
+- `adu_drift` (D-091): σ from the persistence forecaster's held-out window, places with history in MN, NC,
+  TX and OR.
+- `adu_ramp_share` (D-048): the fit at each ramp half-life on D-047's grid against no ramp. The runner stops
+  if a ramp wins, because one share can't hold a ramp.
+
+They stay marked `stale` until Ben approves writing their values (`--write`); the status changes with that
+write.
