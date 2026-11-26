@@ -2,7 +2,7 @@ import httpx
 import pytest
 
 from lotline.io import DataStore, fetch
-from lotline.io.http import RawOverwriteError
+from lotline.io.http import HtmlNotDataError, RawOverwriteError
 from lotline.io.store import ManifestEntry, data_dir
 
 
@@ -172,3 +172,29 @@ def test_read_cache_returns_copies_and_sees_rewrites(tmp_path):
     st = path.stat()
     os.utime(path, ns=(st.st_atime_ns, st.st_mtime_ns + 1_000_000_000))
     assert len(store.read("zz", "jurisdictions")) == 2
+
+
+@pytest.mark.parametrize(
+    ("body", "ctype"),
+    [
+        (b"<!DOCTYPE html><html><body>Access denied</body></html>", "text/plain"),
+        (b"<div>Request blocked</div>", "text/html; charset=utf-8"),
+    ],
+)
+def test_an_html_page_is_never_saved_as_data(tmp_path, body, ctype):
+    """A 200 web page (a block or error page) raises, leaving no file and no manifest row (nightly review)."""
+    store = DataStore(tmp_path)
+    page = httpx.MockTransport(lambda r: httpx.Response(200, content=body, headers={"content-type": ctype}))
+    with pytest.raises(HtmlNotDataError):
+        _fetch(store, page)
+    assert not (store.raw("src", 2024) / "a.txt").exists() and not store.manifest()
+    assert _fetch(store, page, allow_html=True).read_bytes() == body  # a page fetched on purpose is kept
+
+
+def test_a_csv_labelled_text_html_is_still_data(tmp_path):
+    """Some publishers label real files text/html; only a body that is a page is refused."""
+    store = DataStore(tmp_path)
+    csv = httpx.MockTransport(
+        lambda r: httpx.Response(200, content=b"a,b\n1,2\n", headers={"content-type": "text/html"})
+    )
+    assert _fetch(store, csv).read_bytes() == b"a,b\n1,2\n"

@@ -23,6 +23,24 @@ class RawOverwriteError(RuntimeError):
     """A download would overwrite a raw file that was downloaded from a different URL."""
 
 
+class HtmlNotDataError(RuntimeError):
+    """A data download came back as an HTML page (a block, login or error page served with status 200)."""
+
+
+def _looks_like_html(resp: httpx.Response) -> bool:
+    """True when the body is a web page: an HTML tag first, or any tag first under an HTML content type.
+
+    The body decides, not the header alone: some publishers label real CSV or text files `text/html`."""
+    head = resp.content[:512].lstrip().lower()
+    if head.startswith((b"<!doctype html", b"<html", b"<head", b"<body")):
+        return True
+    return (
+        head.startswith(b"<")
+        and not head.startswith(b"<?xml")
+        and "text/html" in resp.headers.get("content-type", "").lower()
+    )
+
+
 def client(timeout: float = 60.0) -> httpx.Client:
     """An HTTP client for downloads. During an offline build its transport refuses every request."""
     transport = httpx.MockTransport(_refuse) if offline.is_offline() else None
@@ -49,6 +67,7 @@ def fetch(
     retries: int = 4,
     backoff: float = 2.0,
     secret_params: dict[str, str] | None = None,
+    allow_html: bool = False,
 ) -> Path:
     """Download `url` to `dest` (under the store's raw/ tree) unless a cached copy is still current.
 
@@ -64,6 +83,11 @@ def fetch(
     write to another path. Refreshing the same URL may update its file (the manifest keeps each hash).
 
     During an offline build (`lotline.io.offline.offline_build`) no request is ever sent: see `_cached`.
+
+    A response that is an HTML page raises `HtmlNotDataError` and nothing is written or recorded, unless
+    `allow_html` is set (the rule agents fetch ordinance pages on purpose). Publishers answer a blocked or
+    broken request with a 200 web page (census.gov, 2026-10-19); cached as data, it broke every later run
+    until someone deleted the file (nightly review, 2026-11-25).
     """
     dest = Path(dest)
     rel = str(dest.resolve().relative_to(store.root))
@@ -99,6 +123,11 @@ def fetch(
         return dest
     if resp.is_error:
         raise httpx.HTTPStatusError(f"HTTP {resp.status_code} for {url}", request=resp.request, response=resp)
+    if not allow_html and _looks_like_html(resp):
+        raise HtmlNotDataError(
+            f"{url} returned a web page, not data (a block, sign-in or error page?); nothing was saved. "
+            "Check the URL in a browser, then retry"
+        )
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(dest.suffix + ".part")

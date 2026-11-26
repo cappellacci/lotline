@@ -213,6 +213,7 @@ def get(
                 http=http,
                 retries=0,
                 refresh=refresh,
+                allow_html=True,  # ordinance and code pages are HTML on purpose
             )
         except httpx.HTTPStatusError as exc:
             st = exc.response.status_code
