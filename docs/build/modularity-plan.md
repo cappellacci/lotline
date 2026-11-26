@@ -84,7 +84,7 @@ parts. No step changes a number: each one must leave every results bundle the sa
    `src/lotline/calibrate/adu/` and `src/lotline/calibrate/mm/`, next to the step runners that call them.
 3. **The 17 modules with no forecast or calibration caller:** each owner keeps the ones a test or a
    `validation/` check uses (backtest, gutcheck-style checks go to `src/lotline/validation/`). The rest go
-   with phase 6's script archive (`scripts/dev/archive/`), with a line in the archive README saying what
+   with phase 6's script archive (`scripts/archive/`), with a line in the archive README saying what
    each one produced and which report holds the result.
 4. **Guard test:** an import-graph test (like the trace above) fails if a module under `model/` imports from
    `calibrate/`, so the split stays put.
