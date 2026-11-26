@@ -1,0 +1,12 @@
+### LB-NNN · 2026-11-26 · Build: The app draws its scenarios from the bundle (modularity plan step 1.4, #554)
+- **Question:** does a new reform reach the app with no edit to the app's code?
+- **What I did:**
+  - `app/build.py`: `scenarios_section` builds the page's scenario list from each bundle's `meta.scenarios` (title, model, definition, Handbook text, extra tables, colour slot by model). Bundles written before schemas 1.25 fall back to the old built-in list, and a run in a bundle's draws that its list leaves out keeps its old label.
+  - `app/template.html`: the result boxes, lanes, evidence picker, headline sum and every-state chart iterate over the models in `DATA.scenarios`. A model with no written card gets a model-page tab and a card from its labels. Evidence cards are keyed by what the bundle declares (the fee card by `fee_types`, the ADU card by `adu_place_types`; missing middle, which fills no extra table, by its model). Any other scenario gets a general card built from its own funnel.
+  - Test: `tests/app/test_scenario_toy.py` registers the toy scenario, builds the synthetic state's bundle and the page, and runs the page's script under node (`tests/app/scenario_harness.js`).
+- **Inputs:** PR #555 (scenario contract), `docs/build/modularity-plan.md`.
+- **Outputs:** `src/lotline/app/build.py`, `src/lotline/app/template.html`, `tests/app/test_scenario_toy.py`, `tests/app/scenario_harness.js`, `tests/app/test_build.py`.
+- **Findings:** with nothing else edited, the toy gets a result box, a lane, a picker button, a model-page tab, an evidence card and a bar in the every-state chart. It is also included in the headline sum, as every reform is. Checked in a browser on a locally built page; no console errors. The data dashboard summarizes input data, not results bundles, so it has no scenario list to change.
+- **Decisions:** none new. Proposed in the PR: a model with no colour slot is drawn in ink.
+- **AI:** Claude Code wrote the code and tests. Checked by the full test suite, `compliance_check.py`, the node harness and a browser check of the built toy page.
+- **Open / next:** the fee model's two-run switch and fee slider still name the fee model; a second multi-run model would need its own switch.

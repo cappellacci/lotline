@@ -61,14 +61,60 @@ ROLES = {
 }
 
 
-# The Handbook's names for the reforms (STYLE_GUIDE "Voice"), in the fixed colour-slot order. Each reform is
-# run on its own; there are no combined scenarios.
+# Each model's colour slot (STYLE_GUIDE "Colour"); a model without one (a new reform) is drawn in ink.
+COLORS = {"adu": "--scenario-adu", "missing_middle": "--scenario-missing-middle", "fees": "--scenario-fees"}
+# The scenarios and their labels come from each bundle's `meta.scenarios` (schemas 1.25, #554), so a new
+# scenario module needs no edit here. Bundles written before 1.25 carry none; they get the Handbook's names
+# for the reforms they could hold (STYLE_GUIDE "Voice"). Each reform is run on its own; there are no combined
+# scenarios.
 SCENARIOS = {
     "adu": ("ADUs", "--scenario-adu"),
     "missing_middle": ("Missing middle", "--scenario-missing-middle"),
     "fees": ("Fee reduction", "--scenario-fees"),  # the Handbook benchmark: $50,000 cut in half (D-065)
     "fees_local_half": ("Fee reduction, real local fees", "--scenario-fees"),
 }
+_OLD_TABLES = {
+    "adu": ["adu_place_types", "adu_baseline"],
+    "fees": ["fee_types"],
+    "fees_local_half": ["fee_types"],
+}
+
+
+def scenarios_section(bundles: Iterable[dict]) -> dict:
+    """Every scenario any bundle holds, in bundle order: {scenario: {label, short, color, model, what,
+    handbook, tables}}. From `meta.scenarios`; a bundle without it (before schemas 1.25) lists `SCENARIOS`.
+
+    `label` is the run's title, `short` its model's (the first run's title: one result box per model), `what`
+    its one-line definition, `tables` the extra bundle parts it fills (the capability the page keys a model's
+    own cards on)."""
+
+    def old(k: str) -> dict:
+        v = SCENARIOS.get(k, (k, None))
+        model = "fees" if k.startswith("fees") else k
+        tables = ", ".join(_OLD_TABLES.get(k, [])) or None
+        row = {"scenario": k, "model": model, "title": v[0], "tables": tables}
+        return row | {"definition": None, "handbook": None}
+
+    out: dict[str, dict] = {}
+    for b in bundles:
+        listed = list(b["meta"].get("scenarios") or [old(k) for k in SCENARIOS])
+        have = {r["scenario"] for r in listed}  # a run in the draws but not listed keeps its old label
+        runs = dict.fromkeys(d["scenario"] for d in b.get("draws") or [])
+        listed += [old(k) for k in runs if k not in have]
+        for row in listed:
+            if row["scenario"] in out:
+                continue
+            short = next((v["label"] for v in out.values() if v["model"] == row["model"]), row["title"])
+            out[row["scenario"]] = {
+                "label": row["title"],
+                "short": short,
+                "color": COLORS.get(row["model"], "--ink"),
+                "model": row["model"],
+                "what": row.get("definition"),
+                "handbook": row.get("handbook"),
+                "tables": [t.strip() for t in (row.get("tables") or "").split(",") if t.strip()],
+            }
+    return out
 
 
 # Data tier (1 = parcels with year built and use codes, 3 = national data only) onto the map's single-hue ramp
@@ -306,7 +352,7 @@ def payload(bundles: Iterable[dict], generated: str | None = None, summary: dict
     if not states:
         raise ValueError("no results bundles to show: run `lotline results --state XX` first")
     stamp = generated or dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    scenarios = {k: {"label": v[0], "color": v[1]} for k, v in SCENARIOS.items()}
+    scenarios = scenarios_section(states)
     data = data_section([b["meta"]["state"] for b in states], summary)
     from lotline.config import load_params
 

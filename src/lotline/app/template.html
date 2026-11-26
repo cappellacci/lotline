@@ -935,7 +935,14 @@ const WHAT = {
   fees: "Development fees cut in half. The Challenge benchmark: a $50,000 fee everywhere, cut to $25,000.",
   fees_local_half: "Development fees cut in half, starting from each city's own fees for houses, duplexes and fourplexes.",
 };
-const HERO = ["adu", "missing_middle", "fees"];
+// One result box per model, in bundle order, from the bundles' `meta.scenarios` (build.scenarios_section, #554):
+// a new scenario module appears here with no edit to this page. The fee model's box switches between its two runs.
+const HERO = [...new Set(Object.values(DATA.scenarios).map((s) => s.model || "fees"))];
+const variantsOf = (m) => Object.keys(DATA.scenarios).filter((k) => (DATA.scenarios[k].model || k) === m);
+const runOf = (m) => (m === "fees" ? UI.fee : variantsOf(m)[0] || m);  // the run a model's box shows
+const shortOf = (m) => SCENARIOS_SHORT[m] || (DATA.scenarios[variantsOf(m)[0]] || {}).short || scenLabel(m);
+const whatOf = (s) => WHAT[s] || (DATA.scenarios[s] || {}).what || "";
+const hasTable = (s, t) => ((DATA.scenarios[s] || {}).tables || []).includes(t);  // a capability the bundle declares
 const IN_NOTE = { adu: "ADUs", missing_middle: "missing middle", fees: "the fee reduction (Challenge benchmark)", fees_local_half: "the fee reduction (real local fees)" };  // one box per reform; the fee box switches between its two versions
 
 
@@ -1135,6 +1142,19 @@ function recordHtml(b, d, compact = false) {
 // the with-reform forecast with the state's recent observed pace. The overlap flag stays on the Model page only
 // (Ben, 2026-11-19).
 const ACC_STATES = "Minnesota, North Carolina, Ohio, Oregon and Texas";
+// The general evidence card, for a scenario with no card of its own: what it is, then its funnel from the
+// bundle (lots or homes it acts on, where building pays, homes built), midpoints with P10–P90.
+function genericEvidenceHtml(b, d, R) {
+  const s = DATA.scenarios[d] || {};
+  const st = (k) => (b.funnel || []).find((f) => f.scenario === d && f.stage === k);
+  const cell = (f) => (f ? `${fmtN(f.p50)} <span class="muted">(${fmtN(f.p10)}–${fmtN(f.p90)})</span>` : "–");
+  const rows = [["legal", "Where the reform applies"], ["pencils", "Where building pays"], ["built", "Homes built"]]
+    .map(([k, w]) => `<tr><td>${esc(w)}</td><td class="num">${cell(st(k))}</td></tr>`).join("");
+  return `<section><h3 class="h3">${esc(s.label || d)}</h3>${s.what ? `<p class="body-small">${esc(s.what)}</p>` : ""}
+    ${s.handbook ? `<p class="source">Handbook definition: “${esc(s.handbook)}”</p>` : ""}
+    <div class="scroll"><table class="body-small"><tbody>${rows}</tbody></table></div>
+    <p class="source">Midpoints over the model's runs, with P10–P90 in brackets, from this state's results file.</p></section>${accuracyHtml(b, d)}`;
+}
 function accuracyHtml(b, d) {
   const key = d === "fees_local_half" ? "fees" : d;
   const what = { adu: "ADU permits", missing_middle: "homes in 2–4 unit buildings", fees: "new homes" }[key] || "homes";
@@ -1163,11 +1183,15 @@ function accuracyHtml(b, d) {
   return `<section><h3 class="h3">How accurate is our model</h3>${intro}${check}</section>`;
 }
 
-// ---- the evidence card under the model selector: one per reform (ADUs first; the others still to design) ----
+// ---- the evidence card under the model selector: one per reform ----
+// A model's own card is keyed by what its bundle declares (`meta.scenarios`: the extra tables it fills, #554):
+// the fee card by `fee_types`, the ADU card by `adu_place_types`. Missing middle fills no extra table, so its
+// card is keyed by its model. Any other scenario gets the general card, from the bundle's own tables.
 function evidenceHtml(b, d, R) {
-  if (d === "missing_middle") return `<section>${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;
-  if (d === "fees" || d === "fees_local_half") return feeEvidenceHtml(b, R, feeSplit(b) ? "rest" : "all") + accuracyHtml(b, d);
-  if (d !== "adu") return `<section><p class="pending">The evidence card for ${esc(scenLabel(d))} is still being designed.</p></section>`;
+  const model = (DATA.scenarios[d] || {}).model;
+  if (model === "missing_middle") return `<section>${recordHtml(b, d)}</section>${mmHowHtml(b, R)}${accuracyHtml(b, d)}`;
+  if (hasTable(d, "fee_types")) return feeEvidenceHtml(b, R, feeSplit(b) ? "rest" : "all") + accuracyHtml(b, d);
+  if (!hasTable(d, "adu_place_types")) return genericEvidenceHtml(b, d, R);
   const name = ((DATA.map.tiles || []).find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
   const med = (c) => AGG.percentile(drawsFor(b, "adu").map((x) => Number(x[c])).filter(Number.isFinite), 50);
   const st = (k) => (b.funnel || []).find((f) => f.scenario === "adu" && f.stage === k);
@@ -1423,7 +1447,6 @@ const SECTIONS = {
     UI.b = b; UI.pins = {};
     const scen = scenariosIn(b);
     if (!scen.includes(UI.fee)) UI.fee = scen.includes("fees_local_half") ? "fees_local_half" : "fees";
-    const runOf = (k) => (k === "fees" ? UI.fee : k);
     UI.model = HERO.includes(UI.model) && scen.includes(runOf(UI.model)) ? UI.model : HERO.find((k) => scen.includes(runOf(k))) || null;
     UI.detail = UI.model ? runOf(UI.model) : scen[0];
     const yrs = AGG.windowLabel(b);  // from the bundle's totals (D-061: 2027–2031 for origin 2025)
@@ -1433,13 +1456,13 @@ const SECTIONS = {
     const pend = pendingIn(b);
     const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
     const seg = HERO.filter((k) => scen.includes(runOf(k))).map((k) =>
-      `<button type="button" data-model="${esc(k)}" aria-pressed="${k === UI.model}">${esc(SCENARIOS_SHORT[k])}</button>`).join("");
+      `<button type="button" data-model="${esc(k)}" aria-pressed="${k === UI.model}">${esc(shortOf(k))}</button>`).join("");
     const fee2 = scen.includes("fees_local_half");
     const rcRows = HERO.map((k) => {
       const feeSwitch = k === "fees" && fee2 ? `<span class="toggle" role="group" aria-label="Which fees">
         <button type="button" data-fee="fees" aria-pressed="${UI.fee === "fees"}">Challenge benchmark</button><button type="button" data-fee="fees_local_half" aria-pressed="${UI.fee === "fees_local_half"}">Real local fees</button></span>` : "";
-      const s = k === "fees" ? UI.fee : k;
-      return `<div class="who" data-box="${esc(k)}"><h4 style="color:${scenColor(s)}">${esc(SCENARIOS_SHORT[k])}</h4><p data-box-what>${esc(WHAT[s])}</p>${feeSwitch}</div>
+      const s = runOf(k);
+      return `<div class="who" data-box="${esc(k)}"><h4 style="color:${scenColor(s)}">${esc(shortOf(k))}</h4><p data-box-what>${esc(whatOf(s))}</p>${feeSwitch}</div>
         <div class="lane" data-lane="${esc(k)}"></div>`;
     }).join("");
     return `<div class="hero" id="hero">
@@ -1545,7 +1568,7 @@ function together(b, keys, o) {
 }
 function heroUpdate(b, R, o) {
   const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
-  const keys = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const keys = HERO.map(runOf).filter((s) => R[s]);
   const { n, tot } = together(b, keys, o);
   const x = tot ? tot.p50 : NaN;
   $("hero-line").innerHTML = `${esc(named)} can add <span class="x">${fmtN(x)}</span> homes over the next ${esc(b.meta.horizon_years)} years`;
@@ -1570,17 +1593,17 @@ function heroUpdate(b, R, o) {
   for (const k of HERO) {
     const lane = document.querySelector(`[data-lane="${k}"]`), who = document.querySelector(`[data-box="${k}"]`);
     if (!lane) continue;
-    const s = k === "fees" ? UI.fee : k, r = R[s];
-    if (who) { who.querySelector("[data-box-what]").textContent = WHAT[s]; who.querySelector("h4").style.color = scenColor(s); }
+    const s = runOf(k), r = R[s];
+    if (who) { who.querySelector("[data-box-what]").textContent = whatOf(s); who.querySelector("h4").style.color = scenColor(s); }
     if (!r) { lane.innerHTML = `${grid}<span class="num muted" style="left:0">Not yet run</span>`; continue; }
     const { p10, p50, p90 } = r[o], c = scenColor(s);
     if (p50 < 0) {  // a fee rise in "Try a different fee change": homes lost, which a log scale cannot draw
       const words = `${fmtN(-p50)} fewer homes (${fmtN(-p90)} to ${fmtN(-p10)} fewer)`;
-      lane.setAttribute("aria-label", `${SCENARIOS_SHORT[k]}: ${words}`);
+      lane.setAttribute("aria-label", `${shortOf(k)}: ${words}`);
       lane.innerHTML = `${grid}<span class="num" style="left:0;color:${c}">${words}</span>`;
       continue;
     }
-    lane.setAttribute("aria-label", `${SCENARIOS_SHORT[k]}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
+    lane.setAttribute("aria-label", `${shortOf(k)}: ${fmtN(p10)} to ${fmtN(p90)} homes, midpoint ${fmtN(p50)}`);
     lane.setAttribute("role", "img");
     lane.innerHTML = `${grid}<span class="band" style="left:${pos(p10)};width:calc(${pos(p90)} - ${pos(p10)});background:${c}"></span>
       <span class="tick" style="left:${pos(p50)};background:${c}"></span>
@@ -1598,7 +1621,7 @@ function heroUpdate(b, R, o) {
 // or a sum over the bundle's draws. Without a shortfall row the card falls back to the share-of-need view.
 function needHtml(b, R) {
   const sf = (b.shortfall || [])[0];
-  const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const nk = HERO.map(runOf).filter((s) => R[s]);
   const all = together(b, nk, "homes_net_statewide").tot;
   if (!sf || !all) return needShareHtml(b, R);
   const named = (DATA.map.tiles.find((t) => t.code === b.meta.state) || {}).name || b.meta.state;
@@ -1659,7 +1682,7 @@ function needHtml(b, R) {
 }
 
 function needShareHtml(b, R) {
-  const nk = HERO.map((k) => (k === "fees" ? UI.fee : k)).filter((s) => R[s]);
+  const nk = HERO.map(runOf).filter((s) => R[s]);
   const kinds = [];
   for (const n of b.need.filter((r) => nk.includes(r.scenario))) if (!kinds.some((k) => k.label === n.label)) kinds.push(n);
   kinds.sort((x, y) => (y.is_headline ? 1 : 0) - (x.is_headline ? 1 : 0));
@@ -2017,9 +2040,24 @@ function checksHtml() {
   $("checks").innerHTML = CHECKS.map(([t, ask, v, said]) => `<tr><td><b>${esc(t)}</b></td><td>${esc(ask)}</td>
     <td><span class="verdict ${v}"><span class="glyph" aria-hidden="true"></span>${V[v]}</span><br><span class="body-small">${esc(said)}</span></td></tr>`).join("");
 }
+// The model page's tabs: ADUs, missing middle and fees have written cards above; any other model in the bundles
+// gets a tab and a card from its `meta.scenarios` labels (#554).
+const WRITTEN_CARDS = { adu: "adu", missing_middle: "mm", fees: "fees" };
+function addModelCards(bar) {
+  const last = [...document.querySelectorAll("[data-model-card]")].pop();
+  for (const m of HERO.filter((k) => !Object.hasOwn(WRITTEN_CARDS, k))) {
+    const s = DATA.scenarios[variantsOf(m)[0]] || {};
+    bar.insertAdjacentHTML("beforeend", `<button type="button" data-model="${esc(m)}" aria-pressed="false">${esc(shortOf(m))}</button>`);
+    const card = `<div class="model-card" data-model-card="${esc(m)}" hidden><h5>What the model does</h5>
+      <p class="one">${esc(s.what || "")}</p>${s.handbook ? `<h5>Handbook definition</h5><p class="body-small">“${esc(s.handbook)}”</p>` : ""}
+      <p class="source">From the results files' list of scenarios (meta.scenarios).</p></div>`;
+    if (last) last.insertAdjacentHTML("afterend", card);
+  }
+}
 function wireModelCards() {
   const bar = document.querySelector(".model-tabs");
   if (!bar) return;
+  addModelCards(bar);
   bar.onclick = (e) => {
     const t = e.target.closest("button[data-model]");
     if (!t) return;
@@ -2128,7 +2166,7 @@ function mmDeepDive(bs) {
 }
 // Every state's five-year range per reform, from the numbers the page embeds per state (build.headline).
 function allStatesSvg() {
-  const order = ["adu", "missing_middle", "fees", "fees_local_half"].filter((k) => Object.hasOwn(DATA.scenarios, k));
+  const order = Object.keys(DATA.scenarios);  // bundle order
   const num = (h) => h && { p10: Number(h.p10), p50: Number(h.p50), p90: Number(h.p90) };
   const states = DATA.states.filter((b) => b.headline && Object.keys(b.headline).length);
   const name = (c) => ((DATA.map.tiles || []).find((t) => t.code === c) || {}).name || c;
@@ -2312,7 +2350,7 @@ function wireResults() {
     }
     if (t.dataset.feereset) { UI.feeChange = -0.5; UI.feeTarget = "all"; feeTest(); }
     if (HERO.includes(t.dataset.model)) {
-      UI.model = t.dataset.model; UI.detail = UI.model === "fees" ? UI.fee : UI.model; UI.pins = {};
+      UI.model = t.dataset.model; UI.detail = runOf(UI.model); UI.pins = {};
       body.querySelectorAll("[data-model]").forEach((x) => x.setAttribute("aria-pressed", x === t));
       $("knobs").innerHTML = knobsHtml(UI.b);
       drawTornado();
