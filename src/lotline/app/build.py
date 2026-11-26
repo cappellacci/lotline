@@ -49,6 +49,10 @@ PLACEHOLDERS = (
     "__REPO_URL__",
     "/*__LOTLINE_AGGREGATE__*/",
     "/*__LOTLINE_DASHBOARD__*/",
+    *(
+        f"__{k}__"
+        for k in ("ORIGIN_YEAR", "WINDOW", "WINDOW_WORDS", "REFORM_YEAR", "GAP_SENTENCE", "PACE_YEARS")
+    ),
 )  # every slot `render` fills: a template that loses one fails the build instead of shipping without it
 
 # Picker order and plain-language group labels for `results_meta.state_role` (#310 Q4).
@@ -389,9 +393,58 @@ def _json(x) -> str:
     return json.dumps(x, separators=(",", ":"), ensure_ascii=False, allow_nan=False).replace("</", "<\\/")
 
 
-def render(data: dict, template: str | None = None, dashboard: str | None = None) -> str:
+def page_years(bundles: Iterable[dict] = ()) -> dict[str, str]:
+    """The years the page's fixed text names (`__ORIGIN_YEAR__` and the other year slots in the template).
+
+    Origin and window come from the bundles, so the words match the numbers shown; with no bundle, from
+    config (results_origin_year, D-061's lead and horizon). Bundles with different origins or windows stop the
+    build, since one sentence can't describe both. The recent-pace years are the baseline's `level_years`
+    ending at the origin. By hand: origin 2025, lead 1, horizon 5, level 5 -> 2027–2031, reform year 2027,
+    2026 in between, pace 2021–2025.
+    """
+    from lotline.config import load_params
+    from lotline.model import baseline
+
+    seen = set()
+    for b in bundles:
+        origin = int(b["meta"]["origin_year"])
+        multi = [
+            str(r["period"]) for r in b.get("totals") or [] if re.fullmatch(r"\d{4}-\d{4}", str(r["period"]))
+        ]
+        seen.add((origin, multi[0] if multi else baseline.window_label(origin)))
+    if len(seen) > 1:
+        raise ValueError(f"bundles disagree on origin year and window: {sorted(seen)}; rebuild them together")
+    if seen:
+        ((origin, window),) = seen
+    else:
+        origin = int(load_params("aggregate")["results_origin_year"].value)
+        window = baseline.window_label(origin)
+    first, last = (int(y) for y in window.split("-"))
+    gap = list(range(origin + 1, first))
+    level = int(load_params("baseline")["level_years"].value)
+    gap_sentence = ""
+    if gap:
+        span = str(gap[0]) if len(gap) == 1 else f"{gap[0]}\u2013{gap[-1]}"
+        one = len(gap) == 1
+        gap_sentence = (
+            f" {span} {'falls' if one else 'fall'} in between and {'is' if one else 'are'} not reported."
+        )
+    return {
+        "ORIGIN_YEAR": str(origin),
+        "WINDOW": f"{first}\u2013{last}",
+        "WINDOW_WORDS": f"{first} to {last}",
+        "REFORM_YEAR": str(first),
+        "GAP_SENTENCE": gap_sentence,
+        "PACE_YEARS": f"{origin - level + 1}\u2013{origin}",
+    }
+
+
+def render(
+    data: dict, template: str | None = None, dashboard: str | None = None, years: dict[str, str] | None = None
+) -> str:
     """The page HTML with `data` embedded. `</` is escaped so the JSON can't close its script tag.
 
+    `years` fills the page's year slots (`page_years`; from config when not given).
     `dashboard` is the data dashboard's own page (lotline.dashboard.render). The page embeds only whether it
     exists; `build_app` writes it to DASHBOARD_FILE, which the page loads when the reader opens the Data tab
     (nightly review, 2026-11-25: embedded, it was 4 of the page's 4.7 MB).
@@ -401,6 +454,8 @@ def render(data: dict, template: str | None = None, dashboard: str | None = None
     if missing:
         raise ValueError(f"template is missing {missing}")
     blob = _json(data)
+    for key, value in (years if years is not None else page_years()).items():
+        page = page.replace(f"__{key}__", html.escape(value))
     styles = font_faces() + "\n" + (IDENTITY / "tokens.css").read_text(encoding="utf-8")
     return (
         page.replace("/*__LOTLINE_TOKENS__*/", styles)
@@ -450,7 +505,7 @@ def build_app(
         from lotline.dashboard.render import render as render_dashboard
 
         dashboard = fold_dashboard(render_dashboard(summary))
-    html = render(payload(bundles, generated, summary), dashboard=dashboard)
+    html = render(payload(bundles, generated, summary), dashboard=dashboard, years=page_years(bundles))
     out = Path(out_dir)
     folder = out / STATE_DIR
     folder.mkdir(parents=True, exist_ok=True)

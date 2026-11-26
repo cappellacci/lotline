@@ -271,6 +271,7 @@ def from_acs(
 # ---- `lotline fetch --source eligible` -----------------------------------------------------------------
 
 SOURCE = "eligible"
+READS = ("jurisdictions", "acs_geo_year", "parcels")  # `lotline fetch` order (registry.fetch_order)
 # ACS, jurisdictions' inputs, and the 2020 code files and housing-unit parts used to split places
 MANIFEST_SOURCES = ["census_acs5", "census_bps_place_annual", "census_dec_pl", "census_geo_codes"]
 

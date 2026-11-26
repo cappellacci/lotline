@@ -88,3 +88,14 @@ def test_tract_csv_columns_are_mapped(tmp_path):
 def test_geo_codes_cannot_collide_across_levels():
     df = pd.DataFrame({"geo": ["county:27053", "zip5:27053"], "year": [2025, 2025]})
     assert_conforms(df, "market_geo_year")  # same digits, different levels: both allowed
+
+
+@pytest.mark.parametrize("renamed", ["HPI", "HPI with 2000 base", "Annual Change (%)", "Year", "FIPS code"])
+def test_a_renamed_column_stops_instead_of_dropping_the_index(renamed):
+    raw = pd.DataFrame(
+        {"FIPS code": ["27053"], "Year": ["2020"], "HPI": ["150"], "HPI with 2000 base": ["200"],
+         "Annual Change (%)": ["5"]}
+    )  # fmt: skip
+    assert fhfa.to_canonical(raw, "county").loc[0, "hpi_base2000"] == 200
+    with pytest.raises(ValueError, match="missing column"):
+        fhfa.to_canonical(raw.rename(columns={renamed: renamed + " (new)"}), "county")

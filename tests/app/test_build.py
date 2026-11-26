@@ -282,7 +282,11 @@ def test_model_page_section_three_has_a_selector_and_an_adu_deep_dive(tmp_path):
     assert 'id="adu-heldout"' in adu and 'id="adu-deep"' in adu
     assert 'if (page === "trust") { drawTornado(); drawDeepDive(); }' in html  # loads every state on open
     deep = html[html.index("async function drawDeepDive") :]
-    for part in ("b.adu_baseline", "placeTypeChart(b)", "Statewide totals, 2027–2031"):
+    for part in (
+        "b.adu_baseline",
+        "placeTypeChart(b)",
+        'Statewide totals, ${AGG.windowLabel(bs[0]) || "the five forecast years"}',
+    ):
         assert part in deep, part
 
 

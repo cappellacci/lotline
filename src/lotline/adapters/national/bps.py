@@ -79,6 +79,37 @@ def _header_index(row1: list[str], row2: list[str]) -> dict[str, int]:
     return {f"{a.strip()} {b.strip()}".strip(): i for i, (a, b) in enumerate(zip(row1, row2, strict=False))}
 
 
+BLOCK_LABELS = ["1-unit", "2-units", "3-4 units", "5+ units"]
+# the row-1 label of each Bldgs/Units/Value triple; it sits above the "Units" cell
+BLOCK_LABELS += [f"{b} rep" for b in BLOCK_LABELS]
+
+
+def _count_block_start(row1: list[str], row2: list[str]) -> int:
+    """Position of the first count column, checked against the header so a layout change fails loudly.
+
+    The counts are read as the last 24 cells of each row (place names can hold commas, which shifts every
+    column after the name), so the header must end with exactly those 24 columns in the documented order.
+    """
+    start = len(row2) - len(NUMERIC)
+    want2 = ["Bldgs", "Units", "Value"] * len(BLOCK_LABELS)
+    got2 = [c.strip() for c in row2[start:]]
+    above = [start + 1 + 3 * i for i in range(len(BLOCK_LABELS))]
+    got1 = [row1[i].strip() if i < len(row1) else "" for i in above]
+    if start < 0 or got2 != want2 or got1 != BLOCK_LABELS:
+        raise ValueError(
+            "BPS header layout changed: expected the file to end with Bldgs/Units/Value for "
+            f"{', '.join(BLOCK_LABELS)}; got {list(zip(got1, got2[::3], strict=False))}"
+        )
+    return start
+
+
+def _count(value: str, column: str, row: list[str]) -> int:
+    v = value.strip()
+    if not v:
+        raise ValueError(f"BPS row has a blank {column} cell (unknown is not zero): {row[:3]}")
+    return int(float(v))
+
+
 def parse(text: str, year: int) -> pd.DataFrame:
     """Parse one annual BPS place file into raw-but-typed rows (all states in the region)."""
     rows = list(csv.reader(io.StringIO(text)))
@@ -87,11 +118,15 @@ def parse(text: str, year: int) -> pd.DataFrame:
     months_at = head["Number of Months Rep"]
     fips_place_at = head.get("FIPS Place Code")
     fips_mcd_at = head.get("FIPS MCD Code")
+    width = len(rows[1])
+    _count_block_start(rows[0], rows[1])
 
     out = []
     for r in rows[2:]:
-        if len(r) < name_at + 25 or not r[1].strip():
+        if len(r) < 2 or not r[1].strip():
             continue  # blank spacer line
+        if len(r) < width:
+            raise ValueError(f"BPS {year} row has {len(r)} columns, header has {width}: {r[:3]}")
         nums = r[-24:]
         out.append(
             {
@@ -103,7 +138,7 @@ def parse(text: str, year: int) -> pd.DataFrame:
                 # names can contain commas, so take everything between the name column and the numbers
                 "name": ",".join(r[name_at:-24]).strip().strip(","),
                 "months_reported": int(r[months_at].strip() or 0),
-                **{c: int(float(v.strip() or 0)) for c, v in zip(NUMERIC, nums, strict=True)},
+                **{c: _count(v, c, r) for c, v in zip(NUMERIC, nums, strict=True)},
             }
         )
     df = pd.DataFrame(out)

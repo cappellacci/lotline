@@ -83,6 +83,7 @@ VERSION = "1.0"
 SOURCE = "franklin_auditor"
 NAME = "franklin_permits"
 TABLE = "permits"
+READS = ("parcels",)  # `lotline fetch` runs the parcel rolls first (registry.fetch_order)
 BASE_URL = "https://apps.franklincountyauditor.com/Outside_User_Files"
 LANDING_URL = "https://auditor.franklincountyohio.gov/Auditor/FTP"
 LICENSE = "Franklin County Auditor public records (disclaimer: 'as is'; no reuse terms stated)"

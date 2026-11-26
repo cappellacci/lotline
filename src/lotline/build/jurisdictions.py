@@ -24,6 +24,8 @@ from lotline.io import DataStore
 from lotline.schemas import validate
 
 SOURCE = "jurisdictions"
+READS = ("bps_place_year",)  # `lotline fetch` order (registry.fetch_order)
+RERUN_AFTER = ("parcels",)  # data tiers come from the parcels, which need this list first
 MANIFEST_SOURCES = [
     bps.SOURCE,
     decennial.SOURCE,

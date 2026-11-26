@@ -70,3 +70,28 @@ def test_every_window_label_call_on_b_sits_in_a_function_that_takes_b():
         if "windowLabel(b)" in body and "b" not in [p.split("=")[0].strip() for p in params.split(",")]:
             bad.append(name)
     assert not bad, f"windowLabel(b) used where no `b` parameter exists: {bad}"
+
+
+def test_fixed_page_text_takes_its_years_from_the_bundles():
+    """The page's fixed sentences (time line, the question, recent pace, chart labels) name no year of their
+    own: `page_years` fills them from the bundles, by hand origin 2025, lead 1, horizon 5, level 5 ->
+    2027–2031, reform year 2027, 2026 in between, pace 2021–2025. A later origin moves every one."""
+    doc = json.loads(FIXTURE.read_text())
+    years = build.page_years([doc])
+    assert years == {
+        "ORIGIN_YEAR": "2025", "WINDOW": "2027–2031", "WINDOW_WORDS": "2027 to 2031",
+        "REFORM_YEAR": "2027", "GAP_SENTENCE": " 2026 falls in between and is not reported.",
+        "PACE_YEARS": "2021–2025",
+    }  # fmt: skip
+    assert build.page_years([]) == years  # no bundle: config gives the same years
+    template = build.TEMPLATE.read_text()
+    static = template[: template.index("<script")]
+    for y in ("2025", "2026", "2027", "2031", "2021–2025"):
+        assert f"<b>{y}</b>" not in static and f"over {y}" not in static, y
+    later = {**doc, "meta": {**doc["meta"], "origin_year": 2026}, "totals": [
+        {**r, "period": "2028-2032"} if "-" in str(r["period"]) else r for r in doc["totals"]]}  # fmt: skip
+    html = build.render(build.payload([later], "t"), years=build.page_years([later]))
+    assert "permits through <b>2026</b>" in html and "five years <b>2028–2032</b>" in html
+    assert "over 2022–2026" in html and "Net new homes 2028 to 2032" in html and "__WINDOW__" not in html
+    with pytest.raises(ValueError, match="disagree"):
+        build.page_years([doc, later])
