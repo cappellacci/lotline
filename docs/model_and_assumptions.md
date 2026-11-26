@@ -1096,7 +1096,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 | `adu_ref_home_value_usd` | 519,222 | fixed | USD (2025) | scripts/dev/adu_reference.py: ACS 2015-2019 B25077 median home value, Portland city OR, CPI-U to 2025 dollars |
 | `adu_ref_mortgage_rate` | 3.99 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py: FRED MORTGAGE30US annual means (market_geo_year.mortgage_rate), mean of 2015-20… |
 | `adu_calibration_rent_low_usd` | 1,204 | fixed | USD per month (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percen… |
-| `adu_calibration_rent_high_usd` | 1,826 | fixed | USD per month (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th perce… |
+| `adu_calibration_rent_high_usd` | 1,822 | fixed | USD per month (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th perce… |
 | `adu_calibration_value_low_usd` | 218,001 | fixed | USD (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 5th percen… |
 | `adu_calibration_value_high_usd` | 589,593 | fixed | USD (2025) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): eligible-parcel-weighted 95th perce… |
 | `adu_calibration_rate_low` | 2.96 | fixed | percent (30-year fixed) | scripts/dev/adu_reference.py --fit-set (D-060, on D-096/D-097's fit set): lowest annual mean of FRED MORTGAGE… |

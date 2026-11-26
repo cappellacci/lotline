@@ -36,6 +36,7 @@ import pandas as pd
 
 from lotline.config import load_undercount
 from lotline.io import DataStore, offline
+from lotline.model import adu_fit_set as fs
 from lotline.model import adu_owner as ao
 from lotline.model import adu_types as ty
 from lotline.model import calibrate_adu as cal
@@ -79,15 +80,8 @@ def units_table(store, st: str) -> pd.DataFrame:
     return ty.units_table(store, st)
 
 
-def type_table(store) -> pd.DataFrame:
-    """Every jurisdiction's raw type. Only Census places can be a core city; townships and unincorporated
-    county areas in a metro are suburbs (D-088; `adu_types.raw_types`)."""
-    out = []
-    for st in R.STATES:
-        u = units_table(store, st.lower())
-        u["type_raw"] = u["geoid"].astype(str).map(ty.raw_types(u))
-        out.append(u)
-    return pd.concat(out, ignore_index=True)
+type_table = fs.type_table  # D-088's raw types (now library code)
+attach = fs.attach
 
 
 def source_table(store, places) -> pd.DataFrame:
@@ -124,10 +118,6 @@ def source_table(store, places) -> pd.DataFrame:
         yrs = p.loc[p["source"] == top, "issue_year"]
         rows.append({"geoid": pl.geoid, "main_source": top, "source_kind": kind(top, int(yrs.median()))})
     return pd.DataFrame(rows)
-
-
-def attach(places, types: dict, terms=ty.TERMS):
-    return [ty.with_types(p, ty.indicators(types.get(p.geoid, ty.REFERENCE), terms)) for p in places]
 
 
 # ---------------------------------------------------------------------------------------------------------

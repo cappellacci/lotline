@@ -55,34 +55,33 @@ from lotline.build import eligible as eligible_rule
 from lotline.config import load_params, load_state
 from lotline.io import DataStore, offline
 from lotline.model import calibrate_adu as cal
-from lotline.model import estimate_adu
 from lotline.model import joint_refit as jr
 from lotline.model import score as sc
 from lotline.model import undercount as uc
+from lotline.model.adu_fit_set import (  # noqa: F401  the fit set (D-079), now library code; other scripts read R.<name>
+    D053,
+    MIN_PERMITS,
+    ROCHESTER,
+    ROLLS,
+    ST_PAUL,
+    STATES,
+    WINDOW,
+    YEAR_LIMITS,
+    acs_lots,
+    all_places,
+    candidates,
+    d053_places,
+    fit_set,
+    limit_years,
+)
 from lotline.model.scenarios import adu
 
-STATES = ("MN", "NC", "OH", "TX", "OR")
-WINDOW = range(2016, 2026)
 TARGET_YEARS = range(2021, 2025)  # D-075: ADU permits a year over 2021-2024
 TIER2_LAST = 2024  # the tier-2 city's counts used to update: its fit years through the target window
-ST_PAUL, ROCHESTER = "2758000", "2754880"
-MIN_PERMITS = 1000  # D-074 step 2
 TOP_PLACES = 20  # D-075 tier 1
 SEED = 20261111
 DRAWS = 20_000
 Z_FIELD = 1.645  # the field rows' 5th and 95th percentiles (D-079)
-YEAR_LIMITS = {
-    "4805000": (2016, 2023),
-    "4865000": (2021, 2025),
-}  # Austin's R-102 flag stops; SA's file starts
-# D-053's fit set (D-039's four states plus Portland and Bend): the places that are not "new" for test A.
-D053 = {
-    "TX": {"4805000", "4865000"},
-    "NC": {"3743480", "3741960", "3714700", "3733120", "3728000", "37063"},
-    "OH": {"3915000"},
-    "OR": {"4159000", "4105800"},
-}
-ROLLS = Path(__file__).resolve().parents[2] / "config" / "validation" / "adu_roll_counts.csv"
 
 
 def log(msg: str) -> None:
@@ -101,50 +100,6 @@ def state_law(rows: pd.DataFrame) -> pd.Series:
     return rows["reform_id"].astype(str).str.startswith("NC-SL") | comp.str.match(r"^(SB 1051|HB 2001)")
 
 
-def d053_places(st: str) -> set[str]:
-    if st == "MN":  # every coded MN place but St. Paul (D-039's MN set) ...
-        r = adu.load_reforms("MN")
-        # ... less Rochester, whose permit source came after D-053 (#367): D-053's MN fit held 42 places
-        # (reports/adu-d053-fit/run-2026-11-06-log.txt), and Rochester is the 43rd
-        return set(r.loc[r["theme"] == "adu", "jurisdiction_geoid"]) - {ST_PAUL, ROCHESTER}
-    return D053.get(st, set())
-
-
-def candidates(st: str, store) -> tuple[list[str], set[str]]:
-    """(candidate GEOIDs, D-053 places): D-053's places plus every place with 1,000+ permits in one
-    ADU-flagging, fit-eligible permit source."""
-    p = cal.drop_sources(store.read(st, "permits"), [(s, None, None) for s in uc.out_of_fit()])
-    flagging = p.loc[adu._is_adu(p), "source"].unique()
-    q = p[p["source"].isin(flagging) & p["jurisdiction_geoid"].notna()]
-    n = q.groupby(["jurisdiction_geoid", "source"]).size()
-    big = {g for (g, _), v in n.items() if v >= MIN_PERMITS}
-    old = d053_places(st)
-    return sorted((big | old) - {ST_PAUL}), old
-
-
-def limit_years(pl: cal.PlaceData) -> cal.PlaceData | None:
-    lo, hi = YEAR_LIMITS.get(pl.geoid, (min(WINDOW), max(WINDOW)))
-    return jr.subset_years(pl, range(lo, hi + 1))
-
-
-def fit_set(st: str, store, undercount="table", drop=()) -> tuple[list[cal.PlaceData], set[str]]:
-    geoids, old = candidates(st, store)
-    pls = cal.place_data(
-        st, store, geoids, WINDOW, counts=cal.count_settings(), undercount=undercount, drop=drop
-    )
-    pls = [q for q in (limit_years(pl) for pl in pls) if q is not None and q.geoid != ST_PAUL]
-    return pls, {pl.geoid for pl in pls if pl.geoid not in old}
-
-
-def all_places(store, undercount="table", drop=()) -> tuple[list[cal.PlaceData], set[str]]:
-    out, new = [], set()
-    for st in STATES:
-        pls, nw = fit_set(st, store, undercount, drop)
-        out += pls
-        new |= nw
-    return out, new
-
-
 # ---------------------------------------------------------------------------------------------------------
 # Tier inputs
 # ---------------------------------------------------------------------------------------------------------
@@ -159,21 +114,6 @@ def _central() -> dict:
 def _field_counts() -> pd.DataFrame:
     every = pd.concat([_reforms(s) for s in adu.REFORM_STATES], ignore_index=True)
     return adu.field_restrict_counts(every, pd.Timestamp.today().normalize())  # as place_years
-
-
-def acs_lots(st: str, store, pl: cal.PlaceData) -> np.ndarray:
-    """Tier 0's lots: ACS one-unit detached homes (`eligible.from_acs`, remainders permit-level) each year,
-    the newest vintage <= the year, else the earliest later one (as `place_years`)."""
-    juris = store.read(st, "jurisdictions")
-    rows = estimate_adu.permit_acs_rows(st, store, juris)
-    rows = rows[(rows["theme"] == "adu") & (rows["jurisdiction_geoid"] == pl.geoid)]
-    if rows.empty:
-        raise ValueError(f"{pl.name}: no ACS lots")
-    out = []
-    for y in pl.years:
-        r = rows.assign(after=rows["year"] > y, gap=(rows["year"] - y).abs()).sort_values(["after", "gap"])
-        out.append(float(r["eligible_parcels"].iloc[0]))
-    return np.asarray(out)
 
 
 @functools.cache

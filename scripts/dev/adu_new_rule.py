@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """D-099: profile of the first-years share ν, and its held-out check, on the D-096 rows.
 
-    PYTHONPATH=<checkout with the D-096 rows>/src python scripts/dev/adu_refit_fixed_rows.py \
-        adu_new_rule.py --out reports/adu-new-rule --workers 7
+    uv run python scripts/dev/adu_new_rule.py --out reports/adu-new-rule --workers 7
+    uv run lotline calibrate --run --step adu_new_rule   # the main variant, from the registry
 
 Run only after D-099 is accepted. Steps (D-099):
 1. All-data profile over `adu_new_rule.NU_GRID`: each place's base scaled by ν in its first K years after f_i,
@@ -17,71 +17,36 @@ Offline; St. Paul out; nothing goes to config.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import math
-import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from lotline.config import load_params
+from lotline.calibrate import adu_steps as steps
 from lotline.io import DataStore, offline
+from lotline.model import adu_fit_set as fs
 from lotline.model import adu_new_rule as nr
 from lotline.model import adu_screen as scr
 from lotline.model import adu_types as ty
-from lotline.model import calibrate_adu as cal
 from lotline.model import joint_refit as jr
 from lotline.model import score as sc
 from lotline.model.scenarios import adu
 
-HERE = Path(__file__).resolve().parent
 RALEIGH = "3755000"
 
 
-def _load(name: str, file: str):
-    if name in sys.modules:
-        return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(name, HERE / file)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-GRID = _load("adu_mx_grid", "adu_mx_grid.py")  # its `places` builds the D-096 inputs with types
-
-
 def _cv():
-    p = load_params("adu")
-    return cal._cvals(p["adu_owner_occupancy_share"].value, p["adu_partial_rule_share"].value)
-
-
-def _zm(pz):
-    d = np.array([ty.type_d(p) for p in pz])
-    return d[:, [j for j in range(d.shape[1]) if d[:, j].any()]]
+    return steps._cv()
 
 
 def profile(pz, first, k=nr.K) -> pd.DataFrame:
-    cv, zm = _cv(), _zm(pz)
-    rows = []
-    for nu in nr.NU_GRID:
-        f = ty._maximize(scr.prepare(nr.scaled_all(pz, nu, first, k), cv), zm)
-        rows.append({"nu": nu, "theta": math.exp(f.lt), "alpha": math.exp(f.la), "core": float(f.b[0]),
-                     "loglik": f.loglik})  # fmt: skip
-    return pd.DataFrame(rows)
+    return steps.nu_profile(pz, first, nr.NU_GRID, k)
 
 
-def interval(prof: pd.DataFrame) -> dict:
-    top = prof["loglik"].max()
-    inside = prof[2 * (top - prof["loglik"]) <= cal.CHI2_90]["nu"]
-    return {
-        "nu": float(prof.loc[prof["loglik"].idxmax(), "nu"]),
-        "low": float(inside.min()),
-        "high": float(inside.max()),
-    }
+interval = steps.nu_interval
 
 
 def held_out_one(args) -> dict:
@@ -128,7 +93,7 @@ def main() -> None:
     a.out.mkdir(parents=True, exist_ok=True)
     store = DataStore()
     with offline.offline_build(store):
-        pz = GRID.places(store)
+        pz = fs.d096_places(store)
     rows = pd.concat([adu.load_reforms(st) for st in ("MN", "NC", "OH", "TX", "OR")], ignore_index=True)
     first = nr.first_allowing_year(rows)
     first = {g: f for g, f in first.items() if g in {p.geoid for p in pz}}

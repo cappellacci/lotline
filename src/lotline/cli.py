@@ -253,7 +253,11 @@ def _calibrate(args: argparse.Namespace) -> int:
                 print(f"{r['step']:24} {r['status']}")
             else:
                 d = "" if r["rel_diff"] is None else f"{100 * r['rel_diff']:.2f}%"
-                print(f"{r['step']:24} {r['name']:48} config {r['config']}  new {r['new']:.6g}  diff {d}")
+                n = r["new"] if isinstance(r["new"], str) else f"{r['new']:.6g}"
+                same = "  (identical)" if r.get("same") else ""
+                if "bounds_diff" in r:
+                    same += f"  low/high diff {100 * r['bounds_diff']:.2f}%"
+                print(f"{r['step']:24} {r['name']:48} config {r['config']}  new {n}  diff {d}{same}")
         if args.write:
             print("wrote config and the lock")
     if args.write_lock:

@@ -41,6 +41,7 @@ import pandas as pd
 
 from lotline.config import load_params
 from lotline.io import DataStore, offline
+from lotline.model import adu_fit_set as fs
 from lotline.model import adu_owner as ao
 from lotline.model import adu_terms as at
 from lotline.model import calibrate_adu as cal
@@ -77,41 +78,11 @@ AGE_CENTER, AGE_SCALE = PA["adu_age_share_center"], PA["adu_age_share_scale"]
 
 
 def b25034(store, st: str) -> pd.DataFrame:
-    """Units built before 1960 and all units per (geo, end_year), held-out rows removed. The columns are named
-    `owner` (the part) and `total` because D-084's `owner_rows` reads those names."""
-    a = holdout.apply_acs(store.read(st, "acs_geo_year"), st)
-    a = a[a["table_id"] == "B25034"]
-    lab = a["label"].astype(str).str.replace(":", "", regex=False).str.strip().str.lower()
-    old = lab.map(lambda s: any(k in s for k in OLD_HOMES))
-    tot = lab.isin(["total", "estimate!!total"])
-    return pd.DataFrame(
-        {
-            "owner": a[old].groupby(["geo", "end_year"])["estimate"].sum(),
-            "total": a[tot].groupby(["geo", "end_year"])["estimate"].sum(),
-        }
-    ).dropna()
+    """Pre-1960 units (`owner`) and all units (`total`) per (geo, end_year) (`adu_fit_set.b25034`)."""
+    return fs.b25034(holdout.apply_acs(store.read(st, "acs_geo_year"), st))
 
 
-def age_table(store, items: list[tuple[str, str, str]]) -> pd.DataFrame:
-    rows = []
-    for st in sorted({s for s, _, _ in items}):
-        acs = b25034(store, st)
-        juris = store.read(st, "jurisdictions")
-        info = juris.set_index(juris["geoid"].astype(str))
-        for s, g, name in items:
-            if s != st:
-                continue
-            kind = str(info.at[g, "kind"]) if g in info.index else "place"
-            county = str(info.at[g, "county_geoid"]) if g in info.index else ""
-            by_year, source = OWN.owner_rows(st, g, kind, county, acs, juris)
-            row = {"state": st, "geoid": g, "name": name, "kind": kind, "source": source}
-            for tag, end in (("fit", OWN.FIT_END), ("latest", OWN.LATEST)):
-                share, year = ao.vintage_share(by_year, end)
-                row[f"share_{tag}"], row[f"vintage_{tag}"] = share, year
-                row[f"z_{tag}"] = 0.0 if share is None else at.age_share_z(share, AGE_CENTER, AGE_SCALE)
-            row["flag"] = "no housing age: z = 0" if row["share_fit"] is None else ""
-            rows.append(row)
-    return pd.DataFrame(rows)
+age_table = fs.age_table
 
 
 # ---------------------------------------------------------------------------------------------------------

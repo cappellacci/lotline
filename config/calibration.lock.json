@@ -274,7 +274,7 @@
    "values": {
     "hazard:adu_calibration_rate_high": 6.81,
     "hazard:adu_calibration_rate_low": 2.96,
-    "hazard:adu_calibration_rent_high_usd": 1826,
+    "hazard:adu_calibration_rent_high_usd": 1822,
     "hazard:adu_calibration_rent_low_usd": 1204,
     "hazard:adu_calibration_value_high_usd": 589593,
     "hazard:adu_calibration_value_low_usd": 218001
