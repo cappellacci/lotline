@@ -2,7 +2,7 @@
 
 Drafted 2026-11-26 in the code-review thread (handoff 17) at Ben's request. Status: **step 1 adopted by Ben
 2026-11-26 ("Yes, adopt step 1"); steps 1.1–1.4 merged (#555, #556). Step 2 started by Ben 2026-11-26
-("Start plan step 2"; the ADU and MM moves go to their owners); step 3 not yet decided.** Every step here changes model code, so each one is done by that model's owner session (ADU =
+("Start plan step 2"; the ADU and MM moves go to their owners); step 3 started by Ben 2026-11-26 ("Start plan step 3").** Every step here changes model code, so each one is done by that model's owner session (ADU =
 "ADU statewide prediction methodology", MM = "Missing Middle Analysis refresh") or by WS-CORE for the shared
 parts. No step changes a number: each one must leave every results bundle the same, draw for draw.
 
@@ -122,6 +122,21 @@ Split by the steps the methodology already names, one module per step, each with
 
 **Done when:** no engine module is over about 600 lines, and the bundles are unchanged. Only worth doing if
 time remains before the Dec 16 deadline; steps 1 and 2 carry most of the scoring value.
+
+**Progress (2026-11-26).**
+
+- **Shared files, done (WS-CORE):** `results.py` 862 → 485 lines, with the context tables in
+  `model/results_tables.py` and the baseline, observed record and gut check in `model/results_baseline.py`
+  (`results.<name>` still works). `baseline.py` 667 → 570, with V1's benchmarks and scores in
+  `validation/baseline_scores.py` (only the backtest and the V5/V9 checks use them). Moves only; every
+  state's bundle hashed the same before and after.
+- **Guard:** `test_engine_modules_stay_small` in `tests/core/test_module_layout.py` fails if an engine module
+  passes 620 lines ("about 600"; `scenarios/fees.py` is 604) unless it is in `OVERSIZE` with its owner.
+  Fitting modules still in `MOVING` are not counted, since they are leaving `model/`.
+- **Owners' part (briefs sent):** ADU splits `scenarios/adu.py` (1,732) and `pooled_adu.py` (1,555, unless
+  step 2 moves it to `calibrate/adu/`). MM splits `calibrate_mm.py` and `estimate_mm.py` once they sit in
+  `calibrate/mm/`, as the list above says; the guard does not require it.
+- There is no step 4 in this plan.
 
 ## Order and owners
 

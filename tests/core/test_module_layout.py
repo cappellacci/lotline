@@ -115,3 +115,21 @@ def test_every_model_module_is_on_the_forecast_path_or_moving():
 def test_moving_list_only_shrinks():
     gone = sorted(set(MOVING) - model_modules())
     assert not gone, f"already moved out of model/; delete from MOVING: {gone}"
+
+
+# Step 3: no engine module over about 600 lines. The fitting modules in MOVING are leaving model/ and are
+# not counted. OVERSIZE lists the engine modules still over the limit, with the owner splitting them; the
+# owner deletes the line when the split lands, and a stale line fails.
+MAX_LINES = 620  # "about 600": scenarios/fees.py (604) fits
+OVERSIZE = {
+    "scenarios.adu": "ADU",
+    "pooled_adu": "ADU",
+}
+
+
+def test_engine_modules_stay_small():
+    lines = {m: len(MODULES[f"lotline.model.{m}"].read_text().splitlines()) for m in model_modules()}
+    big = {m: n for m, n in lines.items() if n > MAX_LINES and m not in MOVING}
+    assert set(big) <= set(OVERSIZE), f"over {MAX_LINES} lines; split by method step: {big}"
+    stale = sorted(m for m in OVERSIZE if m in lines and lines[m] <= MAX_LINES or m not in lines)
+    assert not stale, f"no longer over {MAX_LINES} lines (or gone); delete from OVERSIZE: {stale}"
