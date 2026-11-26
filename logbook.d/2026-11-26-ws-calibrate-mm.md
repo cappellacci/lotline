@@ -10,7 +10,7 @@
   - `mm_ramp_d100.py` reads φ from config instead of a hard-coded constant.
   - Tests: `tests/model/test_mm_fitsets.py` and `tests/calibrate/test_mm_steps.py`.
   - `docs/calibration.md`.
-- **Decision:** Config is not changed. φ's drift is Ben's call (phase 5 refits are his).
+- **Decision:** Ben, 2026-11-26: keep φ at 13.63; the drift is recorded, config is not changed.
 - **What Claude did and how it was checked:**
   - A parity run on real data compared the old scripts with the library. Both give the same C4 fit set (93
     places), level set (15), prior and year-spread places.

@@ -91,4 +91,4 @@ the same run.
 
 On 2026-11-26, three steps reproduced config exactly. φ did not. Run 9 fitted 941 pseudo-forecasts of 483
 places. Today's tables give 1,379 forecasts of 713 places under the same rules, and φ comes out at 13.03
-(12.39-13.70) against config's 13.63 (12.85-14.48). Config keeps run 9's value until Ben decides.
+(12.39-13.70) against config's 13.63 (12.85-14.48). Ben, 2026-11-26: keep 13.63; the drift is recorded, not written.
