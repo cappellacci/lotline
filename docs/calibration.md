@@ -33,8 +33,8 @@ value with config; `--write` puts the new values into config and rewrites the lo
 run (`src/lotline/calibrate/data_steps.py`):
 
 - three reproduce config exactly: the baseline ADU share, the ADU reference values and the mortgage rate;
-- the eligible-parcel proxy (D-056) does not: today's tables give k 0.971 and σ 0.106, against 0.998 and 0.060
-  from its 2026-11-06 run. Config keeps the older values until that change is accepted.
+- the eligible-parcel proxy (D-056) was refitted on 2026-11-26 with this command: k 0.971 and σ 0.106 (the
+  2026-11-06 run gave 0.998 and 0.060, before more parcel rolls were added). Config now holds the new values.
 
 The completion factors are a judgment informed by measured ratios, so they stay a recorded value.
 
