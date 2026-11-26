@@ -4,17 +4,17 @@
 # any parcel-based jurisdiction is never scaled.
 
 eligible_proxy_scale:
-  value: 0.998
-  low: 0.939
-  high: 1.059
+  value: 0.971
+  low: 0.873
+  high: 1.08
   unit: eligible parcels per ACS one-unit detached home
-  source: "Analysis plan D-056 (run 2026-11-06): k = geometric mean of real/proxy state-total ratios, theme ADU, MN NC TX OH OR; low/high = k x exp(-/+ sigma); reports/eligible-proxy/summary.json"
-  notes: "Leave-one-state-out held-out ratios 0.916-1.071, all inside D-056's [0.7, 1.4] band. Missing middle's own k is 1.136 (check theme, not used here); a theme-specific scale would need its own analysis-plan entry."
+  source: "Analysis plan D-056 (first run 2026-11-06; rerun 2026-11-26 with `lotline calibrate --run --step eligible_proxy`): k = geometric mean of real/proxy state-total ratios, theme ADU, MN NC TX OH OR; low/high = k x exp(-/+ sigma)"
+  notes: "Leave-one-state-out held-out ratios 0.810 (NC)-1.108 (TX), all inside D-056's [0.7, 1.4] band. Missing middle's own k is 1.106 (check theme, not used here); a theme-specific scale would need its own analysis-plan entry."
 
 eligible_proxy_sd:
-  value: 0.060
-  low: 0.060
-  high: 0.060
+  value: 0.106
+  low: 0.106
+  high: 0.106
   unit: log-scale standard deviation
-  source: "Analysis plan D-056 (run 2026-11-06): sample sd (n - 1) of log real/proxy ratios over the five states, theme ADU; reports/eligible-proxy/summary.json"
+  source: "Analysis plan D-056 (first run 2026-11-06; rerun 2026-11-26): sample sd (n - 1) of log real/proxy ratios over the five states, theme ADU"
   notes: "Each simulation draw multiplies a tier-3 state's ACS homes by eligible_proxy_scale x exp(eligible_proxy_sd x z), z standard normal, one z per state per draw. Fixed (not itself drawn)."

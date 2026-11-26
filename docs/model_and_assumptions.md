@@ -1067,8 +1067,8 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 
 | Parameter | Value | Range (low–high) | Unit | Source (short; full text in the file) |
 |---|---|---|---|---|
-| `eligible_proxy_scale` | 0.998 | 0.939–1.059 | eligible parcels per ACS one-unit detached home | Analysis plan D-056 (run 2026-11-06): k = geometric mean of real/proxy state-total ratios, theme ADU, MN NC T… |
-| `eligible_proxy_sd` | 0.06 | fixed | log-scale standard deviation | Analysis plan D-056 (run 2026-11-06): sample sd (n - 1) of log real/proxy ratios over the five states, theme… |
+| `eligible_proxy_scale` | 0.971 | 0.873–1.08 | eligible parcels per ACS one-unit detached home | Analysis plan D-056 (first run 2026-11-06 |
+| `eligible_proxy_sd` | 0.106 | fixed | log-scale standard deviation | Analysis plan D-056 (first run 2026-11-06 |
 
 **`config/params/fees.yaml`** (12 parameters)
 

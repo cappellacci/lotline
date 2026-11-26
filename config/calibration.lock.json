@@ -27,8 +27,8 @@
    "status": "current",
    "script": "scripts/dev/eligible_proxy_test.py (model/eligible_proxy.py)",
    "values": {
-    "eligible_proxy:eligible_proxy_scale": 0.998,
-    "eligible_proxy:eligible_proxy_sd": 0.06
+    "eligible_proxy:eligible_proxy_scale": 0.971,
+    "eligible_proxy:eligible_proxy_sd": 0.106
    }
   },
   "adu_reference_values": {

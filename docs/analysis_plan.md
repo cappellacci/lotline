@@ -8279,3 +8279,14 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   - Fee scenarios move with their base (OH benchmark P50 1,212 → 1,272); ADU and missing middle unchanged.
 - **Not rerun:** the V1 backtest. The change applies to backtests too; places with short histories are few
   in the V1 windows. Wisconsin's frozen V8 prediction is not rescored.
+
+### Deviation · 2026-11-26 · D-056 refitted on today's parcel rolls (calibrate phase 2)
+- **What changed:** `lotline calibrate --run --step eligible_proxy --write` recomputed D-056 from the cached
+  tables with the method unchanged. k = 0.971 (was 0.998), σ = 0.106 (was 0.060), so `eligible_proxy_scale` =
+  0.971 (low 0.873, high 1.080) and `eligible_proxy_sd` = 0.106.
+- **Why it moved:** parcel rolls added after 2026-11-06 changed the state totals; NC's real/proxy ratio fell to
+  0.820. The original script (`scripts/dev/eligible_proxy_test.py`) gives the same numbers on today's tables.
+- **Test still passes:** held-out ratios MN 1.088, NC 0.810, TX 1.108, OH 0.948, OR 1.081, all inside
+  [0.7, 1.4]. Missing middle's own k is now 1.106 (check theme, not used).
+- **Effect:** tier-3 states (ACS fallback) get about 3% fewer eligible lots and a wider draw range. Approved by
+  Ben in chat on 2026-11-26.
