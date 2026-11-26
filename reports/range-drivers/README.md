@@ -5,7 +5,7 @@ Nothing is rerun.
 
     uv run python scripts/dev/range_drivers.py --results reports/results --out reports/range-drivers
 
-- **Method:** `src/lotline/model/sensitivity.py`. It gives each input's share of the variance of
+- **Method:** `src/lotline/validation/sensitivity.py`. It gives each input's share of the variance of
   log(net homes + 1), Var(E[Y|X]) / Var(Y), estimated from the runs with 20 equal-count bins. The chance
   level is removed, so shares under about 3% are noise.
 - **Inputs:** each run's parameter draws, regenerated from the scenario's seed, plus the bundle's

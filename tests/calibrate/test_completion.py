@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lotline.model import completion
+from lotline.calibrate import completion
 
 
 def test_annual_totals_keeps_complete_years_only():

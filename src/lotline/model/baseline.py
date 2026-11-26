@@ -60,7 +60,7 @@ around that reflects lumpy years and the regional building cycle. Per place and 
    a_s of step 3 (a_s is the same factor with a 1-year recent window), never both.
 
 5. **Optional demand term** (spec C, analysis plan D-006): a per-place multiplier on the level from
-   `model.demand.multipliers`, passed as `multiplier`. None (spec B) leaves every level as it is.
+   `validation.demand.multipliers`, passed as `multiplier`. None (spec B) leaves every level as it is.
 """
 
 from __future__ import annotations
@@ -519,8 +519,8 @@ def forecast_draws(
 ) -> tuple[pd.DataFrame, np.ndarray]:
     """`baseline_forecast` plus its simulated counts: draws[i] are the draws behind row i of the table.
 
-    `multiplier` (place key -> factor, e.g. spec C's demand term from `model.demand.multipliers`) scales each
-    place's level, and its variance by the square, like a known constant; places not in it keep 1.
+    `multiplier` (place key -> factor, e.g. spec C's demand term from `validation.demand.multipliers`)
+    scales each place's level, and its variance by the square, like a known constant; places not in it keep 1.
     """
     p = params or load_params("baseline")
     lead, horizon, _ = window(origin, p)

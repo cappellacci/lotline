@@ -32,10 +32,10 @@ placeholder until a reform registry exists). Held-out rows never reach this modu
 holdout-filtered tables and re-checks them.
 
 **Specifications:** `spec="B"` is the adopted baseline (D-002). `spec="C"` (D-006) multiplies each place's
-level by the demand term from `model.demand` (county household growth and house-price change), with its
+level by the demand term from `validation.demand` (county household growth and house-price change), with its
 coefficients fitted per state on the fit years only; it needs each state's `demand.DemandInputs`.
 
-Run on real data: `uv run python -m lotline.model.backtest --state MN NC OH TX [--spec C]`.
+Run on real data: `uv run python -m lotline.validation.backtest --state MN NC OH TX [--spec C]`.
 """
 
 from __future__ import annotations
@@ -48,7 +48,8 @@ import pandas as pd
 
 from lotline.build import eligible
 from lotline.config import CONFIG_DIR, Parameter, load_params
-from lotline.model import baseline, demand
+from lotline.model import baseline
+from lotline.validation import demand
 
 EXCLUDED_CSV = CONFIG_DIR / "params" / "v1_excluded_places.csv"
 METHODS = ("model", *baseline.BENCHMARKS)

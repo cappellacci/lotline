@@ -122,7 +122,7 @@ cycle_history_years:
   source: "Census BPS place files start in 1992; 25 years before a 2016 origin reaches back to 1992 and spans the 2000s boom, the 2008 bust and the recovery. Chosen a priori."
   notes: "Year-to-year changes in the state's total permits (places present in both years) over this many years before the origin are resampled to simulate the regional cycle."
 
-# ---- V1 backtest (model/backtest.py) ----
+# ---- V1 backtest (validation/backtest.py) ----
 
 v1_fit_end_years_first:
   value: 2016
@@ -236,7 +236,7 @@ v1_min_eligible_parcels:
   source: "Ben's decision 5, 2026-10-14 (WS-ENGINE V1 report, PR #93): places with fewer than 20 eligible parcels dominated the error of every method"
   notes: "Scoring only: smaller places are still forecast and are rolled into their county for reporting. 0 scores every place (the original V1 run)."
 
-# ---- Spec C: two demand signals (model/demand.py; analysis plan D-006, pre-declared 2026-10-14) ----
+# ---- Spec C: two demand signals (validation/demand.py; analysis plan D-006, pre-declared 2026-10-14) ----
 
 household_growth_years:
   value: 5

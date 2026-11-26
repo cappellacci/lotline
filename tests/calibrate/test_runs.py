@@ -1,5 +1,6 @@
-"""Run folders as data (`model/runs.py`) and the results dashboard (`model/dashboard.py`), on small synthetic
-run folders shaped like a D-024 run (`estimate_mm.write`) and a D-025 run (`estimate_pooled_adu.stages`)."""
+"""Run folders as data (`calibrate/runs.py`) and the results dashboard (`calibrate/runs_dashboard.py`), on
+small synthetic run folders shaped like a D-024 run (`estimate_mm.write`) and a D-025 run
+(`estimate_pooled_adu.stages`)."""
 
 from __future__ import annotations
 
@@ -10,7 +11,8 @@ import pandas as pd
 import pytest
 import yaml
 
-from lotline.model import dashboard, runs
+from lotline.calibrate import runs
+from lotline.calibrate import runs_dashboard as dashboard
 
 
 def _write(folder, **tables):

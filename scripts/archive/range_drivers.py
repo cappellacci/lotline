@@ -7,7 +7,7 @@ For each state and scenario, the result is the five-year additional homes, net s
 bundle's runs (`results_draws`: lots × θ × pencil-out × completion × net-new × (1 − displacement), which
 reproduces the bundle's totals exactly). The inputs are each run's own parameter draws, regenerated from the
 scenario's configured seed (the same calls `adu.run`, `mm.run` and `fees.simulate` make), plus the
-aggregate draws the bundle records (completion, net-new, displacement). `model.sensitivity.first_order`
+aggregate draws the bundle records (completion, net-new, displacement). `validation.sensitivity.first_order`
 gives each input's share of the spread of log(homes + 1): log, because the ranges are multiplicative
 (P90 ÷ P10).
 
@@ -26,8 +26,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from lotline.model import sensitivity as sens
 from lotline.model.scenarios import adu, fees, mm
+from lotline.validation import sensitivity as sens
 
 SCENARIOS = ["adu", "missing_middle", "fees", "fees_local_half"]
 # Inputs that are a function of another input's draw, so they would be counted twice: the core-city term's

@@ -5,7 +5,7 @@
    "decision": "protocol \u00a75.10",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/completion_factors.py (model/completion.py)",
+   "script": "scripts/dev/completion_factors.py (calibrate/completion.py)",
    "values": {
     "aggregate:completion_factor_all": 0.93,
     "aggregate:completion_factor_multifamily": 0.8,
