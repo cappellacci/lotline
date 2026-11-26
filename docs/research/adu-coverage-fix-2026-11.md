@@ -79,7 +79,7 @@ The 35 "strong" rows were all read. These stay citywide, each with a note saying
 
 ## Flag counts, before → after
 
-`PYTHONPATH=src python scripts/dev/adu_coverage_audit.py` on the edited rows (fit rows / fit places in brackets):
+`PYTHONPATH=src python scripts/archive/adu_coverage_audit.py` on the edited rows (fit rows / fit places in brackets):
 
 | Flag | Before | After |
 |---|---|---|

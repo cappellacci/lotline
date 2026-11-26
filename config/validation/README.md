@@ -12,6 +12,6 @@ Hand-coded inputs for validation tests, each with a source. Nothing here is an o
 - `adu_roll_counts.csv`: second homes gained between two parcel rolls, per jurisdiction, copied from the roll
   comparisons already on `main` (`reports/nc/wake-roll-adu-diff.md`, `reports/oh/franklin-roll-adu-diff.json`).
   Unlike the files above, this one **is** scored: it is the observed side of D-074 test B (the roll check),
-  run by `scripts/dev/adu_joint_refit.py`. `sets_k` marks the city whose roll set a flag undercount k
+  read by `src/lotline/model/adu_fit_set.py` (`roll_towns`) and scored by `joint_refit.test_b_pass` in the `adu_joint` step. `sets_k` marks the city whose roll set a flag undercount k
   (Raleigh); test B leaves it out. `first_year`-`last_year` are the model years the roll window covers.
   These counts were published before D-079, so they are not a holdout.

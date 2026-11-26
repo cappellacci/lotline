@@ -1,7 +1,7 @@
 """Engine runs as data, for the results dashboard (`model/dashboard.py`).
 
 A run folder holds the CSVs a `--full` run writes (`scripts/dev/estimate_mm.py`, D-024;
-`scripts/dev/estimate_pooled_adu.py`, D-025) and a manifest, `run.yaml`: the model and its analysis-plan
+`scripts/archive/estimate_pooled_adu.py`, D-025) and a manifest, `run.yaml`: the model and its analysis-plan
 entry, a short description of the method, the data scope, the configuration, the status and, once someone has
 read the results, the reading. The run scripts write the manifest when they start and update it when they
 finish (`start_manifest`, `finish_manifest`); runs made before that have one written by hand from their logs

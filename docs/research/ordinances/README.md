@@ -22,25 +22,25 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
 - `tx-adu-lookups-todo.csv` and `tx-mm-lookups-todo.csv` (2026-10-23, Texas thread 12, S4/S5): places among
   Texas's 40 largest (Census 2020) whose ADU or missing-middle rules one read of the zoneomics code mirror did not
   settle, largest first, plus a line for the second-coder check of every flagged row in `config/reforms/tx.csv`.
-  Rows that were settled are coded by `scripts/dev/tx_rules_21_40.py`.
+  Rows that were settled are coded by `scripts/archive/tx_rules_21_40.py`.
 - `tx-fee-lookups-todo.csv` (2026-10-26, Texas thread 12, S6): water/sewer and impact fees per home for the four
   Texas cities with permit data and Houston, plus Austin's parkland and meter fees. Austin's water/wastewater
   impact fees and street impact fee are coded in `config/fees/tx.csv`.
 - **Status of the three Texas tables** (column `status`: open / partial / coded), updated 2026-10-27 from Ben's
   research workbook (`~/lotline-data/manual/texas/`, an agentic research run, kept out of the repo): Corpus
-  Christi's ADU rule and Austin HOME's dates are coded (`scripts/dev/tx_research_2026_10_27.py`), Carrollton
+  Christi's ADU rule and Austin HOME's dates are coded (`scripts/archive/tx_research_2026_10_27.py`), Carrollton
   and San Antonio are partial, everything else is still open.
 - `tx-workbook-2026-10-29.json` (Ben's second workbook run, with official PDFs in
   `~/lotline-data/manual/texas/Official-PDFs/`): 35 rule rows, 38 fee rows, notes on 34 earlier rows and tracker
-  updates, applied by `scripts/dev/tx_research_2026_10_29.py` (append only). After it: ADU 5 coded / 8 partial /
+  updates, applied by `scripts/archive/tx_research_2026_10_29.py` (append only). After it: ADU 5 coded / 8 partial /
   2 open, missing middle 20 / 4 / 8, fees 0 / 5 / 0. Changes it proposes to earlier rows are **not applied**: they
   are in `tx-corrections-2026-10-29.csv` (35 rows) for Ben to decide.
   - **Decided 2026-10-30** (`decision` column): 32 accepted, Denton's date kept with a note, College Station's
-    parking left as a note, Abilene kept at one home per lot. Applied by `scripts/dev/tx_corrections_2026_10_30.py`
+    parking left as a note, Abilene kept at one home per lot. Applied by `scripts/archive/tx_corrections_2026_10_30.py`
     (run after the 10-29 script), which also renames four rows whose effective year moved: San Antonio
     `TX-4865000-adu-2001` → `-2010`, Frisco `TX-4827684-adu-2021` → `-2019`, Laredo `TX-4841464-adu-1992` →
     `-2010`, College Station `TX-4815976-adu-2023` → `-2018`.
-- **Ben's own lookups (2026-10-30)**, applied by `scripts/dev/tx_ben_lookups_2026_10_30.py` (run after the
+- **Ben's own lookups (2026-10-30)**, applied by `scripts/archive/tx_ben_lookups_2026_10_30.py` (run after the
   corrections script):
   - Killeen overlay ADUs (passed 4-1, overlay only).
   - Lewisville cottages: adopted, now in force.
@@ -67,12 +67,12 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   - Rows the second coder agrees with get `coder_2` and `coder_agreement = agree` in `config/reforms/tx.csv`;
     disagreements are adjudicated.
   - **Reviewed 2026-10-30** (Ben's review pass, `second_coder = ben-review`; applied by
-    `scripts/dev/tx_second_coder_2026_10_30.py`):
+    `scripts/archive/tx_second_coder_2026_10_30.py`):
     - 2 rows agreed (Abilene ADU 2010, College Station ADU 2023).
     - 4 "partly" rows have their finding added to the notes.
     - 74 rows carry the reviewer's "could not independently confirm" note. They stay single-coder and flagged,
       because a check that could not read the source is not agreement.
-- **Ben's second batch (2026-10-30)**, applied by `scripts/dev/tx_ben_lookups_2026_10_30b.py` (run after the
+- **Ben's second batch (2026-10-30)**, applied by `scripts/archive/tx_ben_lookups_2026_10_30b.py` (run after the
   second-coder script):
   - League City's 2026 ADU row is back in force and by right.
   - Tyler's garage-apartment row is renamed `TX-4874144-adu-2010`.
@@ -130,14 +130,14 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
   - **Reviewed 2026-11-01** by Ben's second agent (Codex; `second_coder = codex-2026-11-01`; its working files,
     evidence register and PDFs are in `~/lotline-data/manual/nc/second_coder_2026-11-01/`): 8 yes, 44 partly,
     14 no, plus 5 supplemental rows (Goldsboro, New Bern, Concord missing middle). Applied by
-    `scripts/dev/nc_second_coder_2026_11_01.py`: the 8 agreed rows get `coder_2` and `coder_agreement = agree`;
+    `scripts/archive/nc_second_coder_2026_11_01.py`: the 8 agreed rows get `coder_2` and `coder_agreement = agree`;
     every reviewed row gets the finding in its notes; no coded value changes.
   - `nc-second-coder-decisions-2026-11-01.csv`: the 14 disagreements, one value-changing "partly" (Rocky Mount)
     and the 5 supplemental rows, each with a recommended action, for Ben to decide. Proposed tag `[predates]` in
     `coding_notes`: the rule was in force before the coded date and the first date is unknown, so the row is not
     an in-window event.
   - **Decided 2026-11-01** (Ben: accept the recommendations; keep Mint Hill's duplexes by right). Applied by
-    `scripts/dev/nc_second_coder_decisions_2026_11_01.py` (run after the review script): 15 rows adjudicated,
+    `scripts/archive/nc_second_coder_decisions_2026_11_01.py` (run after the review script): 15 rows adjudicated,
     of which 8 tagged `[predates]`; renamed `NC-3702080-adu-2021` → `-2014`, `NC-3741960-adu-2014` → `-2016`,
     `NC-3757500-adu-2005` → `-2004`; added Goldsboro ADU and duplex, New Bern 'no ADUs' and duplex, Concord
     duplex/triplex. The reviewer's Thomasville (Georgia) source was rejected; a Newbern, Tennessee PDF in its
@@ -146,7 +146,7 @@ Links marked `robots_allowed: false` were never fetched. Nothing here is coded i
 - `mn-mm-lookups-todo.csv` (2026-11-02, thread 13, M4): **Minnesota missing-middle fill-in table**, the 33 of the
   40 largest MN places with no coded missing-middle row, largest first, in the NC format. `notes` carries what
   the batch-1 record found, and `start_url` its link where there was one. Five rows were coded from the batch-1
-  records by `scripts/dev/mn_mm_batch1_2026_11_02.py`:
+  records by `scripts/archive/mn_mm_batch1_2026_11_02.py`:
   - St. Louis Park 2025, an in-window event (N-1 up to 3 homes; effective date from a search snippet, to confirm);
   - Duluth 2026, after the window (R-1 up to 4);
   - "one home" rows (`unit_cap = 1`) for Rochester (R-1, 2023 code), Brooklyn Park and Coon Rapids (2010

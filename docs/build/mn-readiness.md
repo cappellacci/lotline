@@ -53,7 +53,7 @@ What an engine thread needs from Minnesota, in one place. Details are in §2 and
 
 | Run | What MN adds | Run variants | Caveats |
 |---|---|---|---|
-| **D-025 ADU** (`src/lotline/model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py`) | 71 places: 43 with an in-window change (54 event rows), 28 "no ADUs" controls. Met Council covers every metro community; Minneapolis CCS covers Minneapolis | Main: all event rows. Sensitivities: without the 4 DATE UNCONFIRMED rows; without the 10 `[earliest-known]` rows | ADU flags start in 2014 (Met Council) and 2016 (Minneapolis), so the 2010–2013 events (Scott County townships, Hugo, Medina, Roseville, Lakeville) have no ADU-flagged pre-years. 12 event rows fall in 2025 and have almost no post-period; Sunfish Lake (2025-12-09) may fall just outside the window. Drop Minneapolis 2026 (partial) |
+| **D-025 ADU** (`src/lotline/model/pooled_adu.py`, `scripts/archive/estimate_pooled_adu.py`) | 71 places: 43 with an in-window change (54 event rows), 28 "no ADUs" controls. Met Council covers every metro community; Minneapolis CCS covers Minneapolis | Main: all event rows. Sensitivities: without the 4 DATE UNCONFIRMED rows; without the 10 `[earliest-known]` rows | ADU flags start in 2014 (Met Council) and 2016 (Minneapolis), so the 2010–2013 events (Scott County townships, Hugo, Medina, Roseville, Lakeville) have no ADU-flagged pre-years. 12 event rows fall in 2025 and have almost no post-period; Sunfish Lake (2025-12-09) may fall just outside the window. Drop Minneapolis 2026 (partial) |
 | **D-024 missing middle** (`src/lotline/model/estimate_mm.py`) | 100 BPS places of 10,000+; 3 in-window events: Minneapolis 2020-01-01, Richfield 2023-01-24, St. Louis Park 2025-03-28. Controls on evidence: Brooklyn Park (R-1), Coon Rapids, Rochester (R-1) | Main: the 3 events. Sensitivity: Minneapolis with the injunction windows (2022-06-15 to 07-26; 2023-11-04 to 2024-05-13) | Richfield's effective date is coded as passage; the true date is about a month later. Its pre-2023 rule (conditional duplexes on arterial lots) is a partial dose. St. Paul is excluded (V5) |
 | **V5 St. Paul** (#45, freeze **by Nov 17**) | `reports/mn/V5-stpaul-inputs.md` (#259): 55,269 eligible H1/H2 lots on the pre-window roll | — | Cap annual inputs at 2023. Disclose D-013's exposure in the freeze file |
 
@@ -103,7 +103,7 @@ covered-places list. Minneapolis's CCS permits cover Minneapolis. St. Paul never
 | Rules but no permit source | Duluth, Rochester, St. Cloud | Outstate: no record-level permits, so they can't enter |
 
 So Minnesota's 71 places stay the core of the D-025 panel. Today's estimate already uses the Twin Cities places
-(`scripts/dev/estimate_pooled_adu.py`, `metc_residential_permits`). This work adds no new place to it, but the
+(`scripts/archive/estimate_pooled_adu.py`, `metc_residential_permits`). This work adds no new place to it, but the
 109 covered places without a rule are the cheapest way to grow it: one lookup each.
 
 **Missing-middle estimate (D-024).** The outcome is BPS 2–4 unit homes, so **all 100 Minnesota BPS places of
@@ -137,8 +137,8 @@ So Minnesota's 71 places stay the core of the D-025 panel. Today's estimate alre
 uv run lotline fetch --state MN --source mngeo_parcels
 uv run lotline fetch --state MN --source jurisdictions
 uv run lotline fetch --state MN --source eligible
-uv run python scripts/dev/mn_readiness_counts.py
-uv run python scripts/dev/mn_second_coder_sheet.py
+uv run python scripts/archive/mn_readiness_counts.py
+uv run python scripts/archive/mn_second_coder_sheet.py
 ```
 
 - The rebuild ran on #261's branch, on top of `main` at 7fc54e5. `mngeo_parcels` read its raw cache
@@ -170,9 +170,9 @@ sheet's left-hand columns (our coding as sent is the sheet at 54e9727). Ben acce
 `mn-second-coder-decisions-2026-11-02.csv`, then worked the lookups himself, one place at a time. Every change is
 in a script, idempotent and in run order:
 
-1. `scripts/dev/mn_second_coder_2026_11_02.py`: the reviewer's findings appended as notes; 8 rows marked agree.
-2. `scripts/dev/mn_second_coder_decisions_2026_11_02.py`: the 62 decisions; writes the lookup list.
-3. `scripts/dev/mn_lookups_2026_11_02.py`: Ben's lookups (sources, dates and reasons are in each row's notes).
+1. `scripts/archive/mn_second_coder_2026_11_02.py`: the reviewer's findings appended as notes; 8 rows marked agree.
+2. `scripts/archive/mn_second_coder_decisions_2026_11_02.py`: the 62 decisions; writes the lookup list.
+3. `scripts/archive/mn_lookups_2026_11_02.py`: Ben's lookups (sources, dates and reasons are in each row's notes).
 
 | Outcome | Rows |
 |---|---|

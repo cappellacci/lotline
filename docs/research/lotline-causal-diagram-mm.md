@@ -422,7 +422,7 @@ Two data notes, now in the source's provenance:
 
 Ben raised this after §6.5.
 
-- **Script:** `scripts/dev/austin_permit_class_check.py`, with output in `reports/mm-d038/austin_check.csv`.
+- **Script:** `scripts/archive/austin_permit_class_check.py`, with output in `reports/mm-d038/austin_check.csv`.
 - **Sources:** the city's new-building permits by Census class (`austin_permits`), set beside BPS.
 - Nothing was fitted.
 
