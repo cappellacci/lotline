@@ -14,27 +14,27 @@
 # ---- The anchor ----
 
 mm_mature_hazard_ref:
-  value: 0.0010387
-  low: 0.0001316
-  high: 0.01939
+  value: 0.0016571
+  low: 0.0001361
+  high: 0.01898
   unit: new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1)
-  source: "Estimated, D-092 run 10, challenger C4 (Ben, 2026-11-15): M's likelihood with lumpy years (negative binomial, φ 13.63) and the C0 baseline, plus a lognormal prior from the always-allowed places' level θ_L (log-SD doubled for selection, D-092 §5); 93 places, 299 place-years, 90% profile-likelihood interval. §5's rule picks C4: it beats M (1.68 per 1,000) on held-out log score by 5 paired SE and passes the same §7 tests"
+  source: "Estimated, D-092 run 10, challenger C4 (Ben, 2026-11-15): M's likelihood with lumpy years (negative binomial, φ; refitted 2026-11-26 on φ 13.03, Ben: was 0.0010387 at φ 13.63) and the C0 baseline, plus a lognormal prior from the always-allowed places' level θ_L (log-SD doubled for selection, D-092 §5); 93 places, 299 place-years, 90% profile-likelihood interval. §5's rule picks C4: it beats M (1.68 per 1,000) on held-out log score by 5 paired SE and passes the same §7 tests"
   notes: "1.04 per 1,000 (0.13-19.4). With the half-way point at 4.0 years the five-year rate is 0.24 per 1,000 a year (D-055's was 0.10). §7 tests (run 11, reports/mm-d092/run11-tests-phi/): place coverage 0.78 (C4) and 0.84 (M) inside the 0.60-0.95 bar; roll check and leave-one-state-out pass; the no-reform floor misses only on Minnesota's total; new places (Houston only) and the placebo fail. Against no reform effect, M is only +5.0 (SE 3.4) held out: the counts can't clearly show the effect apart from project clustering (run 13). θ without Oregon 1.08. Replaces D-055's 0.12 per 1,000, whose ranges were too narrow (V9 Oregon: 34% of places above P90). Drawn lognormal: median at the estimate, log-SD (ln high - ln low) / 3.29 = 1.518."
 
 mm_place_effect_variance:
-  value: 0.0000061
-  low: 0.0000061
+  value: 6.1e-06
+  low: 6.1e-06
   high: 1.92
   unit: variance of a place's multiplier on the missing-middle hazard (gamma, mean 1)
-  source: "Estimated, D-092 run 10, C4 (alpha, 90% profile-likelihood interval), Ben 2026-11-15"
+  source: "Estimated, D-092 run 10, C4 (alpha, 90% profile-likelihood interval), Ben 2026-11-15; unchanged by the 2026-11-26 refit on φ 13.03"
   notes: "At the search's floor: once each year is lumpy (φ), the data show no extra place-to-place spread, so most draws give every place a multiplier of about 1. D-055 had 8.42 (2.80-32.4), which stood in for the lumpiness φ now carries. Drawn lognormal from the interval: median about 0, 5% of draws above 1.92."
 
 mm_year_spread_phi:
-  value: 13.63
-  low: 12.85
-  high: 14.48
+  value: 13.03
+  low: 12.39
+  high: 13.7
   unit: negative binomial size of a place's yearly 2-4 unit building count (variance = mean + mean^2 / φ)
-  source: "Estimated, D-092 run 9 (deviation (b)): 941 pseudo-forecasts of 483 unused MN, NC, OH and TX places, 2016 and 2021 origins, 90% profile-likelihood interval; used in C4's fit (run 10)"
+  source: "Estimated, D-092 run 9 (deviation (b)), refitted 2026-11-26 with lotline calibrate (Ben): 1,379 pseudo-forecasts of 713 unused MN, NC, OH and TX places on today's tables (run 9: 941 of 483, φ 13.63), 2016 and 2021 origins, 90% profile-likelihood interval; used in C4's fit (run 10)"
   notes: "Builders put up 2-4 unit buildings in clusters (run 13, Minneapolis corrected 2026-11-17: 39-44% of buildings are in projects of 3 or more), so a place's years are lumpy. By state: MN 7.4, NC 8.1, OH 8.1, TX 20 (the search's edge); by place type (run 12) not adopted. The scenario holds φ at its value (the interval is narrow) and draws each place-year's added buildings as Poisson(mean × g), g ~ Gamma(mean 1, variance 1/φ)."
 
 mm_units_per_project:
@@ -48,11 +48,11 @@ mm_units_per_project:
 # ---- Ramp after adoption ----
 
 mm_ramp_half_years:
-  value: 4.0
+  value: 4.5
   low: 1.0
   high: 6.0
   unit: years after adoption to reach half the mature hazard
-  source: "Estimated, D-092 run 10, C4 (profile likelihood on the grid 0.5-6.0), Ben 2026-11-15"
+  source: "Estimated, D-092 run 10, C4 (profile likelihood on the grid 0.5-6.0), Ben 2026-11-15; 4.5 since the 2026-11-26 refit on φ 13.03 (was 4.0)"
   notes: "Slow, and loosely pinned (1.0-6.0): with lumpy years the data put the effect later than D-055's 0.5 (the grid floor). D-055's note: the data could not place the ramp. θ and the half-way point trade off (D-054: leaving Wake Forest out gives 2.6 per 1,000 at half 6.0), so draw them together or hold the half-way point at its value, as V9 and D-051 do. Outside series suggest 1.5-5 years (Portland, Auckland, Houston). D-038 had 2.0 (1.5-2.5)."
 
 mm_ramp_slope_years:
