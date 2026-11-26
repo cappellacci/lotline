@@ -415,7 +415,11 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
     summary.write_text(json.dumps(SUMMARY))
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=summary).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', html, re.S)
-    dash = json.loads(m.group(1))
+    assert json.loads(m.group(1)) is True  # the page holds only a flag; the dashboard is its own file
+    script = (tmp_path / build.DASHBOARD_FILE).read_text()
+    assert script.startswith("LotlineDashboard(") and script.rstrip().endswith(");")
+    dash = json.loads(script.strip()[len("LotlineDashboard(") : -2])
+    assert "Zedland" not in html.split('id="lotline-dashboard"')[1][:200]  # not embedded in the page
     assert dash.startswith("<!doctype html>") and "Zedland" in dash  # the dashboard's own page, our summary
     assert _embedded(html)["data"]["by_state"]["ZZ"]["name"] == "Zedland"
     assert 'id="lotline-fold"' in dash and "--paper:" in dash  # restyled with the tokens, header hidden
@@ -435,7 +439,9 @@ def test_data_dashboard_is_embedded_when_its_summary_exists(tmp_path):
         assert kind in method, kind
     without = build.build_app([FIXTURE], out_dir=tmp_path / "b", data_summary=None).read_text()
     m = re.search(r'<script id="lotline-dashboard" type="application/json">(.*?)</script>', without, re.S)
-    assert json.loads(m.group(1)) is None
+    assert json.loads(m.group(1)) is False and not (tmp_path / "b" / build.DASHBOARD_FILE).exists()
+    build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None)  # rebuilt without one: the old file goes
+    assert not (tmp_path / build.DASHBOARD_FILE).exists()
 
 
 # ---------------------------------------------------------------------- section 3: how well it holds up
