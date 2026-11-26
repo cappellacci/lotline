@@ -123,6 +123,20 @@ def _unlisted(args: argparse.Namespace) -> int:
             "Config names GEOIDs the jurisdictions table lacks (a renamed or re-keyed place?): fix the GEOID"
         )
         print("in config, or add the place to local_jurisdictions.")
+    from lotline.adapters.national import bps
+
+    for state in [args.state.upper()] if args.state else all_states():
+        report = bps.read_rekeys(state, store)
+        for r in [] if report is None else report.itertuples():
+            print(
+                f"{state}  {r.old_geoid:<11} permits {r.first_year}-{r.last_year} moved to {r.new_geoid} "
+                f"({r.name}, BPS ID {r.bps_id})"
+            )
+        if report is not None and len(report):
+            print(
+                "Census gave these permit IDs a new GEOID; their history now sits under the new one. Check"
+            )
+            print("that config naming the old GEOID (holdouts, train_until, reforms, sources) is updated.")
     return 1 if found or blocking else 0
 
 

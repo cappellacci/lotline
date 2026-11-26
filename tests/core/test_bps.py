@@ -119,3 +119,38 @@ def test_a_layout_change_or_blank_count_stops_instead_of_shifting_or_zeroing():
     with pytest.raises(ValueError, match="columns, header has"):
         bps.parse("\n".join([head, label, short, *data[1:]]), 2024)
     assert n == len(data)
+
+
+def test_rekeys_lists_each_earlier_geoid_and_where_its_history_moved():
+    """Review item 2: a re-key moves a place's history to the latest GEOID; the report names each move."""
+    df = pd.DataFrame(
+        {
+            "year": [1991, 2010, 2015, 2016, 2024, 2020],
+            "bps_id": ["27533200"] * 5 + ["27000001"],
+            "geoid": ["2799999", "2718862", "2718862", "2718662", "2718662", "2700001"],
+            "name": ["Elko"] + ["Elko New Market"] * 4 + ["Steady town"],
+        }
+    )
+    got = bps.rekeys(df)
+    assert got.to_dict("records") == [
+        {
+            "bps_id": "27533200",
+            "name": "Elko New Market",
+            "old_geoid": "2718862",
+            "first_year": 2010,
+            "last_year": 2015,
+            "new_geoid": "2718662",
+        }
+    ]  # 1991 is before the ID era (IDs meant other places), and a steady ID is not listed
+    assert bps.rekeys(df.iloc[[5]]).empty
+
+
+def test_rekey_report_round_trips_through_the_interim_folder(tmp_path):
+    from lotline.io.store import DataStore
+
+    store = DataStore(tmp_path)
+    assert bps.read_rekeys("MN", store) is None
+    report = pd.DataFrame([{"bps_id": "1", "name": "X", "old_geoid": "2700002", "first_year": 2010,
+                            "last_year": 2012, "new_geoid": "2700003"}])  # fmt: skip
+    bps.write_rekeys(report, "MN", store)
+    assert bps.read_rekeys("MN", store)["old_geoid"].tolist() == ["2700002"]
