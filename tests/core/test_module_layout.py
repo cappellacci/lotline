@@ -123,7 +123,6 @@ def test_moving_list_only_shrinks():
 MAX_LINES = 620  # "about 600": scenarios/fees.py (604) fits
 OVERSIZE = {
     "scenarios.adu": "ADU",
-    "pooled_adu": "ADU",
 }
 
 
