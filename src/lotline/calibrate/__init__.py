@@ -177,6 +177,15 @@ def _resolve(runner: str):
     return getattr(importlib.import_module(module), name)
 
 
+def _rel(new, old) -> float | None:
+    """|new - old| / |old|; 0 when both are 0; None when config has no number."""
+    if not isinstance(old, (int, float)):
+        return None
+    if old == 0:
+        return 0.0 if new == 0 else None
+    return abs(new - old) / abs(old)
+
+
 def _fmt(v) -> str:
     return str(v) if isinstance(v, int) and not isinstance(v, bool) else repr(float(v))
 
@@ -200,6 +209,30 @@ def set_values(file: str, values: dict[str, object], config_dir: Path = CONFIG_D
                 raise KeyError(f"{file}.yaml: {key} has no {name} line")
             lines[hit] = re.sub(rf"^(\s+{name}:\s*).*$", lambda m, v=v: m.group(1) + _fmt(v), lines[hit])
     path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def compare_table(path: Path, text: str) -> dict:
+    """A recomputed table (CSV text) against the config file: the largest relative difference over the
+    numeric cells of the rows and columns the new table has, matched on its first column (a quick run may
+    return fewer rows or columns). `same` is True when the text is identical. By hand: config rows m_x 0.1
+    and 0.2 with theta 1.0 and 2.0; new row m_x 0.2, theta 2.2 -> rel_diff 0.1."""
+    import io
+
+    import pandas as pd
+
+    new = pd.read_csv(io.StringIO(text))
+    old = pd.read_csv(path)
+    key = new.columns[0]
+    both = new.merge(old, on=key, suffixes=("", "_config"))
+    rel = 0.0
+    for c in new.columns:
+        if c == key or f"{c}_config" not in both or not pd.api.types.is_numeric_dtype(both[c]):
+            continue
+        a, b = both[c].astype(float), both[f"{c}_config"].astype(float)
+        d = (a - b).abs() / b.abs().where(b != 0)
+        rel = max(rel, float(d.max(skipna=True))) if d.notna().any() else rel
+    same = text == path.read_text(encoding="utf-8")
+    return {"config": f"{len(old)} rows", "new": f"{len(new)} rows", "rel_diff": rel, "same": same}
 
 
 def run(
@@ -233,13 +266,25 @@ def run(
             continue
         out = _resolve(s.runner)(RunContext(store, quick, s.seed, s.draws))
         for file, values in out.items():
+            if file in s.tables:  # a whole table, as CSV text: compared row by row, written as is
+                rows.append(
+                    {"step": s.name, "name": file, **compare_table(config_dir / "params" / file, values)}
+                )
+                if write:
+                    (config_dir / "params" / file).write_text(values, encoding="utf-8")
+                continue
             raw = _raw(file, config_dir)
             for key, out_value in values.items():
-                new = out_value["value"] if isinstance(out_value, dict) else out_value
-                old = (raw.get(key) or {}).get("value")
-                rel = abs(new - old) / abs(old) if old not in (None, 0) else None
+                fields = out_value if isinstance(out_value, dict) else {"value": out_value}
+                entry = raw.get(key) or {}
+                new, old = fields["value"], entry.get("value")
+                rel = _rel(new, old)
+                # low/high the runner returns, against config's (reported apart from the value's difference)
+                bounds = [_rel(v, entry.get(f)) for f, v in fields.items() if f != "value"]
+                bounds = [b for b in bounds if b is not None]
                 rows.append(
                     {"step": s.name, "name": f"{file}:{key}", "config": old, "new": new, "rel_diff": rel}
+                    | ({"bounds_diff": max(bounds)} if bounds else {})
                 )
             if write:
                 set_values(file, values, config_dir)

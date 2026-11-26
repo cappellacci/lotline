@@ -29,9 +29,7 @@ changes.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import re
-import sys
 from pathlib import Path
 
 from lotline.adapters.national import acs
@@ -98,15 +96,12 @@ FIT_SET_KEYS = {
 
 
 def anchor_places(store):
-    """The ADU anchor's fit places today: D-096/D-097's Form A + place types set (`adu_mx_grid.places`)."""
-    here = Path(__file__).resolve().parent
-    sys.path.insert(0, str(here))
-    spec = importlib.util.spec_from_file_location("adu_mx_grid", here / "adu_mx_grid.py")
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules["adu_mx_grid"] = mod
-    spec.loader.exec_module(mod)
+    """The ADU anchor's fit places today: D-096/D-097's Form A + place types set, unknown years cut
+    (`adu_fit_set.d096_places`)."""
+    from lotline.model import adu_fit_set as fs
+
     with offline.offline_build(store):
-        return mod.places(store)
+        return fs.d096_places(store)
 
 
 def fit_set_entries(r: dict) -> str:

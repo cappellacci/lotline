@@ -146,6 +146,7 @@ STEPS: tuple[Step, ...] = (
         seed=20261111,
         draws=20_000,
         notes="Copied from reports/adu-final-config/fit.json.",
+        runner="lotline.calibrate.adu_steps:joint",
     ),
     Step(
         "adu_partial_share_grid",
@@ -156,6 +157,7 @@ STEPS: tuple[Step, ...] = (
         after=("adu_joint",),
         tables=("adu_partial_share_grid.csv",),
         notes="Its row at the partial share in adu.yaml must equal hazard.yaml's theta and alpha.",
+        runner="lotline.calibrate.adu_steps:partial_share_grid",
     ),
     Step(
         "adu_anchor_slopes",
@@ -164,6 +166,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/adu_types_slopes.py --out (calibrate_adu.information_se)",
         "code",
         after=("adu_joint",),
+        runner="lotline.calibrate.adu_steps:anchor_slopes",
     ),
     Step(
         "adu_calibration_range",
@@ -181,6 +184,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/adu_reference.py --fit-set --write (calibrate_adu.fit_set_range)",
         "code",
         after=("adu_joint",),
+        runner="lotline.calibrate.adu_steps:calibration_range",
     ),
     Step(
         "adu_town_prior_sd",
@@ -189,6 +193,7 @@ STEPS: tuple[Step, ...] = (
         "arithmetic: |core multiplier| / 1.645",
         "hand",
         after=("adu_joint",),
+        runner="lotline.calibrate.adu_steps:town_prior_sd",
     ),
     Step(
         "adu_new_rule",
@@ -198,6 +203,7 @@ STEPS: tuple[Step, ...] = (
         "hand",
         after=("adu_joint",),
         notes="The held-out check rejected the fit, so the share stays 1.",
+        runner="lotline.calibrate.adu_steps:new_rule",
     ),
     Step(
         "adu_state_effect",

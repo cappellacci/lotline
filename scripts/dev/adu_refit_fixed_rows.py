@@ -19,29 +19,16 @@ import os
 import sys
 from pathlib import Path
 
-import pandas as pd
-
 from lotline.config import CONFIG_DIR
-from lotline.model import joint_refit as jr
-from lotline.model.scenarios import adu
+from lotline.model import adu_fit_set as fs
 
 HERE = Path(__file__).resolve().parent
-TAG = "UNKNOWN-PLACEHOLDER"
 ENV = "LOTLINE_REFIT_TARGET"
 
 
 def unknown_years() -> dict[str, set[int]]:
-    """{geoid: years} under a placeholder row. By hand: effective 2016-01-01, end 2023-01-01 -> 2016-2022."""
-    out: dict[str, set[int]] = {}
-    for st in adu.REFORM_STATES:
-        r = adu.load_reforms(st)
-        r = r[(r["theme"] == "adu") & r["coding_notes"].fillna("").str.contains(TAG)]
-        for row in r.itertuples():
-            y0 = pd.Timestamp(row.effective_date).year
-            end = pd.Timestamp(row.end_date) if pd.notna(row.end_date) else pd.Timestamp("2100-01-01")
-            y1 = (end - pd.Timedelta(days=1)).year
-            out.setdefault(str(row.jurisdiction_geoid), set()).update(range(y0, y1 + 1))
-    return out
+    """{geoid: years} under a placeholder row (`adu_fit_set.unknown_years`)."""
+    return fs.unknown_years()
 
 
 def _load(name: str, file: str):
@@ -55,35 +42,40 @@ def _load(name: str, file: str):
 
 
 def _cut(p, drop):
-    gone = drop.get(p.geoid) if p is not None else None
-    if gone:
-        p = jr.subset_years(p, [y for y in p.years if int(y) not in gone])
-    return p
+    return fs.limit_years(p, drop) if p is not None and p.geoid in drop else p
 
 
 def patch() -> dict[str, set[int]]:
-    """Wrap whichever place builders the target script ended up with (each script's loader re-executes its
-    helpers, so the wrap is applied after the target is loaded): `adu_owner_refit.inputs` (D-084 to D-095)
-    and `adu_joint_refit.limit_years` (D-079's fit set, read by `adu_types_slopes`)."""
-    drop = unknown_years()
+    """Cut the unknown years in whichever place builders the target script ended up with:
+    `adu_owner_refit.inputs` (D-084 to D-095) and `adu_joint_refit`'s `fit_set`, `all_places` and
+    `limit_years` (D-079's fit set), which now pass the years to the library builders
+    (`lotline.model.adu_fit_set`). The calibration scripts (`adu_mx_grid`, `adu_config_fit`,
+    `adu_types_slopes`, `adu_reference --fit-set`, `adu_new_rule`) cut them through the library and no
+    longer need this wrapper."""
+    gone = unknown_years()
     own = sys.modules.get("adu_owner_refit")
     if own is not None:
         base_inputs = own.inputs
 
         def inputs(store):
             places, new, table = base_inputs(store)
-            return [q for q in (_cut(p, drop) for p in places) if q is not None], new, table
+            return [q for q in (_cut(p, gone) for p in places) if q is not None], new, table
 
         own.inputs = inputs
     jrm = sys.modules.get("adu_joint_refit")
     if jrm is not None:
-        base_limit = jrm.limit_years
+
+        def fit_set(st, store, undercount="table", drop=()):
+            return fs.fit_set(st, store, undercount, drop, unknown=gone)
+
+        def all_places(store, undercount="table", drop=()):
+            return fs.all_places(store, undercount, drop, unknown=gone)
 
         def limit_years(pl):
-            return _cut(base_limit(pl), drop)
+            return fs.limit_years(pl, gone)
 
-        jrm.limit_years = limit_years
-    return drop
+        jrm.fit_set, jrm.all_places, jrm.limit_years = fit_set, all_places, limit_years
+    return gone
 
 
 # worker processes get other arguments, so the target's file name travels in the environment

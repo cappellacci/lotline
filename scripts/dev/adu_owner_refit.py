@@ -40,6 +40,7 @@ import pandas as pd
 
 from lotline.config import load_params
 from lotline.io import DataStore, offline
+from lotline.model import adu_fit_set as fs
 from lotline.model import adu_owner as ao
 from lotline.model import adu_screen as scr
 from lotline.model import calibrate_adu as cal
@@ -80,69 +81,22 @@ CENTER, SCALE, FIT_END = (
 
 
 def b25003(store, st: str) -> pd.DataFrame:
-    """Owner-occupied and total occupied homes per (geo, end_year), held-out rows removed."""
-    a = holdout.apply_acs(store.read(st, "acs_geo_year"), st)
-    a = a[a["table_id"] == "B25003"]
-    v = a["variable"].astype(str)
-    out = pd.DataFrame(
-        {
-            "owner": a[v == "B25003_002"].groupby(["geo", "end_year"])["estimate"].sum(),
-            "total": a[v == "B25003_001"].groupby(["geo", "end_year"])["estimate"].sum(),
-        }
-    )
-    return out.dropna()
+    """Owner-occupied and occupied homes per (geo, end_year), held-out rows removed (`adu_fit_set.b25003`)."""
+    return fs.b25003(holdout.apply_acs(store.read(st, "acs_geo_year"), st))
 
 
 def owner_rows(st: str, geoid: str, kind: str, county: str, acs: pd.DataFrame, juris: pd.DataFrame):
-    """({end_year: share}, source) for one jurisdiction, by D-084's order of sources."""
-
-    def shares(frame: pd.DataFrame) -> dict[int, float]:
-        f = frame[frame["total"] > 0]
-        return {int(y): float(o / t) for y, o, t in zip(f.index, f["owner"], f["total"], strict=True)}
-
-    def at(geo: str) -> pd.DataFrame:
-        return acs.xs(geo, level="geo") if geo in acs.index.get_level_values("geo") else acs.iloc[:0]
-
-    if kind == "place" and not at(f"place:{geoid}").empty:
-        return shares(at(f"place:{geoid}")), "place"
-    if kind == "township" and not at(f"cousub:{geoid}").empty:
-        return shares(at(f"cousub:{geoid}")), "county subdivision"
-    if kind == "county_unincorporated" and not at(f"county:{county}").empty:
-        inside = juris[(juris["county_geoid"].astype(str) == county) & (juris["kind"] == "place")]
-        rest = at(f"county:{county}").copy()
-        for g in inside["geoid"].astype(str):
-            p = at(f"place:{g}")
-            rest = rest.sub(p.reindex(rest.index).fillna(0.0))
-        return shares(rest), "county less its places"
-    return {}, "none"
+    """({end_year: share}, source) by D-084's order of sources (`adu_fit_set.share_rows`)."""
+    return fs.share_rows(geoid, kind, county, acs, juris)
 
 
-def owner_table(store, items: list[tuple[str, str, str]]) -> pd.DataFrame:
-    """One row per (state, geoid, name): share and vintage in the fit, latest and sensitivity reads, z."""
-    rows = []
-    for st in sorted({s for s, _, _ in items}):
-        acs = b25003(store, st)
-        juris = store.read(st, "jurisdictions")
-        info = juris.set_index(juris["geoid"].astype(str))
-        for s, g, name in items:
-            if s != st:
-                continue
-            kind = str(info.at[g, "kind"]) if g in info.index else "place"
-            county = str(info.at[g, "county_geoid"]) if g in info.index else ""
-            by_year, source = owner_rows(st, g, kind, county, acs, juris)
-            row = {"state": st, "geoid": g, "name": name, "kind": kind, "source": source}
-            for tag, end in (("fit", FIT_END), ("latest", LATEST), ("sens", SENS_END)):
-                share, year = ao.vintage_share(by_year, end)
-                row[f"share_{tag}"], row[f"vintage_{tag}"] = share, year
-                row[f"z_{tag}"] = 0.0 if share is None else ao.owner_z(share, CENTER, SCALE)
-            row["flag"] = "no owner share: z = 0" if row["share_fit"] is None else ""
-            rows.append(row)
-    return pd.DataFrame(rows)
+owner_table = fs.owner_table
+roll_towns = fs.roll_towns
 
 
-def roll_towns() -> pd.DataFrame:
-    r = pd.read_csv(R.ROLLS, dtype={"geoid": str})
-    return r[~r["sets_k"]]
+def inputs(store):
+    """D-084 inputs (`adu_fit_set.owner_inputs`); a module function so `adu_refit_fixed_rows` wraps it."""
+    return fs.owner_inputs(store)
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -400,15 +354,6 @@ def main() -> None:
     store = DataStore()
     with offline.offline_build(store):
         run(a, store)
-
-
-def inputs(store):
-    places, new = R.all_places(store)
-    items = [(p.state, p.geoid, p.name) for p in places] + [
-        (r.state, r.geoid, r.name) for r in roll_towns().itertuples()
-    ]
-    own = owner_table(store, list(dict.fromkeys(items)))
-    return places, new, own
 
 
 def vintage_check(own: pd.DataFrame, fit_geoids: set[str]) -> dict:
