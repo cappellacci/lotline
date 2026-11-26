@@ -14,6 +14,8 @@ so they don't issue permits. Polygons are heavy (Columbus alone has 256 rings), 
 
 from __future__ import annotations
 
+import json
+
 import pandas as pd
 
 from lotline.config import load_state
@@ -29,6 +31,25 @@ SERVICE = (
     "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer"
 )
 LAYERS = {"place": 18, "cousub": 15}  # ACS 2025: Incorporated Places, County Subdivisions
+LAYER_NAMES = {"place": "Incorporated Places", "cousub": "County Subdivisions"}
+GROUP_NAME = "ACS 2025"  # the layer group the IDs above sit in; Census renumbers when it adds a vintage
+
+
+def check_layer(meta: dict, level: str) -> None:
+    """Raise unless the layer description is `LAYER_NAMES[level]` inside the `GROUP_NAME` group.
+
+    The service holds several vintages, and a new one can shift the layer IDs: without this check a new
+    state's first fetch could save another vintage's polygons under the `acs2025` folder."""
+    name = str(meta.get("name", "")).strip()
+    group = str((meta.get("parentLayer") or {}).get("name", "")).strip()
+    if name != LAYER_NAMES[level] or group != GROUP_NAME:
+        raise ValueError(
+            f"TIGERweb layer {LAYERS[level]} is now {name!r} in group {group!r}, not "
+            f"{LAYER_NAMES[level]!r} in {GROUP_NAME!r}: Census has renumbered the service. Find the "
+            f"{GROUP_NAME} layer IDs at {SERVICE} and update LAYERS."
+        )
+
+
 PAGE_SIZE = 50  # polygons per page: some boundaries have tens of thousands of vertices
 
 PROVENANCE = {
@@ -68,6 +89,9 @@ def load_polygons(state: str, store: DataStore, level: str, *, refresh: bool = F
         page_size=PAGE_SIZE,
         refresh=refresh,
     )
+    meta = store.raw(SOURCE, VINTAGE) / f"{level}_{fips}" / "layer.json"
+    if meta.exists():  # written by every fetch; checked on every load, so a cached copy is checked too
+        check_layer(json.loads(meta.read_text(encoding="utf-8")), level)
     if df.empty:
         return pd.DataFrame(columns=["geoid", "name", "funcstat", "rings"])
     out = df.rename(columns={"GEOID": "geoid", "NAME": "name", "FUNCSTAT": "funcstat"})
