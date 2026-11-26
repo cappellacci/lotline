@@ -183,6 +183,9 @@ let s = ""; process.stdin.on("data", (c) => (s += c)).on("end", () => {
 """
     qs = [0, 7, 10, 33.3, 50, 90, 100]
     assert _node(script, {"a": a, "qs": qs}) == pytest.approx(list(np.percentile(a, qs)))
+    # a missing value (null in the bundle) makes every percentile NaN, as numpy does; JSON has no NaN -> null
+    assert np.isnan(np.percentile(a + [np.nan], qs)).all()
+    assert _node(script, {"a": a + [None], "qs": qs}) == [None] * len(qs)
 
 
 def test_shifting_an_unknown_column_is_refused():
