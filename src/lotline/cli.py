@@ -310,9 +310,15 @@ def _results(args: argparse.Namespace) -> int:
     if not args.all and not args.state:
         print("give --state XX, or --all for every state and the page")
         return 2
-    if not results.tree_is_clean():
+    clean = results.tree_state()
+    if clean is False:
         print(
             "warning: uncommitted changes; the bundle's commit_sha will not fully identify the code that ran"
+        )
+    elif clean is None:
+        print(
+            f"note: not a git checkout; the bundle's commit_sha is {results.commit_sha()[:7]} "
+            "(from LOTLINE_COMMIT or src/lotline/COMMIT; all zeros if neither is set)"
         )
 
     def one(state: str, role=None, out=None) -> Path:

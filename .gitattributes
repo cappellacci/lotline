@@ -1,0 +1,2 @@
+# A GitHub "Download ZIP" or `git archive` writes the commit id into this file (results_meta.commit_sha without git).
+src/lotline/COMMIT export-subst
