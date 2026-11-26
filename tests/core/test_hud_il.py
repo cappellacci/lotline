@@ -59,3 +59,27 @@ def test_load_reads_the_registered_file(tmp_path):
     store.register(f, source=hud_il.SOURCE, url=hud_il.LANDING_URL, license=hud_il.LICENSE, vintage="fy2026")
     df = hud_il.load("NC", store)
     assert sorted(df["geo"]) == ["county:37063", "county:37183"]
+
+
+def test_the_year_comes_from_the_median_column_not_the_constant():
+    """Review item 6: a FY2027 file must not be labelled 2026 dollars."""
+    out = hud_il.to_canonical(_raw().rename(columns={"median2026": "median2027"}))
+    assert (out["year"] == 2027).all()
+
+
+def test_the_year_falls_back_to_the_registered_vintage_for_a_bare_median_column():
+    out = hud_il.to_canonical(_raw().rename(columns={"median2026": "median"}), fiscal_year=2027)
+    assert (out["year"] == 2027).all()
+
+
+@pytest.mark.parametrize(
+    ("path", "year"),
+    [("raw/hud_income_limits/fy2027/Section8.xlsx", 2027), ("raw/hud_income_limits/2026-11-01/x.xlsx", 2026)],
+)
+def test_vintage_year_reads_the_registered_folder(path, year):
+    class Entry:
+        pass
+
+    e = Entry()
+    e.path = path
+    assert hud_il.vintage_year(e) == year
