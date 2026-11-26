@@ -60,4 +60,5 @@ extend-exclude = ["compliance_check.py", "scripts/dev/create_issues.py"]  # stan
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
-"src/lotline/schemas.py" = ["UP045"]  # pandera reads Optional[...] to mark columns a source may omit
+"src/lotline/schemas.py" = ["UP045"]
+"scripts/archive/*" = ["E501"]  # frozen one-off scripts; paths grew by 4 characters when they moved (phase 6)  # pandera reads Optional[...] to mark columns a source may omit

@@ -9,7 +9,7 @@
 # recomputed for this fit) are in adu_anchor.yaml.
 #
 # Central fit: 64 places, 395 place-years in MN, NC, OH, TX and OR (D-088 fit set; St. Paul held out), offline,
-# scripts/dev/adu_types_refit.py (reports/adu-place-types/fits.csv, variant central, fold all, form A+P).
+# scripts/archive/adu_types_refit.py (reports/adu-place-types/fits.csv, variant central, fold all, form A+P).
 # Intervals are 90%: profile likelihood for θ and the core term, observed information for α.
 
 # ---- How places are typed (D-088, fixed before any fit; national data only) ----

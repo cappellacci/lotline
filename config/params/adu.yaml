@@ -22,7 +22,7 @@ adu_partial_share_draws:
   low: 1
   high: 1
   unit: how m_x is drawn (0 fixed at adu_partial_rule_share; 1 drawn from config/params/adu_partial_share_grid.csv weights; 2 from its fold maxima; 3 every draw at the set adu_partial_rule_share, with theta, alpha and the core term refitted there)
-  source: "D-097 (accepted 2026-11-15; switched on by Ben 2026-11-16, 'm_x draws, let's turn them on'): A + place types refitted at each m_x on the 0.1 grid (scripts/dev/adu_mx_grid.py on main's rule rows after PR #444); weights = mean of the leave-one-state-out folds' normalized profile likelihoods"
+  source: "D-097 (accepted 2026-11-15; switched on by Ben 2026-11-16, 'm_x draws, let's turn them on'): A + place types refitted at each m_x on the 0.1 grid (scripts/archive/adu_mx_grid.py on main's rule rows after PR #444); weights = mean of the leave-one-state-out folds' normalized profile likelihoods"
   notes: "When on, each draw gets one m_x shared by every place and state, and theta, alpha and the core term move to that grid row's refit (scenarios.adu.apply_partial_share_grid), so the counts stay matched."
 
 adu_new_rule_share:

@@ -24,7 +24,7 @@ D-090 fixed, before any run, the split, the places scored, three forecasters and
 The fitter reuses D-087's (`adu_terms.ascent` with `within=True`, `adu_screen`'s vectorized likelihood) and
 reads the (m_o, m_x) cell as fit 3 does. Each θ_s's 90% interval is profiled over α and the other states' θ
 at the chosen cell, with any β held at its estimate. Pure functions; the run is
-`scripts/dev/adu_time_split.py`.
+`scripts/archive/adu_time_split.py`.
 """
 
 from __future__ import annotations

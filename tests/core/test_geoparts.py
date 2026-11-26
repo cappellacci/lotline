@@ -85,6 +85,17 @@ def test_no_dependent_places_means_no_requests(fake_census, tmp_path, monkeypatc
     assert out.empty
 
 
+def test_dependent_places_with_no_township_parts_give_an_empty_numeric_table(
+    fake_census, tmp_path, monkeypatch
+):
+    """A place formed after 2020 (Minnesota's Baldwin, Credit River) has no 2020 township parts. Under
+    pandas 3, `.map` on the empty string column gave strings and the share division failed (phase 6)."""
+    header = ["H1_001N", "state", "county", "county subdivision", "place/remainder (or part)"]
+    monkeypatch.setattr(geoparts, "_parts", lambda *a, **k: [header, ["500", "39", "001", "10000", "99999"]])
+    out = geoparts.township_shares("39", ["3900200"], ["3900110000"], DataStore(tmp_path))
+    assert out.empty and list(out.columns) == ["place_geoid", "township_geoid", "share"]
+
+
 def test_main_county_is_the_largest_part_ties_to_the_lower_geoid(monkeypatch):
     """Task 5 rule 5: Rutherford College (NC) has more homes in Burke (37023) than Caldwell (37027)."""
     shares = pd.DataFrame(

@@ -22,7 +22,7 @@ baseline_adu_share_of_one_unit:
   low: 0.0047
   high: 0.0765
   unit: ADU permits / (ADU + detached single-family permits)
-  source: "scripts/dev/adu_baseline_share.py: Met Council residential permits and Austin permits, 2019-2022 (MS-10): Twin Cities metro 127 of 26,874 = 0.0047; Austin 1,371 of 17,928 = 0.0765; pooled 0.033"
+  source: "scripts/archive/adu_baseline_share.py: Met Council residential permits and Austin permits, 2019-2022 (MS-10): Twin Cities metro 127 of 26,874 = 0.0047; Austin 1,371 of 17,928 = 0.0765; pooled 0.033"
   notes: "Census BPS counts a detached ADU as a 1-unit permit, so the baseline single-family forecast already holds some ADUs. Used to split the baseline into houses and ADUs where a place's own permits don't flag ADUs. The two sources differ 16-fold: Austin has allowed ADUs for years in a high-rent market; most metro suburbs restrict them. The range is that spread."
 
 displacement_share:

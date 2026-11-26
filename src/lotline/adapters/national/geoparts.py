@@ -176,5 +176,7 @@ def township_shares(
         )
         .set_index("place_geoid")["total"]
     )
-    parts["share"] = parts["hu"] / parts["place_geoid"].map(totals)
+    # by index, not `.map`: pandas 3 maps an empty string column to strings, and the division fails
+    total = totals.reindex(parts["place_geoid"]).to_numpy(dtype=float)
+    parts["share"] = parts["hu"].to_numpy(dtype=float) / total
     return parts.dropna(subset=["share"])[["place_geoid", "township_geoid", "share"]]

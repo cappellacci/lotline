@@ -1,7 +1,7 @@
 """The arithmetic behind the ADU calibration steps (D-030, D-088, D-096, D-097, D-099), in library code.
 
-Moved from `scripts/dev/adu_mx_grid.py` and `scripts/dev/adu_types_slopes.py` so `lotline calibrate` and the
-scripts share one copy:
+Moved from `scripts/archive/adu_mx_grid.py` and `scripts/archive/adu_types_slopes.py` so `lotline calibrate`
+and the scripts share one copy:
 
 - `fit_at_mx`: A + place types with θ, α and β_core maximized at fixed rule shares (m_o, m_x).
 - `grid_table` (D-097): the all-states fit at each m_x on the grid, and the draw weight of each m_x, the mean
@@ -69,7 +69,7 @@ def grid_table(prof: pd.DataFrame, m_o: float, places: int, place_years: int) ->
     grid = grid.reset_index()
     grid["source"] = (
         f"D-097: A + P at m_x held, m_o {m_o}, {places} places, {place_years} place-years "
-        "(scripts/dev/adu_mx_grid.py on the D-096 rows); weight = mean of the leave-one-state-out folds' "
+        "(scripts/archive/adu_mx_grid.py on the D-096 rows); weight = mean of the leave-one-state-out folds' "
         "normalized profile likelihoods"
     )
     return grid

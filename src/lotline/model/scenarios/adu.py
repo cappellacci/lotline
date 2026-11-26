@@ -49,8 +49,8 @@ town prior; one place multiplier per place; extrapolation noise shared across pl
 The mortgage-rate stress range is a sensitivity (`params=`), not part of the forecast range. Numerator (units)
 and denominator (eligible parcels) stay in separate columns. Nothing is fitted here: the anchor, place-effect
 variance, rule shares and core-city term come from D-088's Form A + place types fit
-(`scripts/dev/adu_types_refit.py`), and observed local ADUs enter as the no-reform rate with drift (D-093),
-or as the additionality floor with the switch off.
+(`scripts/archive/adu_types_refit.py`), and observed local ADUs enter as the no-reform rate with drift
+(D-093), or as the additionality floor with the switch off.
 """
 
 from __future__ import annotations
@@ -206,7 +206,7 @@ def apply_partial_share_grid(
 
 def anchor_terms() -> dict[str, float]:
     """config/params/adu_anchor.yaml: the anchor's observed-information terms and judgment slopes (D-030),
-    for the Form A + place types fit (D-088; `scripts/dev/adu_types_slopes.py`)."""
+    for the Form A + place types fit (D-088; `scripts/archive/adu_types_slopes.py`)."""
     return {k: s.value for k, s in load_params("adu_anchor").items()}
 
 
