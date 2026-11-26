@@ -8,13 +8,13 @@ of a different narrative structure) but I'm generally happy with this."
 
 **Read first:** `docs/analysis_plan.md` D-073 (dose by home type), D-076 (statewide run, centred elasticity draw)
 and D-077 (knobs, revenue test, revisions); `docs/build/workstreams/WS-APP.md` ("Sliders without a server");
-`src/lotline/model/scenarios/fees.py` (`change_grid`); `scripts/dev/fee_knobs_export.py`.
+`src/lotline/model/scenarios/fees.py` (`change_grid`); `scripts/archive/fee_knobs_export.py`.
 
 ## What exists
 
 | Piece | Where | Notes |
 |---|---|---|
-| Grid of results for every knob setting | `reports/fees-knobs/grid.json` (2.2 MB) | Written by `uv run python scripts/dev/fee_knobs_export.py`; `--page <html>` puts it in a page, `--from-json` skips the run |
+| Grid of results for every knob setting | `reports/fees-knobs/grid.json` (2.2 MB) | Written by `uv run python scripts/archive/fee_knobs_export.py`; `--page <html>` puts it in a page, `--from-json` skips the run |
 | Engine function | `fees.change_grid` | Tested: reproduces `fees.run` exactly at a cut and a rise of half; linear by elasticity; revenue by hand |
 | Prototype page | `reports/fees-phase2-run/fees-phase2-results.html` | Plain HTML/CSS/JS, Lotline tokens, no libraries |
 | Statewide run it matches | `reports/fees-statewide-run/` | D-076 |

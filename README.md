@@ -27,6 +27,7 @@ Commands that download data need a `.env`: copy `.env.example` to `.env` and fil
 - [Data Provenance](docs/data_provenance.md): sources, licenses and preparation steps
 - [Disclosures](docs/disclosures.md): AI tools, models, external services and dependency licenses
 - [Data dictionary](docs/schemas.md) and [analysis plan](docs/analysis_plan.md)
+- [Calibration](docs/calibration.md): where every fitted number comes from, and `lotline calibrate` to reproduce it
 - [Adding local rules with the rule agents](docs/adding_local_rules_with_agents.md): research a state's
   missing-middle, ADU and fee rules with your own Claude account, then review and import them
 
@@ -125,6 +126,42 @@ state. **The full step-by-step guide, with the data each model needs and the min
 With national data only, the engine estimates eligible lots from the ACS and the page labels the state
 "National data only" (data tier 3), so its range is wider. Local parcel data, with the places it covers given
 a better tier under `data_tiers` in the state's config, narrows the range and darkens the state on the map.
+
+## Reproduce the fitted parameters
+
+About 130 values in `config/params/` are fitted to our own data; every one belongs to a named calibration step
+(`src/lotline/calibrate/steps.py`), and `config/calibration.lock.json` records the value each step last wrote.
+Full detail is in [docs/calibration.md](docs/calibration.md).
+
+```bash
+uv run lotline calibrate --check               # seconds, no data: every fitted value is accounted for and matches the lock
+uv run lotline calibrate --list                # the 22 steps in run order: what each produces and from which decision
+uv run lotline calibrate --run --quick         # fewer draws: every runnable step re-derives its values (about 18 minutes)
+uv run lotline calibrate --run                 # the full fits, same seeds and draws as config (several hours; the ADU joint fit dominates)
+uv run lotline calibrate --run --step mm_c4    # one step (repeatable); add --write to update config and the lock
+```
+
+- **Data.** `--run` reads the tables `lotline fetch` builds (see [Data](#data)). It needs the same `.env` as
+  fetch, because the eligible-proxy step checks `CENSUS_API_KEY` before reading its cached Census lookup.
+- **What `--quick` shows.** On 2026-11-26 it reproduced every runnable value exactly except where quick mode
+  uses a coarser grid:
+  - the missing-middle ramp half-way point (4.0 on the quick grid against 4.5), with the mature rate that
+    goes with it;
+  - the τ probabilities, normalized over fewer τ values;
+  - the partial-share grid (3 rows instead of 10).
+
+  A full `--run` uses config's own grids.
+- **What runs from code.** 18 of the 22 steps re-derive their values from the fetched tables.
+  - Three are recorded values, each with the script that measured it in `scripts/dev/`: the completion
+    factors (a judgment informed by measured ratios), the ADU undercount factors (one check per row) and two
+    small ADU inputs (the survey report rate and the covariate centres).
+  - The V5 Charlotte prior is frozen for its blind test.
+- **Where things are.**
+  - Library code: the fit sets (`lotline.model.adu_fit_set`, `lotline.model.mm_fitsets`) and the step runners
+    (`lotline.calibrate`).
+  - `scripts/dev/` keeps only scripts still in use ([its README](scripts/dev/README.md) says why each stays).
+  - The one-off analyses behind each decision are in `scripts/archive/` with an index
+    ([README](scripts/archive/README.md)).
 
 ## Tests
 

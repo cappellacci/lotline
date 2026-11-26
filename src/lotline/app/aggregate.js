@@ -23,9 +23,11 @@
   const FACTORS = ["theta", "pencil_out_share", "completion_factor", "net_new_share", "displacement_share"];
 
   // numpy.percentile's default ("linear"): position (n − 1)·q/100 between the sorted neighbours.
+  // Like numpy, any missing value makes every percentile NaN: sorting puts NaN last, so without this check
+  // P10 would look fine while P90 came out NaN.
   function percentile(values, q) {
-    const a = Float64Array.from(values).sort();
-    if (!a.length) return NaN;
+    const a = Float64Array.from(values, num).sort(); // null -> NaN, not 0
+    if (!a.length || Number.isNaN(a[a.length - 1])) return NaN;
     const pos = ((a.length - 1) * q) / 100;
     const lo = Math.floor(pos), hi = Math.ceil(pos);
     return a[lo] + (a[hi] - a[lo]) * (pos - lo);

@@ -232,12 +232,12 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - a separate pool of parcels without an ADU under each set of rules (at most one ADU per parcel);
   - `adu_net_new_share` low end 0.50 → 0.45 (E039 ≈ 48%); new `adu_formalization_share` 0.10 (0–0.30,
     judgment from E049, E050); new `baseline_adu_share_of_one_unit` 0.033 (0.0047 Twin Cities metro – 0.0765
-    Austin, `scripts/dev/adu_baseline_share.py`);
+    Austin, `scripts/archive/adu_baseline_share.py`);
   - forward runs draw a flat 2026–30 mortgage rate from `mortgage_rate_forecast` (6.60%; 2.96–6.81%, the
     2015–25 annual range as a stress range, `market.yaml`); validation uses each year's actual rate;
   - where a place's only parcel roll is after the origin (Austin's 2026 roll), that roll is used and flagged
     (a denominator, not an outcome).
-- **First check against observed ADUs** (`scripts/dev/adu_current_rules_check.py`, 2016–22, before every
+- **First check against observed ADUs** (`scripts/archive/adu_current_rules_check.py`, 2016–22, before every
   holdout window, actual rates, central-parameter draws; raised by WS-CORE on #161). Model ADU permits under
   each place's coded current rules vs observed: **Minneapolis 315 vs 179 (1.8x)**, **Raleigh 172 vs 81
   (2.1x)**, **Austin 4,230 vs 2,302 (1.8x)** (Austin's ADU rules are not coded; treated as mature). The
@@ -1165,7 +1165,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     leaves the test.
   - **HonestDiD:** if check 1 (pre-trend leads) fails, the bounds are computed once with the choices fixed on
     2026-10-21 (`--honest`).
-  - **Run once:** `uv run python scripts/dev/estimate_pooled_adu.py --full --workers 8 --out
+  - **Run once:** `uv run python scripts/archive/estimate_pooled_adu.py --full --workers 8 --out
     reports/adu-d025-4state/`, log in the same folder; whatever it shows is reported.
   - **Decided by:** Ben, 2026-11-02 ("let's run the engine"); written by WS-ENGINE before the run.
 - **The four-state run (2026-11-02, 19:56, once; commit 0ca15cc; log
@@ -3451,7 +3451,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     3. **(b) or (c): (b).** (c) is worse, not better.
     4. **What follows, by item 1's outcome:** D-038's values stay in `mm_hazard.yaml` and the miss is reported.
        Nothing in config changes in this PR.
-  - **POST-HOC diagnostics, not pre-registered** (`scripts/dev/d054_posthoc.py`, `reports/mm-d054/posthoc_*`):
+  - **POST-HOC diagnostics, not pre-registered** (`scripts/archive/d054_posthoc.py`, `reports/mm-d054/posthoc_*`):
     - **Why TX is missed.** Lubbock's own-growth baseline expects 191 buildings over 2024–25. It permitted 25.
       Every model inherits that baseline, so the TX miss is a baseline failure, not a reform-effect failure.
       Without Lubbock, TX observed 24: (b) 22 / 60 / 305, inside only; no effect 12 / 17 / 23, missed.
@@ -3516,7 +3516,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - τ is not estimable;
     - the estimate rests on a few NC towns and Houston.
   - **V5 (Charlotte, St. Paul):** freezes on these values if they are on `main` by then (D-037 item 3).
-- **Code:** `scripts/dev/d055_v9_rescore.py`, with results to `reports/v9-oregon-d055/`.
+- **Code:** `scripts/archive/d055_v9_rescore.py`, with results to `reports/v9-oregon-d055/`.
 - **Decided by:** Ben, 2026-11-06; written by the missing-middle test session before the re-score.
 - **Results (re-score 2026-11-06 on 565756c, plus one fix: outcomes are read from the main data store, because
   the blind copy's `raw/` is a link to it; `reports/v9-oregon-d055/`).** D-038's draws reproduced the freeze
@@ -3593,13 +3593,13 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   is expected to be worse than ADU.
 - **Scope:** changes nothing for the five onboarded states. Adds two parameters and one draw step for
   tier-3 states only. Runs after the Oregon V9 freeze is recorded and before WS-APP builds the state map.
-- **Code, when run:** `scripts/dev/eligible_proxy_test.py` writing `reports/eligible-proxy/`; a unit test on
+- **Code, when run:** `scripts/archive/eligible_proxy_test.py` writing `reports/eligible-proxy/`; a unit test on
   a hand-worked three-state example of k, q_s and σ; the draw step in the scenario modules behind a
   `denominator_source == "acs_sf_fallback"` condition, with a test that a parcel-based state is untouched.
 - **Decided by:** Ben, 2026-11-06 ("For 1 I think the middle option works"); drafted by Cowork; to be run by
   WS-ENGINE. **Status:** run 2026-11-06; **passed** (Result below).
 - **Result (run 2026-11-06 by WS-ENGINE, branch `ws/engine-d053-proxy-test`; read by the rule above, nothing
-  changed after seeing the numbers).** `uv run python scripts/dev/eligible_proxy_test.py` →
+  changed after seeing the numbers).** `uv run python scripts/archive/eligible_proxy_test.py` →
   `reports/eligible-proxy/` (`ratios_adu.csv`, `ratios_missing_middle.csv`, `by_jurisdiction.csv`,
   `summary.json`). Implementation choices fixed before the run: each parcel-counted jurisdiction enters at its
   newest roll year (`denominator_source == "parcels"`, rule 1.1); its ACS homes are taken at the end year
@@ -3732,8 +3732,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - `dispersion_test`;
     - `place_inputs(..., baseline_rule=…, zero_floor=…)`.
   - Unit tests against hand-worked cases in `tests/model/test_calibrate_mm.py`.
-  - The run script `scripts/dev/calibrate_mm_d058.py`, with `--dry`; results go to `reports/mm-d058/`.
-- **Run once:** `uv run python scripts/dev/calibrate_mm_d058.py --out reports/mm-d058`, after Ben's go-ahead.
+  - The run script `scripts/archive/calibrate_mm_d058.py`, with `--dry`; results go to `reports/mm-d058/`.
+- **Run once:** `uv run python scripts/archive/calibrate_mm_d058.py --out reports/mm-d058`, after Ben's go-ahead.
 - **Decided by:** Ben, 2026-11-06 (D-054 option 3); written by the missing-middle test session before any run.
 - **Before the run (2026-11-06; code pushed; the dry run printed flags and structure only, no counts and no
   fit).** The fit set and test places are D-054's: 13 and 3.
@@ -3840,7 +3840,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
      - If item 1 fails, D-055's values stay.
      - V5 freezes on Nov 17 on whatever `main` holds. The holdouts are never read.
 - **Oregon:** stays out.
-- **Code:** `scripts/dev/calibrate_mm_d059.py` (D-058's script with `EXCLUDE` and `MAIN`; it asserts that
+- **Code:** `scripts/archive/calibrate_mm_d059.py` (D-058's script with `EXCLUDE` and `MAIN`; it asserts that
   Lubbock was in D-054's fit set before dropping it). Results go to `reports/mm-d059/`. No new model function.
 - **Decided by:** Ben, 2026-11-06; written by the missing-middle test session before the run.
 - **Before the run (dry run; structure only):** fit set 12 places (MN 1, NC 6, OH 1, TX 4), test places 3.
@@ -4151,8 +4151,8 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Code, when Ben approves:**
   - `calibrate_mm.ramp_mean(half, ages)` and `calibrate_mm.five_year_profile(places, halves)`, each with a
     hand-worked unit test (the m values above; a two-place profile by hand);
-  - `scripts/dev/calibrate_mm_d062.py`, writing to `reports/mm-d062/`.
-- **Run once:** `uv run python scripts/dev/calibrate_mm_d062.py`. Minutes, not hours: two fits, no folds.
+  - `scripts/archive/calibrate_mm_d062.py`, writing to `reports/mm-d062/`.
+- **Run once:** `uv run python scripts/archive/calibrate_mm_d062.py`. Minutes, not hours: two fits, no folds.
 - **Reading rule:** none needed to adopt or reject; this is a reparameterization. Ben decides on the config
   PR with the r5 interval and the per-half profile in front of him.
 - **Decided by:** written by the missing-middle test session on 2026-11-07 for Ben. **Status:** run on
@@ -4244,7 +4244,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     runs, each with Ben's go-ahead. Loader checked on NC and MN inputs only (places 453 and 1,051; coded
     rules 22 and 8); no scenario output computed.
 - **First run (Ben, 2026-11-08, "Run five states"; commit 7c9a717, about 1 minute;
-  `reports/mm-scenario-2026-11-08/`, `scripts/dev/mm_scenario_run.py`).** Origin 2025, 4,000 draws, seed
+  `reports/mm-scenario-2026-11-08/`, `scripts/archive/mm_scenario_run.py`).** Origin 2025, 4,000 draws, seed
   20261108, D-055 hazard values. Net added homes over five years, P10 / P50 / P90 (mean):
   - TX 1,412 / 5,968 / 26,698 (11,581), on 8.1 million eligible parcels;
   - NC 368 / 1,478 / 6,720 (2,990); OH 328 / 1,345 / 5,489 (2,501); MN 215 / 884 / 3,828 (1,685);
@@ -4464,7 +4464,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   the $50,000 fallback, so Eugene now takes the pooled median (house $6,981), well below its known lower bound.
   Options: (a) code Eugene's known components and treat stormwater as the missing part (range from the lower
   bound up); (b) keep a place-level override to the Handbook figure for Eugene only.
-  **Settled 2026-11-09: option (a).** `scripts/dev/eugene_fees_2026_11_09.py` prices six rows for a 2,000 sq ft
+  **Settled 2026-11-09: option (a).** `scripts/archive/eugene_fees_2026_11_09.py` prices six rows for a 2,000 sq ft
   house: EWEB water $2,276 (upper pressure zones $3,063 as the high), local wastewater $811.97, MWMC $1,990,
   parks $7,880.61, transportation $3,759.31, and stormwater general capacity $789.99, with the LID capacity
   charge added for the high ($7,860.28). House: $17,507.88 central and low, $25,365.17 high (nominal; test in
@@ -4574,7 +4574,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **MN, NC, OH, TX and Oregon missing middle:** identical to run D, to the home.
   - Run E is also the first official run with the baseline part (schemas 1.11).
   - Page: Finding 7 of https://claude.ai/artifact/WF92C89mxGCqRajaa8CXNs (version 3), with the permits
-    actually issued in 2021–2025 (`scripts/dev/observed_permits.py`, `reports/results-2026-11-09/observed.json`).
+    actually issued in 2021–2025 (`scripts/archive/observed_permits.py`, `reports/results-2026-11-09/observed.json`).
 
 ### D-069 · 2026-11-09 · Duplex and fourplex utility fees: one meter per unit is the central case (method only, before any run)
 - **Question:** where a place charges water/sewer fees by meter and lets the builder choose between one meter per
@@ -4606,7 +4606,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   holdout starts (`adu.holdout_stops`: Charlotte and 37119 2019–2022). A released holdout (Oregon) no longer
   stops anything. For origin 2022 the window is D-019's own, so the backtests are unchanged. D-019 stopped at
   2022 to stay before the 2023 rate shock; a forward run forecasts the post-shock market.
-- **Results (1,000 draws, origin 2025, `scripts/dev/gutcheck_diagnostics.py`):** NC no-reform ADUs on the 11
+- **Results (1,000 draws, origin 2025, `scripts/archive/gutcheck_diagnostics.py`):** NC no-reform ADUs on the 11
   places 135 a year (122–191), with reform 137 (123–196). Statewide 2,023 without, 2,292 with, over 2027–2031.
   Net added homes statewide (the headline) 40 / 104 / 301, against 40 / 105 / 301 before. Net added barely
   moves: MN 203 (was 207), OH 173 (173), TX 1,351 (1,356). **TX caveat:** Austin's 2024–25 ADUs recorded as
@@ -4728,7 +4728,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   `fee_rise_share` 0.5, through the same λ, ε and ramp. With elasticity only, it is the exact mirror of the
   real-fee cut. It is reported as a sensitivity, labeled "Sensitivity: real local fees raised by half", not
   as a scenario. Assumption stated: landowners absorb λ of a rise as they capture λ of a cut.
-- **Pencil-out table** (`src/lotline/model/pencil_out.py`, `scripts/dev/fee_pencil_out_table.py` ->
+- **Pencil-out table** (`src/lotline/model/pencil_out.py`, `scripts/archive/fee_pencil_out_table.py` ->
   `docs/research/fee-pencil-out.md`). For each coded place it runs the house, duplex and fourplex pro formas,
   for sale and for rent, at four fee levels: today's local fee, that fee cut in half, $50,000 and $25,000.
   - Each row reports the fee per unit and per lot, the fee's share of cost (construction + fees + interest),
@@ -4997,7 +4997,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - The page adds the switched-on classes and the states draw by draw, then reads P10/P50/P90. Adding up
     percentiles would overstate the range.
   - Its headline is the central path (all parameters central), the same lead as D-073's page.
-  - `scripts/dev/fee_knobs_export.py --page <html>` writes `reports/fees-knobs/grid.json` and puts it in the
+  - `scripts/archive/fee_knobs_export.py --page <html>` writes `reports/fees-knobs/grid.json` and puts it in the
     page.
 - **Headline unit.** % of the baseline's five-year homes. The share of projected household growth (office
   hours A2) waits for the household projection to be in the results bundle.
@@ -5585,7 +5585,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - **Code:**
     - `src/lotline/model/adu_owner.py`: the term, the fitter and the decision rule;
     - `joint_refit.GlobalsA` carries β_o per draw;
-    - `scripts/dev/adu_owner_refit.py` runs everything;
+    - `scripts/archive/adu_owner_refit.py` runs everything;
     - the hand-worked tests are in `tests/model/test_adu_owner.py`;
     - the center, the scale and the fit vintage are in `config/params/adu_owner.yaml`.
   - **One fitter for both forms.** `calibrate_adu.fit3` takes about 35 minutes per fit, too slow to profile β_o
@@ -5696,7 +5696,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - `src/lotline/model/adu_trend.py`: the trend, the fitter, test D's forecast and log score, the persistence
       benchmark and the decision rules;
     - `joint_refit.GlobalsA` carries γ per draw, with an optional year after which the trend is held flat;
-    - `scripts/dev/adu_trend_refit.py` runs everything;
+    - `scripts/archive/adu_trend_refit.py` runs everything;
     - the hand-worked tests are in `tests/model/test_adu_trend.py`;
     - the reference year (2020) and the split (2016–2020 against 2021–2025) are in
       `config/params/adu_trend.yaml`.
@@ -5936,7 +5936,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     - `src/lotline/model/adu_types.py`: the type rule, the merge rule, the fitter (`fit3_types`), Part 1's
       variance shares and reading rule, and the decision rule;
     - `joint_refit.GlobalsA` carries the type terms per draw;
-    - `scripts/dev/adu_types_refit.py` runs everything;
+    - `scripts/archive/adu_types_refit.py` runs everything;
     - the hand-worked tests are in `tests/model/test_adu_types.py`.
   - **The fitter.** It is fit 3's grid with θ, α, β_o and the type terms found together on each cell by
     Nelder–Mead, as D-085's. With no type terms it reproduces D-084's fitter on synthetic data, and it recovers
@@ -6138,7 +6138,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       width, and the statewide current-rules totals;
     - hand-worked tests in `tests/model/test_adu_profiles.py`, including a check that the totals match
       `scenarios.adu.pool_paths` draw by draw;
-    - `scripts/dev/adu_state_profiles.py` and `scripts/dev/adu_profiles_page.py`.
+    - `scripts/archive/adu_state_profiles.py` and `scripts/archive/adu_profiles_page.py`.
   - **Build choices, made before reading any total:**
     - The profiles use D-088's raw types: towns stay towns, with no merge.
     - The 2011–15 ACS medians are in 2025 dollars.
@@ -6214,7 +6214,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       most of it in MN and NC.
 - **Anchor draw terms, 2026-11-14.** Ben asked for the slopes to be recomputed for this fit
   ("Recompute slopes").
-  - **How:** `scripts/dev/adu_types_slopes.py` rebuilds D-088's fit places with each judgment parameter at
+  - **How:** `scripts/archive/adu_types_slopes.py` rebuilds D-088's fit places with each judgment parameter at
     central ± 10% of its range, then refits θ, α and the core term at m_o 1.0 and m_x 0.4.
     `config/params/adu_anchor.yaml` is regenerated. Its observed-information terms are back in that file, so
     `adu_place_types.yaml` no longer holds them.
@@ -6317,7 +6317,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
       β draws and the within-state sensitivity;
     - `joint_refit.GlobalsA` takes β as (draws, terms) for a place carrying a vector of terms; D-084's
       one-term path is unchanged;
-    - `scripts/dev/adu_age_refit.py` runs everything, and reuses D-084's owner-share reader;
+    - `scripts/archive/adu_age_refit.py` runs everything, and reuses D-084's owner-share reader;
     - hand-worked tests in `tests/model/test_adu_terms.py`, including that `fit3_terms` reproduces
       `adu_owner.fit3_term` for Form A and Form A′;
     - the center and scale in `config/params/adu_age.yaml`.
@@ -6447,7 +6447,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   posterior, and F0, each with a hand-worked test, plus a dev run script like `adu_age_refit.py`'s.
 - **Built, 2026-11-14, before any fit.** `src/lotline/model/adu_forecast.py` (the split, place classes, rule
   changes, F0, the within-state fit, the own-history update, the trend, the rule), 16 hand-worked tests in
-  `tests/model/test_adu_forecast.py`, and `scripts/dev/adu_time_split.py`. Its `--inputs-only` step wrote
+  `tests/model/test_adu_forecast.py`, and `scripts/archive/adu_time_split.py`. Its `--inputs-only` step wrote
   `reports/adu-time-split/places.csv` (class, fit and window years, rule changes, z_age per place) before any
   fit. What it found and what the build settles that the entry left open:
   1. **Places with history: 43** (MN 27, NC 11, TX 2, OR 3). New places in a known state: MN 15, TX 1 (San
@@ -6590,13 +6590,13 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Built and run** only after Ben accepts this entry.
   - The code adds the drift term to `adu_forecast` (draws and the quadrature log score), the σ fit, and the
     calibration share, each with a hand-worked test.
-  - It extends `scripts/dev/adu_time_split.py` with a `--drift` step that reads D-090's outputs.
+  - It extends `scripts/archive/adu_time_split.py` with a `--drift` step that reads D-090's outputs.
 - **Built, 2026-11-14, before any run.**
   - **Code:**
     - `src/lotline/model/adu_forecast.py` gains the drift options and the fixed-drift log-score grids. It also
       gains `drift_loglik`, `fit_sigma`, `fit_mu_sigma`, `drift_mult`, `coverage` and `predict_new`.
     - Eight hand-worked tests sit in `tests/model/test_adu_forecast.py`.
-    - The run script is `scripts/dev/adu_drift.py`.
+    - The run script is `scripts/archive/adu_drift.py`.
 
   What the build settles that the entry left open:
   1. **The run is its own script,** `adu_drift.py`, not a `--drift` flag on D-090's. It reads D-090's
@@ -6810,7 +6810,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
     effect.
   - The before years are in the A + P fit for every other event's M′ fit; only the event's own place is left out.
 - **Outputs:** `reports/adu-reform-ratio/` (events, per-event forecasts and scores, b profile, README, run log)
-  and a results page published as an Artifact. Code: `scripts/dev/adu_reform_ratio.py`, with tests for the
+  and a results page published as an Artifact. Code: `scripts/archive/adu_reform_ratio.py`, with tests for the
   forecast and the b profile against hand-worked examples. St. Paul stays out; nothing is unblinded.
 - **Result, 2026-11-15** (`reports/adu-reform-ratio/`, page https://claude.ai/artifact/JggHUyaPLYuJxwMFBvMk6j):
   - **Reading: not shown either way.** M's summed log-score gain over P is +4.2 (2 paired SE 7.9); b̂ 1.3, 90%
@@ -7531,7 +7531,7 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **What changed** (Ben, 2026-11-16: "I've reviewed 444, let's merge it. … m_x draws, let's turn them on.
   Headline statistics should definitely be medians. Keep Dallas as no ADUs"):
   - **Refit.** Form A + place types refit on main's rule rows, which now include #444's 44 rows for uncoded
-    MN and OH places and the Blaine fix (`scripts/dev/adu_config_fit.py` through `adu_refit_fixed_rows.py`;
+    MN and OH places and the Blaine fix (`scripts/archive/adu_config_fit.py` through `adu_refit_fixed_rows.py`;
     `reports/adu-final-config/`). The fit set is 70 places and 498 place-years: #444 dated rows that let more
     place-years in.
     - θ 0.000224 (0.000170–0.000303), was 0.000240;
@@ -8141,7 +8141,7 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 ### Results note · 2026-11-23 · V6b, the pro forma threshold test (fees; validation plan §V6, issue #49)
 
 - **Asked by:** Ben, 2026-11-23 ("lets do the Fee threshold check (V6b, #49)").
-- **Run:** `scripts/dev/v6b_fee_threshold.py` → `reports/v6b/V6b-fee-threshold.md` (and one JSON per state).
+- **Run:** `scripts/archive/v6b_fee_threshold.py` → `reports/v6b/V6b-fee-threshold.md` (and one JSON per state).
   Processed tables only, offline, origin 2025, current engine and config; no parameter or model change.
 - **Lots that start to pencil out** (single-family prototype, central parameters; only where a parcel roll
   gives candidate vacant lots and a new-home value):
@@ -8285,7 +8285,7 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   tables with the method unchanged. k = 0.971 (was 0.998), σ = 0.106 (was 0.060), so `eligible_proxy_scale` =
   0.971 (low 0.873, high 1.080) and `eligible_proxy_sd` = 0.106.
 - **Why it moved:** parcel rolls added after 2026-11-06 changed the state totals; NC's real/proxy ratio fell to
-  0.820. The original script (`scripts/dev/eligible_proxy_test.py`) gives the same numbers on today's tables.
+  0.820. The original script (`scripts/archive/eligible_proxy_test.py`) gives the same numbers on today's tables.
 - **Test still passes:** held-out ratios MN 1.088, NC 0.810, TX 1.108, OH 0.948, OR 1.081, all inside
   [0.7, 1.4]. Missing middle's own k is now 1.106 (check theme, not used).
 - **Effect:** tier-3 states (ACS fallback) get about 3% fewer eligible lots and a wider draw range. Approved by

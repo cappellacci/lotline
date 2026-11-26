@@ -19,22 +19,28 @@ uv run lotline calibrate --check   # registry, config and lock agree (no data ne
 its step being re-run and the lock rewritten (`lotline calibrate --write-lock`), the check fails, so a fitted
 number can't drift from its fit unnoticed.
 
-**Status of the steps.** Every step is `current` except `v5_charlotte_prior`, which is `frozen`: it serves only
-the frozen V5 Charlotte test. The three ADU steps once fitted on older forms were refitted in phase 5 (below).
+**Status of the steps (2026-11-26).** 18 of the 22 steps rerun from the fetched data with `lotline calibrate
+--run`. Four are recorded values with a named source instead of a runner:
 
-**Runnable steps.** `uv run lotline calibrate --run` recomputes the steps that have a runner and compares each
-value with config; `--write` puts the new values into config and rewrites the lock. Today four data-only steps
-run (`src/lotline/calibrate/data_steps.py`):
+- `completion_factors`: a judgment informed by measured ratios (`scripts/dev/completion_factors.py`).
+- `adu_undercount_k`: one report per row; the roll and coverage checks that set each k are in
+  `scripts/dev/` (`nc_wake_roll_adu_diff.py`, `tx_adu_coverage.py`, `tx_austin_adu_k.py`, `or_adu_coverage.py`,
+  `or_portland_adu_k.py`, `mn_adu_coverage.py`, `oh_adu_coverage.py`, `parser_phrase_check.py`).
+- `adu_survey_report_rate`: D-041's count (`scripts/dev/calibrate_adu.py`).
+- `adu_covariate_centres`: D-083/D-084's screen (`scripts/dev/adu_covariate_screen.py`).
+
+`v5_charlotte_prior` is `frozen`: it serves only the frozen V5 Charlotte test and is never refitted.
+
+**Runnable steps.** `uv run lotline calibrate --run` recomputes every step that has a runner and compares each
+value with config; `--write` puts the new values into config and rewrites the lock. The data-only steps are in
+`src/lotline/calibrate/data_steps.py`:
 
 - three reproduce config exactly: the baseline ADU share, the ADU reference values and the mortgage rate;
 - the eligible-parcel proxy (D-056) was refitted on 2026-11-26 with this command: k 0.971 and σ 0.106 (the
   2026-11-06 run gave 0.998 and 0.060, before more parcel rolls were added). Config now holds the new values.
 
-The completion factors are a judgment informed by measured ratios, so they stay a recorded value.
-
-**What comes next.** Phase 1 of the calibration design records the map; it runs no fits. In later phases each
-step gets a `run` function, so `lotline calibrate --quick` (reduced draws, minutes) and a full run (same seeds
-and draws, hours) re-derive the values from the fetched data and rewrite config and the lock in one command.
+The ADU chain (phase 4), the missing-middle chain (phase 3) and the three older ADU fits (phase 5) are below.
+Development scripts that these steps replaced are in `scripts/archive/` (phase 6; see its README).
 
 ## The ADU chain (phase 4)
 

@@ -1,5 +1,5 @@
 # ACS-fallback scale for national-data-only (tier 3) states (analysis plan D-056, model/eligible_proxy.py).
-# Fitted once on the five states with both denominators; reproduced by scripts/dev/eligible_proxy_test.py
+# Fitted once on the five states with both denominators; reproduced by scripts/archive/eligible_proxy_test.py
 # (outputs in reports/eligible-proxy/). Used only for a state with no parcel denominator at all; a state with
 # any parcel-based jurisdiction is never scaled.
 

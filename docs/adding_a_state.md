@@ -305,7 +305,7 @@ Booleans are `True`, `False` or blank. **Blank means unknown, never "no restrict
   - it requires parking.
   
   Where several rules apply, the most permissive one wins (`scenarios/adu.py`, `current_rules`).
-- **Missing middle.** The rule's "dose" is units grade × approval grade × coverage (`estimate_mm.py`).
+- **Missing middle.** The rule's "dose" is units grade × approval grade × coverage (`src/lotline/model/estimate_mm.py`).
   - Units grade: 2 per lot is 1/3, 3 is 2/3, 4 or more is 1.
   - Approval grade: by right is 1, otherwise 0.333.
 
@@ -597,19 +597,22 @@ priors (section 3). Adding its data to the fits is a separate method decision, m
 state might later be a blind test, freeze its prediction first.
 
 - **ADU:**
-  1. Add its fit places and years to `scripts/dev/calibrate_adu.py` (`FOUR_STATE` / `OREGON_FIT`, about lines
-     300–311, and `STATES`).
-  2. Rerun with `--draw-terms` (regenerates `config/params/adu_anchor.yaml`).
-  3. Rerun with `--state-effect-config` (regenerates `config/params/adu_state_effect.yaml`, adding
-     `adu_state_effect_fitted__XX`).
-  
-  A place-year enters only with a coded rule in force and a source that flags ADUs.
+  1. Add the state to `STATES` in `src/lotline/model/adu_fit_set.py`. Its places enter by rule: a coded rule
+     in force, eligible lots and a permit source that flags ADUs (`fit_set`, D-079).
+  2. Rerun the ADU chain, in the order `uv run lotline calibrate --list` prints: `adu_joint`,
+     `adu_partial_share_grid`, `adu_anchor_slopes`, `adu_calibration_range`, `adu_town_prior_sd`,
+     `adu_new_rule`, `adu_state_effect`, `adu_drift` and `adu_ramp_share`. Use
+     `uv run lotline calibrate --run --step <name>` to compare, then add `--write` to update config and the lock.
+     `adu_state_effect` adds `adu_state_effect_fitted__XX` to `config/params/adu_state_effect.yaml`.
 - **Shared rule priors:** add the state to `REFORM_STATES` (`scenarios/adu.py`), so its coded rules feed the
   priors other states borrow. Record the before/after bundles.
 - **Missing middle:**
-  1. Add the state to `STATES` in `scripts/dev/calibrate_mm_d092.py`.
-  2. Rerun it and `scripts/dev/mm_tests_d092.py` (marked "only with Ben's go-ahead").
-  3. Update `config/params/mm_hazard.yaml`.
+  1. Add the state to `STATES` in `src/lotline/model/mm_fitsets.py` (and to `SPREAD_STATES` if its uncoded
+     places should count toward φ).
+  2. Rerun `mm_units_per_project`, `mm_year_spread`, `mm_c4` and `mm_fast_ramp` the same way (`--run`, then
+     `--run --write`).
+  3. Rerun D-092's §7 tests, `uv run python scripts/dev/mm_tests_d092.py` (marked "only with Ben's
+     go-ahead"); they have no `lotline calibrate` step yet.
 - **Validation:** decide whether the state joins `FIT_STATES` in `src/lotline/validation/v5.py`,
   `v5_stpaul.py` and `v9.py`.
 
@@ -670,12 +673,12 @@ OR). It reads no permits.
 | `src/lotline/model/scenarios/adu.py` `REFORM_STATES` | States whose rules feed shared priors | Only when pooling (step 14) |
 | `tests/core/test_ordinance_records.py` ≈ 208 | States whose fee CSVs are validated | When you add a fee file |
 | `src/lotline/model/estimate_mm.py:47` `STATES` | D-024 missing-middle panel | Only when refitting |
-| `scripts/dev/calibrate_adu.py` ≈ 300–311, 537 | ADU fit set | Only when pooling (step 14) |
+| `src/lotline/model/adu_fit_set.py` `STATES` | ADU fit set | Only when pooling (step 14) |
 | `config/params/adu_state_effect.yaml` | `adu_state_effect_fitted__XX` | Generated when pooling |
-| `scripts/dev/calibrate_mm_d092.py:52` | Missing-middle fit set | Only when pooling |
+| `src/lotline/model/mm_fitsets.py` `STATES`, `SPREAD_STATES` | Missing-middle fit sets | Only when pooling (step 14) |
 | `src/lotline/validation/v5.py`, `v5_stpaul.py`, `v9.py` `FIT_STATES` | Validation fit sets | Only if the state joins a fit |
 | `config/params/housing_need.yaml` `*_xx` keys | Housing-need context | Optional |
-| About 30 scripts in `scripts/dev/` with their own `STATES` tuples | Research and page scripts | Only if you rerun that script |
+| Scripts in `scripts/dev/` and `scripts/archive/` with their own `STATES` tuples | Research and page scripts | Only if you rerun that script |
 
 Not hard-coded, so nothing to change:
 

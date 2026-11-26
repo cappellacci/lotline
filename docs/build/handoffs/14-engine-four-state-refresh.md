@@ -74,7 +74,7 @@ them); if a field would be cleaner, open a `contract-change` issue.
   eligible`; always set that variable, because without it a full statewide download starts. NC and MN were
   rebuilt after #252 (2026-11-01 and 2026-11-02).
 - Run the panel builders' counts: `uv run python scripts/dev/estimate_mm.py --smoke` and
-  `uv run python scripts/dev/estimate_pooled_adu.py --smoke`. Report places, adopters per year, never-treated comparisons, all-zero places, and the counts under each sensitivity.
+  `uv run python scripts/archive/estimate_pooled_adu.py --smoke`. Report places, adopters per year, never-treated comparisons, all-zero places, and the counts under each sensitivity.
 - Compare with the readiness reports. Any difference beyond rounding is a bug in task 1 or a data problem: say
   which in the PR.
 

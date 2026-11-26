@@ -46,7 +46,7 @@ What an engine thread needs from North Carolina, in one place. Details are in §
 
 | Run | What NC adds | Run variants | Caveats |
 |---|---|---|---|
-| **D-025 ADU** (`src/lotline/model/pooled_adu.py`, `scripts/dev/estimate_pooled_adu.py`) | 8 places with an in-window change: Raleigh, Durham city, Durham County, Greensboro, Cornelius, Huntersville, Matthews, Mint Hill. 5 have firm dates (Raleigh, Durham city and county, Greensboro, Cornelius) | Main: all 8. Sensitivity: firm dates only (drops Matthews 2016 and Mint Hill 2011) | Mecklenburg towns: small counts from the description parser; treat 2025 as partial and drop 2026. Raleigh's ADU flags start in 2019. Charlotte stays out |
+| **D-025 ADU** (`src/lotline/model/pooled_adu.py`, `scripts/archive/estimate_pooled_adu.py`) | 8 places with an in-window change: Raleigh, Durham city, Durham County, Greensboro, Cornelius, Huntersville, Matthews, Mint Hill. 5 have firm dates (Raleigh, Durham city and county, Greensboro, Cornelius) | Main: all 8. Sensitivity: firm dates only (drops Matthews 2016 and Mint Hill 2011) | Mecklenburg towns: small counts from the description parser; treat 2025 as partial and drop 2026. Raleigh's ADU flags start in 2019. Charlotte stays out |
 | **D-024 missing middle** (`src/lotline/model/estimate_mm.py`) | 55 BPS places of 10,000+. Firm in-window events: Durham 2019, Raleigh 2021 and 2022 (and Durham County 2019 if remainders are in) | Main: all dated rows. Sensitivity: without the 8 `[earliest-known]` events (Wake Forest, Wilson, Morrisville, Sanford, Burlington, Mooresville, Garner, Monroe) | Charlotte excluded (holdout). Apex and New Bern are treated before the window |
 | **V5 Charlotte** (#45, freeze **by Nov 17**) | `reports/nc/V5-charlotte-inputs.md`: inputs and their check | Option (b), the town prior with its range, unless Mecklenburg sends the archived roll **by Nov 10** | Cap annual inputs at 2022 and say so in the freeze file |
 
@@ -166,7 +166,7 @@ WS-ENGINE should run D-024 with and without them.
 ## 4. How these numbers were made
 
 ```bash
-uv run python scripts/dev/nc_readiness_counts.py
+uv run python scripts/archive/nc_readiness_counts.py
 ```
 
 The script is read-only. It reads the processed tables with `DataStore` and the two config CSVs, and passes

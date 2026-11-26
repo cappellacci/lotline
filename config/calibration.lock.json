@@ -16,7 +16,7 @@
    "decision": "MS-10",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/adu_baseline_share.py",
+   "script": "scripts/archive/adu_baseline_share.py",
    "values": {
     "aggregate:baseline_adu_share_of_one_unit": 0.033
    }
@@ -25,7 +25,7 @@
    "decision": "D-056",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/eligible_proxy_test.py (model/eligible_proxy.py)",
+   "script": "scripts/archive/eligible_proxy_test.py (model/eligible_proxy.py)",
    "values": {
     "eligible_proxy:eligible_proxy_scale": 0.971,
     "eligible_proxy:eligible_proxy_sd": 0.106
@@ -187,7 +187,7 @@
    "decision": "D-090, D-091",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/adu_drift.py (reads scripts/dev/adu_time_split.py)",
+   "script": "scripts/archive/adu_drift.py (reads scripts/archive/adu_time_split.py)",
    "values": {
     "adu:adu_drift_sigma": 1.025
    }
@@ -196,7 +196,7 @@
    "decision": "D-096",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/adu_refit_fixed_rows.py adu_config_fit.py (model/adu_types.fit3_types); fit set from scripts/dev/adu_joint_refit.py",
+   "script": "scripts/archive/adu_refit_fixed_rows.py adu_config_fit.py (model/adu_types.fit3_types); fit set from scripts/dev/adu_joint_refit.py",
    "values": {
     "adu:adu_owner_occupancy_share": 1.0,
     "adu:adu_partial_rule_share": 0.7,
@@ -220,7 +220,7 @@
    "decision": "D-097",
    "how": "code",
    "status": "current",
-   "script": "scripts/dev/adu_mx_grid.py --config-out",
+   "script": "scripts/archive/adu_mx_grid.py --config-out",
    "values": {
     "adu_partial_share_grid.csv": "aa4a409ae1048b5d12f56a24a1604504a1599e15e035e146734dfa36618d609b"
    }
@@ -229,7 +229,7 @@
    "decision": "D-088, D-030",
    "how": "code",
    "status": "current",
-   "script": "scripts/dev/adu_types_slopes.py --out (calibrate_adu.information_se)",
+   "script": "scripts/archive/adu_types_slopes.py --out (calibrate_adu.information_se)",
    "values": {
     "adu_anchor:adu_anchor_info_corr": 0.062426,
     "adu_anchor:adu_anchor_info_log_se_alpha": 0.227788,
@@ -293,7 +293,7 @@
    "decision": "D-099",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/adu_new_rule.py (model/adu_new_rule.py)",
+   "script": "scripts/archive/adu_new_rule.py (model/adu_new_rule.py)",
    "values": {
     "adu:adu_new_rule_share": 1.0
    }
@@ -302,7 +302,7 @@
    "decision": "D-100",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/mm_ramp_d100.py (model/mm_routes.fit_routes)",
+   "script": "scripts/archive/mm_ramp_d100.py (model/mm_routes.fit_routes)",
    "values": {
     "mm_hazard:mm_ramp_half_years_fast": 0.5
    }

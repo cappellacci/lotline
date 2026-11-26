@@ -301,8 +301,31 @@ def load_bundle(path: Path) -> dict:
     from lotline.model.results import read_bundle
 
     path = Path(path)
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    check_schemas_version(doc["meta"].get("schemas_version"), path)
     read_bundle(path)  # raises on any schema error, so a bad bundle never reaches the page
-    return json.loads(path.read_text(encoding="utf-8"))
+    return doc
+
+
+def check_schemas_version(found: str | None, path: Path) -> None:
+    """Refuse a bundle this code can't read: another major line, or a newer minor version than this code.
+
+    Older minor versions in the same line are fine: changes are additive and `read_bundle` reads missing
+    parts as empty. A newer bundle may carry tables or columns the page doesn't know, so rebuild with the
+    code that wrote it."""
+    from lotline.schemas import SCHEMAS_VERSION
+
+    try:
+        have = tuple(int(x) for x in SCHEMAS_VERSION.split("."))
+        got = tuple(int(x) for x in str(found).split("."))
+    except ValueError:
+        raise ValueError(f"{path}: schemas_version {found!r} is not a version number") from None
+    if got[0] != have[0] or got > have:
+        raise ValueError(
+            f"{path}: written with schemas {found}, but this code reads schemas {SCHEMAS_VERSION}"
+            f"{' or older' if got[0] == have[0] else ''}. Update the code (git pull) or rerun "
+            "`lotline results` for this state."
+        )
 
 
 def order_states(bundles: Iterable[dict]) -> list[dict]:

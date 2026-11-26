@@ -757,3 +757,16 @@ def test_fee_box_baseline_counts_each_size_once(tmp_path):
     html = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None).read_text()
     box = html[html.index("function feeTestUpdate") : html.index("function feeTestUpdate") + 2000]
     assert "r.draw === 0 && Number(r.fee_change_share) === 0.5 && t[2].includes(String(r.size))" in box
+
+
+@pytest.mark.parametrize("found", ["1.0", "1.25"])
+def test_older_or_equal_schemas_in_the_same_line_are_read(found, monkeypatch):
+    monkeypatch.setattr("lotline.schemas.SCHEMAS_VERSION", "1.25")
+    build.check_schemas_version(found, Path("x.json"))
+
+
+@pytest.mark.parametrize("found", ["1.26", "2.0", "0.9", None, "v1"])
+def test_newer_or_other_line_schemas_are_refused(found, monkeypatch):
+    monkeypatch.setattr("lotline.schemas.SCHEMAS_VERSION", "1.25")
+    with pytest.raises(ValueError, match="schemas"):
+        build.check_schemas_version(found, Path("x.json"))

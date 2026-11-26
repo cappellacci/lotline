@@ -256,7 +256,7 @@ def test_pooled_panel_relabelling_by_hand():
 
 D025_MODE_BUG = pytest.mark.skip(
     reason="pooled_adu.place_logliks: unsafeguarded Newton mode search cycles for high-count places, so BFGS "
-    "cannot converge on zero-heavy panels (shared notes, 2026-10-20); re-enable when D-025's owner fixes it"
+    "cannot converge on zero-heavy panels (2026-10-20; still hangs 2026-11-26). Remove when #558 is fixed"
 )
 
 

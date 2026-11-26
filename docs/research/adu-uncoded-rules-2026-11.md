@@ -182,7 +182,7 @@ whole.
   (`scenarios.adu._live`).
 - `pytest tests -k reform`: 99 passed. `python compliance_check.py`: 0 FAIL.
 
-### Coverage audit (`scripts/dev/adu_coverage_audit.py`, rerun into `reports/adu-coverage-audit/`)
+### Coverage audit (`scripts/archive/adu_coverage_audit.py`, rerun into `reports/adu-coverage-audit/`)
 
 | | Before | After |
 |---|---|---|
