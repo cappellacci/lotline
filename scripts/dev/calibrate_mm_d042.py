@@ -29,29 +29,13 @@ from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import calibrate_mm as cal
 from lotline.model import estimate_mm as mm
+from lotline.model import mm_fitsets as fs
 from lotline.model import rule_tags
 from lotline.model.scenarios import adu
 
 TESTS = {"2743000": "Minneapolis", "3719000": "Durham city", "37063": "Durham County", "3755000": "Raleigh"}
 FIT_FIRST, FIT_LAST = 2013, 2025
-PREREGISTERED = {  # D-042's list; places with no pre-reform BPS year drop out under the stated rule
-    "Wilson",
-    "Morrisville",
-    "Wake Forest",
-    "Sanford",
-    "Burlington",
-    "Mooresville",
-    "Garner",
-    "League City",
-    "Lewisville",
-    "Lubbock",
-    "Cincinnati",
-    "Euclid",
-    "Richfield",
-    "St. Louis Park",
-    "Austin",
-    "Houston",
-}
+PREREGISTERED = set(fs.PREREGISTERED_D042)  # D-042's list; places with no pre-reform BPS year drop out
 OUTSIDE_RATE, OUTSIDE_HALF = 0.0005, 2.5  # D-038's outside benchmark
 STATUSES = ("coded_not_treated", "uncoded")
 NO_CAP_RISE: dict[str, tuple[int, int, int]] = {}  # places whose in-window change did not raise the cap

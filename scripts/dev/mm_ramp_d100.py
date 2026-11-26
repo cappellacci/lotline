@@ -27,6 +27,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.config import load_params
 from lotline.io import DataStore
 from lotline.model import calibrate_mm as cal
 from lotline.model import estimate_mm as mm
@@ -43,7 +44,7 @@ def _load(name: str, file: str):
 d092 = _load("d092", "calibrate_mm_d092.py")
 d054 = d092.d054
 ST_PAUL = "2758000"
-PHI = 13.632980572972555  # run 9 (D-092 deviation (b)); C4 in config
+PHI = load_params("mm_hazard")["mm_year_spread_phi"].value  # run 9 (D-092 deviation (b)), as C4 in config
 MODELS = ("R0", "R1", "R2")
 
 

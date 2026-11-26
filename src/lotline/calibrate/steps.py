@@ -241,6 +241,7 @@ STEPS: tuple[Step, ...] = (
         "hand",
         reads=("bps", "parcels", "reforms"),
         notes="Also passed to later scripts as --phi 13.63.",
+        runner="lotline.calibrate.mm_steps:mm_year_spread",
     ),
     Step(
         "mm_c4",
@@ -252,6 +253,7 @@ STEPS: tuple[Step, ...] = (
         after=("mm_year_spread",),
         seed=20261106,
         draws=20_000,
+        runner="lotline.calibrate.mm_steps:mm_c4",
     ),
     Step(
         "mm_fast_ramp",
@@ -260,6 +262,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/mm_ramp_d100.py (model/mm_routes.fit_routes)",
         "hand",
         after=("mm_c4",),
+        runner="lotline.calibrate.mm_steps:mm_fast_ramp",
     ),
     Step(
         "mm_units_per_project",
@@ -268,6 +271,7 @@ STEPS: tuple[Step, ...] = (
         "scripts/dev/calibrate_mm.py",
         "hand",
         reads=("bps",),
+        runner="lotline.calibrate.mm_steps:mm_units_per_project",
     ),
     # ---- frozen validation inputs -----------------------------------------------------------------
     Step(

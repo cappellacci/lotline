@@ -67,3 +67,28 @@ the whole CSV; `--run` compares it row by row and `--write` writes it.
 
 Three ADU steps are left unported because they were fitted on an older model form: `adu_state_effect`,
 `adu_drift` and `adu_ramp_share`. Refitting them is phase 5.
+
+## The missing-middle chain (phase 3)
+
+Four missing-middle steps rerun from the fetched data with one command:
+
+- `mm_units_per_project`: D-038's homes per 2-4 unit building.
+- `mm_year_spread`: D-092 run 9's per-year spread φ.
+- `mm_c4`: D-092 run 10, challenger C4. It fits the mature rate, the place-effect variance and the ramp's
+  half-way point.
+- `mm_fast_ramp`: D-100's half-way point for locally adopted places.
+
+```bash
+uv run lotline calibrate --run --quick --step mm_c4   # minutes: a coarse half-way-point grid
+uv run lotline calibrate --run --step mm_c4           # the full fit (about 17 minutes)
+```
+
+The fit sets are library code in `lotline.model.mm_fitsets`: D-092's panel, events, fit and test split, the
+always-allowed level set, the year-spread places, and D-038's named places. They used to live only in
+development scripts, which now import them. Every fit is deterministic (grid and golden-section search), so a
+full run on unchanged tables reproduces config. C4 and D-100 read φ from config rather than refitting it in
+the same run.
+
+On 2026-11-26, three steps reproduced config exactly. φ did not. Run 9 fitted 941 pseudo-forecasts of 483
+places. Today's tables give 1,379 forecasts of 713 places under the same rules, and φ comes out at 13.03
+(12.39-13.70) against config's 13.63 (12.85-14.48). Config keeps run 9's value until Ben decides.
