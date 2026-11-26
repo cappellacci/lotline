@@ -8290,3 +8290,20 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
   [0.7, 1.4]. Missing middle's own k is now 1.106 (check theme, not used).
 - **Effect:** tier-3 states (ACS fallback) get about 3% fewer eligible lots and a wider draw range. Approved by
   Ben in chat on 2026-11-26.
+
+### Deviation · 2026-11-26 · D-044, D-048 and D-091 refitted on D-096's form (calibrate phase 5)
+- **What changed:** `lotline calibrate --run --write` refitted the three ADU steps that were fitted on older
+  model forms, on D-096's fit set (70 places, 498 place-years), with each method unchanged
+  (PR #549):
+  - **D-044 (τ):** τ̂ 0.565 → 0, 90% upper bound 1.70 → 0.46; the grid's mass moves toward 0
+    (P(τ = 0) 0.021 → 0.128). τ is fitted with the rule shares and the core multiplier held at config, and
+    θ and α maximized at each τ.
+  - **D-091 (σ):** 1.025, unchanged; leaving one state out gives 0.875–1.100.
+  - **D-048 (ramp):** no ramp still wins (log-likelihood −1,487.8 against −1,916.5 at a half-life of 0.5
+    years, worse beyond), so `adu_ramp_share` stays 1.
+- **Why τ moved:** D-053's τ was fitted before the D-088 place types. With the core multiplier in the fit,
+  most of the difference between states is explained by their mix of place types.
+- **Effect:** none on the five fitted states, which draw no state multiplier (MN's bundle is identical). A
+  state outside the fit gets a narrower range: Wisconsin's ADU 2027–2031 P10–P90 122–2,088 → 201–1,391, P50
+  506 → 505.
+- Approved by Ben in chat on 2026-11-26 ("Yes, write it").

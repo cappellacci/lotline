@@ -128,7 +128,7 @@ adu_ramp_share:
   low: 1.0
   high: 1.0
   unit: share of the mature hazard a rule has reached in each year it is in force (1 = full strength from year 1)
-  source: "Estimated choice, D-048 (adopted by Ben 2026-11-05): fitting D-041 with no ramp raised the log-likelihood by 55.8 with no added parameter, D-047 approach 2 chose no ramp in every fold, D-045 found counts flat or falling where the ramp expected a 3-5x rise, and D-049's held-out place scores favoured it (+52.5, 2 SE 52.2). Replaces adu_ramp_half_years 2.0 (1.0-3.5) and adu_ramp_slope_years 0.75 (0.5-1.5), the logistic ramp from adu-study-design.md (Seattle ~3 years to plateau, E044; Portland ~6, E046)"
+  source: "Estimated choice, D-048 (adopted by Ben 2026-11-05): fitting D-041 with no ramp raised the log-likelihood by 55.8 with no added parameter, D-047 approach 2 chose no ramp in every fold, D-045 found counts flat or falling where the ramp expected a 3-5x rise, and D-049's held-out place scores favoured it (+52.5, 2 SE 52.2). Replaces adu_ramp_half_years 2.0 (1.0-3.5) and adu_ramp_slope_years 0.75 (0.5-1.5), the logistic ramp from adu-study-design.md (Seattle ~3 years to plateau, E044; Portland ~6, E046). Refitted 2026-11-26 on D-096's form (lotline calibrate --run --step adu_ramp_share, PR #549): no ramp log-likelihood -1,487.8 against -1,916.5 at a half-life of 0.5 years and lower beyond"
   notes: "Fixed, not drawn. With the D-048 anchor (0.000659, down from 0.001038) a typical place's five-year mean is about 7% lower than before: year 1 about 3x higher, years 3-5 about a third lower. The old logistic is kept in code (hazard.PRE_D048_RAMP) so D-041 and earlier fits can be reproduced."
 
 # ---- Outside the calibration range ----

@@ -19,14 +19,8 @@ uv run lotline calibrate --check   # registry, config and lock agree (no data ne
 its step being re-run and the lock rewritten (`lotline calibrate --write-lock`), the check fails, so a fitted
 number can't drift from its fit unnoticed.
 
-**Status of the steps.** Most are `current`. Three are marked `stale` because they were fitted on an earlier
-model form and not yet re-fitted on the current one:
-
-- `adu_state_effect` (τ, D-053);
-- `adu_drift` (σ, D-090/D-091);
-- `adu_ramp_share` (D-048).
-
-One step, `v5_charlotte_prior`, is `frozen`: it serves only the frozen V5 Charlotte test.
+**Status of the steps.** Every step is `current` except `v5_charlotte_prior`, which is `frozen`: it serves only
+the frozen V5 Charlotte test. The three ADU steps once fitted on older forms were refitted in phase 5 (below).
 
 **Runnable steps.** `uv run lotline calibrate --run` recomputes the steps that have a runner and compares each
 value with config; `--write` puts the new values into config and rewrites the lock. Today four data-only steps
@@ -65,5 +59,18 @@ central differences). These used to live only in development scripts that loaded
 Heavy steps run in a process pool of `LOTLINE_CALIBRATE_WORKERS` workers (default 4). The grid step returns
 the whole CSV; `--run` compares it row by row and `--write` writes it.
 
-Three ADU steps are left unported because they were fitted on an older model form: `adu_state_effect`,
-`adu_drift` and `adu_ramp_share`. Refitting them is phase 5.
+## The three older ADU fits (phase 5)
+
+`adu_state_effect`, `adu_drift` and `adu_ramp_share` were fitted on older model forms. Each now has a runner
+that refits it on D-096's form, the same 70 places and 498 place-years as the chain above:
+
+- `adu_state_effect` (D-043/D-044): τ's profile and maximum likelihood on the places with the core
+  multiplier folded in, rule shares held at config.
+- `adu_drift` (D-091): σ from the persistence forecaster's held-out window, places with history in MN, NC,
+  TX and OR.
+- `adu_ramp_share` (D-048): the fit at each ramp half-life on D-047's grid against no ramp. The runner stops
+  if a ramp wins, because one share can't hold a ramp.
+
+Written 2026-11-26 (Ben approved; PR #549). Ramp and drift came out unchanged. τ fell from 0.565 to 0
+(upper bound 1.70 → 0.46), which leaves the five fitted states' results unchanged and narrows a new state's
+ADU range.
