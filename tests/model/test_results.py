@@ -421,7 +421,7 @@ def _fake_cli(monkeypatch, tmp_path, states, fail=()):
         return {k: v.assign(state=state) if "state" in v else v for k, v in b.items()}
 
     monkeypatch.setattr(results, "build_bundle", fake_build)
-    monkeypatch.setattr(results, "tree_is_clean", lambda: True)
+    monkeypatch.setattr(results, "tree_state", lambda: True)
     pages = []
 
     def build_app(results_dir, out_dir):
@@ -680,3 +680,41 @@ def test_an_older_bundle_without_the_new_meta_fields_still_reads(tmp_path):
             row.pop(k, None)
     path.write_text(json.dumps(doc))
     assert "tree_clean" not in results.read_bundle(path)["meta"]
+
+
+def test_commit_sha_without_git_uses_the_env_then_the_stamp_then_zeros(monkeypatch, tmp_path):
+    """Outside a repository: LOTLINE_COMMIT wins; then src/lotline/COMMIT (filled in by `git archive` and
+    GitHub's Download ZIP); a missing or unfilled stamp ($Format:%H$) gives all zeros."""
+    monkeypatch.delenv("LOTLINE_COMMIT", raising=False)
+    fake = tmp_path / "pkg" / "model" / "results.py"
+    fake.parent.mkdir(parents=True)
+    monkeypatch.setattr(results, "__file__", str(fake))
+    assert results.commit_sha(tmp_path) == results.UNKNOWN_COMMIT
+    (tmp_path / "pkg" / "COMMIT").write_text("$Format:%H$\n")
+    assert results.commit_sha(tmp_path) == results.UNKNOWN_COMMIT
+    monkeypatch.setenv("LOTLINE_COMMIT", "ABCDEF1234567")
+    assert results.commit_sha(tmp_path) == "abcdef1234567"
+
+
+def test_the_repo_ships_an_unfilled_commit_stamp():
+    stamp = Path(results.__file__).resolve().parents[1] / "COMMIT"
+    assert stamp.read_text(encoding="utf-8").strip() == "$Format:%H$"
+
+
+def test_commit_sha_reads_a_filled_stamp(monkeypatch, tmp_path):
+    monkeypatch.delenv("LOTLINE_COMMIT", raising=False)
+    fake = tmp_path / "pkg" / "model" / "results.py"
+    fake.parent.mkdir(parents=True)
+    (tmp_path / "pkg" / "COMMIT").write_text("0123456789abcdef0123456789abcdef01234567\n")
+    monkeypatch.setattr(results, "__file__", str(fake))
+    assert results.commit_sha(tmp_path) == "0123456789abcdef0123456789abcdef01234567"
+
+
+def test_commit_sha_without_git_installed(monkeypatch, tmp_path):
+    def no_git(*a, **k):
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(results.subprocess, "run", no_git)
+    monkeypatch.setenv("LOTLINE_COMMIT", "1234567")
+    assert results.commit_sha(tmp_path) == "1234567"
+    assert results.tree_state(tmp_path) is None

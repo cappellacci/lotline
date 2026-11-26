@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Iterable
+from pathlib import Path
 
 import pandas as pd
 
@@ -228,6 +229,45 @@ def unlisted(state: str, store: DataStore) -> pd.DataFrame:
         counts = g[g.str.len().isin([7, 10]) & ~g.isin(known)].value_counts()
         out += [{"geoid": k, "table": table, "rows": int(v)} for k, v in counts.items()]
     return pd.DataFrame(out, columns=["geoid", "table", "rows"])
+
+
+# Config lists where a GEOID the jurisdictions table lacks matches nothing: an error. Reform rows are only
+# listed, because a place Census files under a county row is blended into that row (D-021, `county_mix`)
+# and a state's reform table may code places outside its modeled set.
+CONFIG_GEOID_LISTS = ("fees", "local_jurisdictions", "data_tiers", "train_until", "holdouts")
+
+
+def config_orphans(state: str, store: DataStore, config_dir: Path | None = None) -> pd.DataFrame:
+    """GEOIDs (7- or 10-digit) named in config (config/reforms, config/fees, the state file's lists) that the
+    built jurisdictions table lacks, e.g. after a Census re-key of the building-permit places. Columns: geoid,
+    where, blocking (True for every list but reforms). Empty when the jurisdictions table isn't built."""
+    from lotline.config import CONFIG_DIR, load_fees
+
+    juris = store.read(state, "jurisdictions")
+    if juris is None:
+        return pd.DataFrame(columns=["geoid", "where", "blocking"])
+    folder = config_dir or CONFIG_DIR
+    known = set(juris["geoid"].astype(str))
+    cfg = load_state(state, folder)
+    named: dict[str, set[str]] = {}
+    reforms = folder / "reforms" / f"{state.lower()}.csv"
+    if reforms.exists():
+        named["reforms"] = set(
+            pd.read_csv(reforms, dtype=str, usecols=["jurisdiction_geoid"])["jurisdiction_geoid"]
+        )
+    fees = load_fees(state, folder)
+    if fees is not None:
+        named["fees"] = set(fees["jurisdiction_geoid"].astype(str))
+    named["local_jurisdictions"] = set(cfg.local_jurisdictions)
+    named["data_tiers"] = set(cfg.data_tiers)
+    named["train_until"] = set(cfg.train_until)
+    named["holdouts"] = {h.geoid for h in cfg.holdouts if not h.statewide}
+    out = [
+        {"geoid": g, "where": where, "blocking": where in CONFIG_GEOID_LISTS}
+        for where, geoids in named.items()
+        for g in sorted(x for x in geoids if isinstance(x, str) and len(x) in (7, 10) and x not in known)
+    ]
+    return pd.DataFrame(out, columns=["geoid", "where", "blocking"])
 
 
 def load(state: str, store: DataStore, *, refresh: bool = False) -> pd.DataFrame:
