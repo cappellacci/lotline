@@ -99,3 +99,24 @@ def test_a_renamed_column_stops_instead_of_dropping_the_index(renamed):
     assert fhfa.to_canonical(raw, "county").loc[0, "hpi_base2000"] == 200
     with pytest.raises(ValueError, match="missing column"):
         fhfa.to_canonical(raw.rename(columns={renamed: renamed + " (new)"}), "county")
+
+
+def test_raw_vintage_never_overwrites_and_reads_the_newest_copy(tmp_path, monkeypatch):
+    """Review item 10: a refresh goes to a new dated folder; a plain run reads the newest saved copy."""
+    from datetime import date
+
+    from lotline.io.store import DataStore
+
+    store = DataStore(tmp_path)
+    name = "hpi_at_bdl_county.xlsx"
+    today = date.today().isoformat()
+    assert fhfa.raw_vintage(store, name, refresh=False) == today  # nothing saved yet
+    (store.raw(fhfa.SOURCE, "current") / name).parent.mkdir(parents=True)
+    (store.raw(fhfa.SOURCE, "current") / name).write_text("x")
+    assert fhfa.raw_vintage(store, name, refresh=False) == "current"  # the pre-2026-11-26 folder
+    for v in ("2026-12-01", "2027-03-01"):
+        (store.raw(fhfa.SOURCE, v) / name).parent.mkdir(parents=True)
+        (store.raw(fhfa.SOURCE, v) / name).write_text("x")
+    (store.raw(fhfa.SOURCE, "2027-06-01")).mkdir()  # a folder without this file is ignored
+    assert fhfa.raw_vintage(store, name, refresh=False) == "2027-03-01"
+    assert fhfa.raw_vintage(store, name, refresh=True) == today

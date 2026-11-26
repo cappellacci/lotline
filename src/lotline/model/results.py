@@ -28,6 +28,10 @@ over every place the baseline forecasts (D-076) twice, as D-065 labels them: `fe
 (Ben, 2026-11-17). A scenario the engine cannot run is listed in `meta.scenarios_pending`, never filled with
 a stand-in.
 
+The context tables are built in `results_tables.py` (overlap flag, fee slider grid, ADU place types,
+affordability, shortfall) and `results_baseline.py` (baseline, observed record, gut check); this module
+draws, assembles, validates, writes and reads the bundle.
+
 Factors the scenario module does not draw itself are drawn here, triangular over config/params/aggregate.yaml
 (low, value, high), from `results_seed`: `completion_factor_single_family` (ADU),
 `completion_factor_multifamily` (missing middle) and `displacement_share`.
@@ -51,8 +55,28 @@ import pandas as pd
 import lotline
 from lotline.build import eligible, panels
 from lotline.config import CONFIG_DIR, load_params
-from lotline.model import aggregate, baseline, gutcheck
+from lotline.model import aggregate, baseline
 from lotline.model import eligible_proxy as proxy
+from lotline.model.results_baseline import (  # noqa: F401 (results.<name> keeps working)
+    baseline_class_draws,
+    baseline_table,
+    historical_floor_rows,
+    observed_table,
+)
+from lotline.model.results_tables import (  # noqa: F401 (results.<name> keeps working)
+    FEE_STOPS,
+    _columns,
+    _pct,
+    adu_baseline_years,
+    adu_place_type_table,
+    affordability_table,
+    fee_types_with_stops,
+    overlap_flag,
+    shortfall_table,
+    state_stock,
+    weighted_median,
+    year_shares,
+)
 from lotline.schemas import SCENARIOS, SCHEMAS_VERSION, validate
 
 if TYPE_CHECKING:
@@ -165,34 +189,6 @@ def post_test(state: str, origin: int, config_dir: Path | None = None) -> tuple[
     return ", ".join(h.test_id for h in hits), "Built after " + "; and after ".join(notes) + "."
 
 
-def weighted_median(x, w) -> float:
-    """The smallest x at which the cumulative weight reaches half the total (weights >= 0, total > 0)."""
-    x, w = np.asarray(x, dtype=float), np.asarray(w, dtype=float)
-    order = np.argsort(x, kind="stable")
-    cum = np.cumsum(w[order])
-    return float(x[order][np.searchsorted(cum, 0.5 * cum[-1])])
-
-
-def overlap_flag(eligible: np.ndarray, distance: np.ndarray, params=None) -> tuple[str, float]:
-    """State overlap flag from the eligible-weighted median calibration distance of its places.
-
-    `distance` is `hazard.calibration_distance(...)["total"]` per place (log distance outside the calibration
-    range, 0 inside). high at or below `overlap_flag_medium_distance` (0.5: the widening adds a log-sd of 0.5,
-    P10-P90 about x0.5-x1.9 at the central widening), low above `overlap_flag_low_distance` (1.0), medium
-    between. By hand: places with 60 and 40 eligible parcels at distances 0.3 and 2.0 -> median 0.3, high.
-    """
-    p = params or load_params("aggregate")
-    e = np.asarray(eligible, dtype=float)
-    if not e.sum() > 0:
-        return "low", float("nan")
-    median = weighted_median(distance, e)
-    if median > p["overlap_flag_low_distance"].value:
-        return "low", median
-    if median > p["overlap_flag_medium_distance"].value:
-        return "medium", median
-    return "high", median
-
-
 # ---- draws -> tables ------------------------------------------------------------------------------------
 
 
@@ -238,186 +234,6 @@ def scenario_draws(run: ScenarioRun, rng: np.random.Generator) -> pd.DataFrame:
             "overlap_share": np.nan,
         }
     )
-
-
-FEE_STOPS = tuple(round(x / 10, 1) for x in range(-5, 11) if x != 0)  # the slider: up 50% to abolished
-
-
-def fee_types_with_stops(places: pd.DataFrame, origin: int, draws: int, types: pd.DataFrame) -> pd.DataFrame:
-    """`results_fee_types` with every slider stop added for each size that is not linear in the fee change.
-
-    The engine's grid (`fees.change_grid`, same draws as `fees.simulate`) at every stop in `FEE_STOPS`: a size
-    whose homes added equal (s ÷ 0.5) × the half cut in every draw and stop (the elasticity route) keeps
-    only its 0.5 rows, which the page scales. Any other size (houses on the lot-feasibility route, places
-    with a parcel roll) gets the grid's value at every stop, with the draw's completion and the size's
-    baseline. Raises if the grid's half cut differs from `types` (they must be the same draws).
-    """
-    from lotline.model.scenarios import fees
-
-    if types is None or not len(types):
-        return types
-    grid = fees.change_grid(places, origin, list(FEE_STOPS), draws=draws)
-    w = grid.pivot_table(index=["draw", "size"], columns="share", values="units_added", aggfunc="sum")
-    tol = 1e-6 * max(1.0, float(w[0.5].abs().max()))
-    t = types.assign(draw=types["draw"].astype(int)).set_index(["draw", "size"]).sort_index()
-    if not np.allclose(
-        w[0.5].reindex(t.index).to_numpy(dtype=float), t["units_added"].to_numpy(float), atol=tol
-    ):
-        raise ValueError("results_fee_types does not match the engine's grid at a cut of half")
-    extra = []
-    for size in sorted(set(t.index.get_level_values("size"))):
-        ws = w.xs(size, level="size")
-        if all(np.allclose(ws[s], (s / 0.5) * ws[0.5], atol=tol) for s in FEE_STOPS):
-            continue
-        half = t.xs(size, level="size")
-        for s in FEE_STOPS:
-            if s == 0.5:
-                continue
-            at_s = ws[s].reindex(half.index).to_numpy(float)
-            extra.append(half.assign(fee_change_share=s, units_added=at_s).reset_index().assign(size=size))
-    return pd.concat([types, *extra], ignore_index=True) if extra else types
-
-
-def adu_place_type_table(state: str, places: pd.DataFrame, run_draws: Mapping) -> pd.DataFrame:
-    """`results_adu_place_types`: the ADU scenario by place type (D-088), from `adu.run`'s draws.
-
-    Per type: places; lots = the median over draws of its eligible lots; base and added = each draw's
-    current-rules and added gross ADUs summed over the type's places, averaged over the window years, then
-    P10/P50/P90 across draws. By hand: two suburb places with 3 and 5 current-rules ADUs a year and 1 and 2
-    added, in every draw -> base 8, added 3.
-    """
-    kind = places["place_type"].fillna("suburb").to_numpy() if "place_type" in places else None
-    cur = np.asarray(run_draws["current"], dtype=float)  # draws x places x years
-    add = np.asarray(run_draws["added"], dtype=float)
-    elig = np.asarray(run_draws["eligible"], dtype=float)
-    rows = []
-    for t in ("core", "suburb", "town"):
-        on = (kind == t) if kind is not None else np.full(cur.shape[1], t == "suburb")
-        if not on.any():
-            continue
-        b = cur[:, on, :].sum(axis=1).mean(axis=1)
-        a = add[:, on, :].sum(axis=1).mean(axis=1)
-        (b10, b50, b90), (a10, a50, a90) = np.percentile(b, [10, 50, 90]), np.percentile(a, [10, 50, 90])
-        rows.append(
-            {
-                "state": state,
-                "place_type": t,
-                "places": int(on.sum()),
-                "lots": float(np.median(elig[:, on].sum(axis=1))),
-                "base_p10": b10,
-                "base": b50,
-                "base_p90": b90,
-                "added_p10": a10,
-                "added": a50,
-                "added_p90": a90,
-            }
-        )
-    return pd.DataFrame(rows, columns=["state", *_columns("adu_place_types")])
-
-
-def adu_baseline_years(state: str, run_draws: Mapping, origin: int, own=None) -> pd.DataFrame:
-    """`results_adu_baseline`: statewide current-rules gross ADUs per window year, P10/P50/P90 over draws.
-
-    With `own` (a bool per place: its no-reform rate comes from its own ADU counts), each year also gets the
-    mean and, where some places have own counts, `own_counts` and `model` rows: percentiles of each group's
-    own sum, and means that add up to the `all` row's (the page splits the bar by them).
-    By hand: places with 10 and 4 ADUs a year in every draw, the first with own counts -> all 14, own_counts
-    10, model 4; means the same.
-    """
-    cur_by_place = np.asarray(run_draws["current"], dtype=float)  # draws x places x years
-    _, _, first = baseline.window(origin)
-    years = range(cur_by_place.shape[2])
-    if own is None:
-        cur = cur_by_place.sum(axis=1)
-        rows = [{"state": state, "period": str(first + y), **_pct(cur[:, y])} for y in years]
-        cols = [c for c in _columns("adu_baseline") if c not in ("basis", "mean")]
-        return pd.DataFrame(rows, columns=["state", *cols])
-    own = np.asarray(own, dtype=bool)
-    groups = {"all": np.ones_like(own)} | ({"own_counts": own, "model": ~own} if own.any() else {})
-    rows = []
-    for basis, m in groups.items():
-        cur = cur_by_place[:, m, :].sum(axis=1)
-        for y in years:
-            a = cur[:, y]
-            rows.append(
-                {"state": state, "period": str(first + y), "basis": basis, **_pct(a), "mean": a.mean()}
-            )
-    return pd.DataFrame(rows, columns=["state", *_columns("adu_baseline")])
-
-
-def affordability_table(state: str, places, run_draws: Mapping, res_mm, fee_places, store) -> pd.DataFrame:
-    """`results_affordability`: who the new homes serve (`model/affordability.py`), from the inputs the
-    scenarios already used. Empty (no rows) when no HUD income limits file is registered."""
-    from lotline.model import affordability
-
-    market = store.read(state, "market_geo_year")
-    inputs = affordability.inputs(places, run_draws, getattr(res_mm, "places", None), fee_places, market)
-    out = affordability.table(state, inputs)
-    return (
-        out.astype({"places": "Int64"})
-        if len(out)
-        else pd.DataFrame(columns=["state", *_columns("affordability")])
-    )
-
-
-def state_stock(
-    acs: pd.DataFrame | None, state: str, origin: int, fips: str | None = None
-) -> tuple[float, int] | None:
-    """The state's housing units (ACS B25024_001, newest 5-year vintage ending by `origin`) and its year."""
-    from lotline.config import load_state
-
-    if acs is None or acs.empty:
-        return None
-    geo = f"state:{fips or load_state(state).fips}"
-    rows = acs[(acs["geo"] == geo) & (acs["variable"] == "B25024_001") & (acs["end_year"] <= origin)]
-    rows = rows.dropna(subset=["estimate"]).sort_values("end_year")
-    return (float(rows["estimate"].iloc[-1]), int(rows["end_year"].iloc[-1])) if len(rows) else None
-
-
-def shortfall_table(
-    state: str, base: pd.DataFrame, acs, origin: int, need_params=None, fips=None
-) -> pd.DataFrame:
-    """`results_shortfall`: the need left after homes built anyway (`model/shortfall.py`). No row when the
-    state has no shortage estimate, no housing stock or no five-year all-sizes baseline."""
-    from lotline.model import shortfall
-
-    cols = ["state", *_columns("shortfall")]
-    have = aggregate.need(state, need_params)
-    stock = state_stock(acs, state, origin, fips)
-    five = base[(base["size_class"] == "all") & base["period"].str.contains("-")] if len(base) else base
-    if aggregate.SHORTAGE not in have or stock is None or not len(five):
-        return pd.DataFrame(columns=cols)
-    sh = have[aggregate.SHORTAGE]
-    gr = have.get(aggregate.GROWTH)
-    growth = (gr.low, gr.value, gr.high) if gr is not None else (0.0, 0.0, 0.0)
-    r = load_params("aggregate")["stock_loss_rate"]
-    b = five.iloc[0]
-    g = shortfall.gap(
-        (sh.low, sh.value, sh.high),
-        growth,
-        stock[0],
-        (r.low, r.value, r.high),
-        (b["p10"], b["p50"], b["p90"]),
-    )
-    row = {
-        "state": state, "shortage_low": sh.low, "shortage": sh.value, "shortage_high": sh.high,
-        "growth_low": growth[0], "growth": growth[1], "growth_high": growth[2],
-        "stock": stock[0], "stock_year": stock[1],
-        "built_p10": b["p10"], "built": b["p50"], "built_p90": b["p90"], **g,
-    }  # fmt: skip
-    return pd.DataFrame([row], columns=cols).astype({"stock_year": "Int64"})
-
-
-def year_shares(run_draws: Mapping) -> np.ndarray:
-    """Each draw's permits by year as a share of its five-year total (draws x years)."""
-    from lotline.model.scenarios import year_shares_of
-
-    return year_shares_of(np.asarray(run_draws["added"], dtype=float).sum(axis=1))
-
-
-def _pct(a) -> dict[str, float]:
-    p10, p50, p90 = np.percentile(np.asarray(a, dtype=float), [10, 50, 90])
-    return {"p10": p10, "p50": p50, "p90": p90}
 
 
 def summarize(
@@ -483,199 +299,6 @@ def summarize(
         "totals": pd.DataFrame(totals).assign(state=st),
         "need": pd.DataFrame(need, columns=_columns("need")).assign(state=st),
     }
-
-
-def _columns(part: str) -> list[str]:
-    from lotline.schemas import columns
-
-    return [c for c in columns(TABLE[part]) if c != "state"]
-
-
-# ---- the baseline ---------------------------------------------------------------------------------------
-
-
-def baseline_class_draws(panel: pd.DataFrame, state: str, origin: int, params=None):
-    """Statewide baseline draws per BPS size class, {size: (window years x draws)} with "all" their sum per
-    draw, and the set of places forecast (`baseline_table`)."""
-    p = params or load_params("baseline")
-    reported = bool(p["use_reported_only"].value)
-    _, horizon, _ = baseline.window(origin, p)
-    panel = panel[panel["state"] == state.upper()]
-    by_class, modelled = {}, set()
-    for size in baseline.SIZE_CLASSES:
-        table, draws = baseline.forecast_draws(
-            panel, baseline.outcome_column(size, reported), origin, params=p
-        )
-        h = table["horizon"].to_numpy()
-        by_class[size] = np.stack([draws[h == k].sum(axis=0) for k in range(1, horizon + 1)]).astype(float)
-        modelled |= set(table["geoid"])
-    return {"all": sum(by_class.values()), **by_class}, modelled
-
-
-def baseline_table(
-    panel: pd.DataFrame, state: str, origin: int, params=None, class_draws=None
-) -> pd.DataFrame:
-    """The `baseline` part: statewide homes permitted with no policy change, per size class and period.
-
-    For each BPS size class, `baseline.forecast_draws` gives every place's simulated counts over the window
-    (D-061: origin 2025 -> 2027-2031); a draw's statewide count for a year is the sum over places. Places in
-    one state share the cycle path within a draw, and every size class samples the same cycle years
-    (`baseline.cycle_years` is seeded by state and origin, not by class), so draws line up across classes and
-    "all" is their sum within each draw. P10/P50/P90 are taken from those sums, never by adding percentiles.
-
-    `coverage_share`: the origin-year units of the places forecast over the units of every place in the
-    panel that year, on the same basis (reported or with imputation). Null when the origin year has none.
-    """
-    p = params or load_params("baseline")
-    reported = bool(p["use_reported_only"].value)
-    _, horizon, first = baseline.window(origin, p)
-    st = state.upper()
-    panel = panel[panel["state"] == st]
-    by_class, modelled = class_draws or baseline_class_draws(panel, st, origin, p)
-    by_class = {**by_class, "2_4": by_class["2"] + by_class["3_4"]}
-
-    cols = [baseline.outcome_column(s, reported) for s in baseline.SIZE_CLASSES]
-    at_origin = panel[panel["year"] == origin]
-    units = at_origin[cols].sum(axis=1, min_count=1).fillna(0)
-    total = float(units.sum())
-    covered = float(units[at_origin["geoid"].isin(modelled)].sum())
-    coverage = covered / total if total > 0 else None
-
-    rows = []
-    for size, a in by_class.items():  # a: (horizon, draws)
-        periods = [(f"{first}-{first + horizon - 1}", a.sum(axis=0))]
-        periods += [(str(first + k), a[k]) for k in range(horizon)]
-        for period, x in periods:
-            rows.append({"size_class": size, "period": period, **_pct(x), "mean": float(x.mean())})
-    return pd.DataFrame(rows).assign(
-        places=len(modelled),
-        coverage_share=coverage,
-        basis="reported" if reported else "with_imputation",
-        state=st,
-    )
-
-
-# ---- the scorecard ---------------------------------------------------------------------------------------
-
-
-def historical_floor_rows(
-    state: str,
-    places: pd.DataFrame,
-    run_draws: Mapping,
-    adu_counts: pd.DataFrame,
-    panel: pd.DataFrame,
-    draws: pd.DataFrame,
-    origin: int,
-    class_draws=None,
-) -> list[dict]:
-    """`historical_floor` rows (`gutcheck.historical_floor`) for the ADU and missing-middle scenarios.
-
-    - ADUs: places whose local permits flag ADUs, less any still-blind holdout place. With reform = current-
-      rules gross ADUs + added, per draw and window year, on those places; observed = their ADU permits.
-    - Missing middle: every BPS place. With reform = the baseline's 2-unit and 3-4 unit homes (per draw) +
-      the scenario's gross permits added (window total spread evenly); observed = BPS 2-4 unit homes on the
-      baseline's basis. Baseline and scenario draws are paired by index (they are independent).
-    `class_draws`: `baseline_class_draws`' result, if already computed.
-    """
-    from lotline.config import load_state
-    from lotline.model.scenarios import adu
-
-    st = state.upper()
-    why = gutcheck.reasons().get(st, {})
-    rows = []
-    blind = adu.holdout_stops(load_state(st).holdouts)
-    counts = adu_counts[~adu_counts["geoid"].isin(blind)]
-    if "*" not in blind and len(counts):
-        on = places["geoid"].isin(set(counts["geoid"])).to_numpy()
-        cur = np.asarray(run_draws["current"], dtype=float)[:, on, :].sum(axis=1)
-        add = np.asarray(run_draws["added"], dtype=float)[:, on, :].sum(axis=1)
-        observed = counts.groupby("year")["adu_permits"].sum()
-        observed = observed.reindex(range(int(observed.index.min()), origin + 1), fill_value=0)  # floor years
-        scope = f"{int(on.sum())} places whose permits flag ADUs"
-        rows.append(
-            gutcheck.historical_floor("adu", cur + add, observed, origin, scope=scope, reason=why.get("adu"))
-        )
-    mm = draws[draws["scenario"] == "missing_middle"].sort_values("draw")
-    if len(mm):
-        reported = bool(load_params("baseline")["use_reported_only"].value)
-        by_class, _ = class_draws or baseline_class_draws(panel, st, origin)
-        base = (by_class["2"] + by_class["3_4"]).T  # draws x years
-        added = aggregate.homes_from_draws(mm)["permits_added"]
-        with_reform = base[np.arange(len(added)) % len(base)] + added[:, None] / base.shape[1]
-        cols = [baseline.outcome_column(s, reported) for s in ("2", "3_4")]
-        p = panel[panel["state"] == st]
-        observed = p.groupby("year")[cols].sum().sum(axis=1)
-        rows.append(
-            gutcheck.historical_floor(
-                "missing_middle",
-                with_reform,
-                observed,
-                origin,
-                scope="BPS 2-4 unit homes, every place",
-                reason=why.get("missing_middle"),
-            )
-        )
-    return rows
-
-
-def observed_table(
-    panel: pd.DataFrame, permits, jurisdictions, state: str, origin: int, years: int = 7, params=None
-) -> pd.DataFrame:
-    """The `observed` part: what was actually permitted in the `years` years ending at the origin.
-
-    - `homes_2_4`: units in 2-unit and 3-4 unit buildings, summed over every BPS place in the
-      (holdout-filtered) panel, on the baseline's basis (`use_reported_only`); `places` counts the places
-      with a row that year.
-    - `adu_permits`: `adu.observed_adu_counts` (sources that flag ADUs; the larger count where two cover one
-      place), summed over places; `places` = every place in those sources over the years, and
-      `population_share` the covered places' share of the 2020 population of the state's places (GEOIDs
-      longer than 5 characters on both sides, so county remainders are left out). Without permits, or none
-      flagged, there are no ADU rows.
-    By hand: 2-unit 4 + 3-4 unit 6 in one place and 2 in another in 2025 -> homes_2_4 = 12 from 2 places.
-    """
-    from lotline.model.scenarios import adu
-
-    p = params or load_params("baseline")
-    reported = bool(p["use_reported_only"].value)
-    first = origin - years + 1
-    st = state.upper()
-    w = panel[(panel["state"] == st) & panel["year"].between(first, origin)]
-    cols = [baseline.outcome_column(s, reported) for s in ("2", "3_4")]
-    rows = []
-    for year in range(first, origin + 1):
-        y = w[w["year"] == year]
-        rows.append(
-            {
-                "measure": "homes_2_4",
-                "year": year,
-                "value": float(y[cols].sum().sum()),
-                "places": int(y["geoid"].nunique()),
-                "population_share": None,
-                "basis": "reported" if reported else "with_imputation",
-            }
-        )
-    if permits is not None and len(permits) and adu._is_adu(permits).any():
-        counts = adu.observed_adu_counts(permits, first, origin)
-        by_year = counts.groupby("year")["adu_permits"].sum()
-        covered = set(counts["geoid"])
-        share = None
-        if jurisdictions is not None and "pop_2020" in jurisdictions:
-            pop = jurisdictions.set_index("geoid")["pop_2020"].astype(float)
-            places_pop = pop[pop.index.str.len() > 5].sum()
-            in_places = pop.reindex(sorted(g for g in covered if len(g) > 5)).sum()
-            share = min(1.0, float(in_places / places_pop)) if places_pop > 0 else None
-        for year in range(first, origin + 1):
-            rows.append(
-                {
-                    "measure": "adu_permits",
-                    "year": year,
-                    "value": float(by_year.get(year, 0)),
-                    "places": len(covered),
-                    "population_share": share,
-                    "basis": "flagged_permits",
-                }
-            )
-    return pd.DataFrame(rows).assign(state=st)
 
 
 # ---- the bundle -----------------------------------------------------------------------------------------
