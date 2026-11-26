@@ -60,7 +60,7 @@ def compare(agent: pd.DataFrame, coded: pd.DataFrame, years: Sequence[int] = YEA
     By hand: coded cap 3 from 2020 vs agent cap 3 from 2020 -> match; agent cap 2 -> no match."""
     a = summary(agent, years)
     c = summary(coded[coded["jurisdiction_geoid"].astype(str).isin(a.index)], years)
-    both = a.join(c, lsuffix="_agent", rsuffix="_coded", how="left")
+    both = a.add_suffix("_agent").join(c.add_suffix("_coded"), how="left")  # join's lsuffix goes in pandas 4
 
     def label(v: object) -> str:
         return "none" if v is None or (isinstance(v, float) and pd.isna(v)) else str(v).removesuffix(".0")

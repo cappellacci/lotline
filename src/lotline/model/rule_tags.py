@@ -56,7 +56,9 @@ def flags(reforms: pd.DataFrame) -> pd.DataFrame:
     event; a blank adoption date -> earliest-known; the same effective 2010-01-01 -> before the window, not
     an event; `adus_per_lot` 0 on an ADU row -> a none row.
     """
-    notes = reforms["coding_notes"].fillna("").astype(str)
+    notes = (
+        reforms["coding_notes"].astype(object).fillna("").astype(str)
+    )  # an all-blank column reads as float
 
     def num(col: str) -> pd.Series:
         return pd.to_numeric(reforms.get(col, pd.Series(index=reforms.index, dtype=float)), errors="coerce")
