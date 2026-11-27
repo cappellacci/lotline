@@ -133,9 +133,7 @@ def _unlisted(args: argparse.Namespace) -> int:
                 f"({r.name}, BPS ID {r.bps_id})"
             )
         if report is not None and len(report):
-            print(
-                "Census gave these permit IDs a new GEOID; their history now sits under the new one. Check"
-            )
+            print("Census gave these permit IDs a new GEOID; their history now sits under the new one. Check")
             print("that config naming the old GEOID (holdouts, train_until, reforms, sources) is updated.")
     return 1 if found or blocking else 0
 
