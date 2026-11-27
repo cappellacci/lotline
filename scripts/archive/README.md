@@ -154,3 +154,4 @@ Summaries are each script's own first docstring line; decision ids are those nam
 | `gutcheck_diagnostics.py` | Gut-check diagnostics for a state's ADU forecast (WS-NC-GUTCHECK tasks 1-3; |  |
 | `range_drivers.py` | What drives each result's range: first-order sensitivity shares from the runs in the results bundles (#54). | D-097 |
 | `results_run_summary.py` | Summarize a set of results bundles for a run's results page (not part of the app). |  |
+| `mn_denominators.py` | Minnesota eligible parcels from the rolls against the ACS fallback, side by side (round 3, task 4; was `lotline.adapters.states.mn.denominators`, archived 2026-11-27). | D-014, D-017 |

@@ -27,8 +27,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from lotline.rule_agents.common import budget
-from lotline.rule_agents.mm import brief, handoff, pdftext, reconcile, rows
+from lotline.rule_agents.common import budget, pdftext
+from lotline.rule_agents.mm import brief, handoff, reconcile, rows
 from lotline.rule_agents.mm import compare as cmp
 from lotline.rule_agents.mm.findings import PlaceFinding, check, verify_quote
 from lotline.rule_agents.mm.places import enumerate_places

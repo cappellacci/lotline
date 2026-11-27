@@ -32,7 +32,6 @@ For a first result with national data only (level 0 in section 2), with no local
 4. **Run the models for the first time** (step 7, a few minutes).
    ```bash
    uv run lotline results --state XX
-   uv run python scripts/dev/fee_dev_run.py --state XX --statewide --out reports/xx/fees-statewide.csv
    ```
 5. **Read the results before you show them** (step 11, an hour).
 <!-- short-path:end -->
@@ -411,17 +410,12 @@ With no `--state`, this builds the other states' jurisdiction tables too, if you
 
 ```bash
 uv run lotline results --state XX
-uv run python scripts/dev/fee_dev_run.py --state XX --statewide --out reports/xx/fees-statewide.csv
 ```
 
-- **`lotline results`** runs the ADU and missing-middle scenarios. It writes `reports/results/xx/bundle.json`.
+- **`lotline results`** runs the ADU, missing-middle and fee scenarios. It writes `reports/results/xx/bundle.json`.
   - With national data only, it sets the role to `national_only`. It scales the ACS eligible-lot count by the
     D-056 factor, with that factor's uncertainty, and adds the caveat "National data only".
   - Each run draws 1,000 times from origin year 2025 (`config/params/aggregate.yaml`).
-- **The fee scenario** is not in the bundle yet (the bundle lists it under `scenarios_pending`). The dev script
-  prints five-year totals (P10, P50, P90 and the mean of added homes) for each size class, and `--out` writes
-  them to the CSV.
-
 If the results run stops with a `KeyError` naming another state, that state's `jurisdictions` table is missing
 from your data directory (see the note at the end of section 3).
 

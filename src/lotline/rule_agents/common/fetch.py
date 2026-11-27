@@ -24,7 +24,6 @@ Moved from the MM swarm's `mm/fetch.py` (master) when the shared core was built,
 
 from __future__ import annotations
 
-import fcntl
 import hashlib
 import json
 import re
@@ -36,6 +35,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from lotline.io import filelock
 from lotline.rule_agents.common.access import classify, robots_allows, robots_url
 from lotline.rule_agents.common.docstore import DocStore, sniff_ext
 
@@ -98,7 +98,7 @@ def _wait(root: Path, host: str) -> None:
     lock = root / ".ratelimit" / f"rule-agents-{host}"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with lock.open("a+") as fh:
-        fcntl.flock(fh, fcntl.LOCK_EX)
+        filelock.lock(fh)
         fh.seek(0)
         last = float(fh.read().strip() or 0)
         wait = last + HOST_INTERVAL - time.time()
@@ -107,7 +107,7 @@ def _wait(root: Path, host: str) -> None:
         fh.seek(0)
         fh.truncate()
         fh.write(f"{time.time():.3f}")
-        fcntl.flock(fh, fcntl.LOCK_UN)
+        filelock.unlock(fh)
 
 
 def _robots(docs: DocStore, url: str, http: httpx.Client) -> tuple[str | None, str | None]:
