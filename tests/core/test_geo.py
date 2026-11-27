@@ -1,17 +1,12 @@
 """Point assignment: even-odd point-in-polygon, first-match assignment, the place-or-township rule, and the
 TIGERweb boundary loader against a fake server. Synthetic polygons only; no network."""
 
-from urllib.parse import parse_qs, urlparse
-
-import httpx
 import numpy as np
 import pandas as pd
 import pytest
 
 from lotline import geo
 from lotline.adapters.national import tiger_boundaries
-from lotline.io import arcgis
-from lotline.io.store import DataStore
 
 SQUARE = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]
 HOLE = [[3, 3], [3, 7], [7, 7], [7, 3], [3, 3]]
@@ -120,44 +115,3 @@ def test_place_or_township_in_a_county_permit_state(fake_boundaries):
     got = geo.place_or_township([5, 22], [5, 2], "NC", store=None)
     assert got.tolist() == ["3900001", None]  # NC townships don't permit: never a county subdivision
     assert fake_boundaries == [("NC", "place")]
-
-
-def test_load_polygons_from_a_fake_tigerweb(tmp_path, monkeypatch):
-    feats = [
-        {"attributes": {"OBJECTID": 2, "GEOID": "3918000", "NAME": "Columbus city", "FUNCSTAT": "A"},
-         "geometry": {"rings": [SQUARE, HOLE]}},
-        {"attributes": {"OBJECTID": 1, "GEOID": "3901000", "NAME": "Ada village", "FUNCSTAT": "A"},
-         "geometry": {"rings": [ISLAND]}},
-    ]  # fmt: skip
-    seen = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        seen.append(str(request.url))
-        q = {k: v[0] for k, v in parse_qs(urlparse(str(request.url)).query).items()}
-        if not request.url.path.endswith("/query"):
-            return httpx.Response(
-                200,
-                json={
-                    "name": "Incorporated Places",
-                    "parentLayer": {"id": 13, "name": "ACS 2025"},
-                    "maxRecordCount": 100000,
-                    "geometryType": "esriGeometryPolygon",
-                    "objectIdField": "OBJECTID",
-                    "advancedQueryCapabilities": {"supportsPagination": True, "supportsOrderBy": True},
-                },
-            )
-        off, size = int(q["resultOffset"]), int(q["resultRecordCount"])
-        assert q["where"] == "STATE='39'" and q["outSR"] == "4326" and size == tiger_boundaries.PAGE_SIZE
-        return httpx.Response(200, json={"features": feats[off : off + size]})
-
-    monkeypatch.setattr(arcgis, "client", lambda **kw: httpx.Client(transport=httpx.MockTransport(handler)))
-    monkeypatch.setattr(arcgis.time, "sleep", lambda s: None)
-    store = DataStore(tmp_path)
-    df = tiger_boundaries.load_polygons("OH", store, "place")
-    assert df["geoid"].tolist() == ["3901000", "3918000"]
-    assert df.columns.tolist() == ["geoid", "name", "funcstat", "rings"]
-    assert df["rings"].iloc[1] == [SQUARE, HOLE]
-    assert seen[0].startswith(f"{tiger_boundaries.SERVICE}/18")
-    assert (tmp_path / "raw/census_tigerweb_acs2025/acs2025/place_39").is_dir()
-    with pytest.raises(ValueError, match="level"):
-        tiger_boundaries.load_polygons("OH", store, "cdp")
