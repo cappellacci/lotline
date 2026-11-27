@@ -782,3 +782,15 @@ def test_each_state_also_gets_a_model_file_without_its_draws(tmp_path):
     fixture = json.loads(FIXTURE.read_text())
     assert json.loads(m.group(1)) == {k: v for k, v in fixture.items() if k != "draws"}
     assert build.model_file("ZZ") == "states/zz.model.js"
+
+
+def test_a_bundle_whose_scenarios_have_different_runs_is_refused(tmp_path):
+    """The headline adds the reforms draw by draw, so every scenario must carry the same draw ids."""
+    doc = json.loads(FIXTURE.read_text())
+    adu = [d for d in doc["draws"] if d["scenario"] == "adu"]
+    doc["draws"] += [{**d, "scenario": "missing_middle"} for d in adu[:-1]]  # one run short
+    with pytest.raises(ValueError, match="different model runs"):
+        build.check_draws_line_up(doc["draws"], tmp_path / "zz.json")
+    build.check_draws_line_up(
+        doc["draws"][: len(adu)] + [{**d, "scenario": "missing_middle"} for d in adu], tmp_path
+    )

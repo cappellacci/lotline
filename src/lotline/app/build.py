@@ -304,7 +304,22 @@ def load_bundle(path: Path) -> dict:
     doc = json.loads(path.read_text(encoding="utf-8"))
     check_schemas_version(doc["meta"].get("schemas_version"), path)
     read_bundle(path)  # raises on any schema error, so a bad bundle never reaches the page
+    check_draws_line_up(doc.get("draws") or [], path)
     return doc
+
+
+def check_draws_line_up(draws: list[dict], path: Path) -> None:
+    """Every scenario must have the same draw ids: the headline adds the reforms run by run (draw i of each),
+    and would otherwise quietly trim to the shortest or pair unrelated runs (tests review, 2026-11-27)."""
+    ids: dict[str, set] = {}
+    for d in draws:
+        ids.setdefault(d["scenario"], set()).add(d["draw"])
+    if len({frozenset(v) for v in ids.values()}) > 1:
+        sizes = ", ".join(f"{s} {len(v)}" for s, v in sorted(ids.items()))
+        raise ValueError(
+            f"{path}: the scenarios have different model runs ({sizes} draws), so they can't be added run "
+            "by run. Rerun `lotline results` for this state so every scenario uses the same draws."
+        )
 
 
 def check_schemas_version(found: str | None, path: Path) -> None:

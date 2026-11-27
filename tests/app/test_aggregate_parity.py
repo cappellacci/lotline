@@ -307,3 +307,21 @@ def test_fee_policy_by_hand():
     assert houses.theta == pytest.approx(0.03)  # 300 / 10,000, not 240 / 10,000
     every = aggregate.fee_policy_draws(draws, stored, -1.0, ["1", "2", "3_4"]).iloc[0]
     assert every.theta == pytest.approx((300 + 40 + 20) / 10_000)
+
+
+def test_js_matches_python_with_an_overlap_share():
+    """The overlap term, (1 − overlap) per draw, is in both implementations but every real bundle writes it as
+    null (combined runs were dropped, Ben 2026-11-17), so the fixture never exercised it: a sign flip in the
+    JS passed (tests review, 2026-11-27, finding 4). Here half the draws carry an overlap share."""
+    draws = _draws()
+    draws = draws[draws["scenario"] == draws["scenario"].iloc[0]].copy()
+    draws["overlap_share"] = np.where(draws["draw"] % 2 == 0, 0.5, np.nan)
+    js = _node(RUN, {"draws": _records(draws), "cases": [{}, {"theta": 90}]})
+    for pins, got in zip([{}, {"theta": 90}], js, strict=True):
+        want = _python(draws, pins)
+        for k in OUTCOMES:
+            for p in ("p10", "p50", "p90"):
+                assert got[k][p] == pytest.approx(want[k][p], rel=1e-12, abs=1e-9), (pins, k, p)
+    # and the overlap actually moved the result
+    plain = _python(_draws()[lambda d: d["scenario"] == d["scenario"].iloc[0]], {})
+    assert js[0]["homes_net_statewide"]["p50"] < plain["homes_net_statewide"]["p50"]
