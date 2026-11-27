@@ -66,9 +66,15 @@ def test_uncoded_places_draw_their_band_dose():
     assert row["dose_gap_mean"] == pytest.approx(0.8)
 
 
-def test_no_coded_place_means_no_rule():
-    res = mm.simulate(pd.DataFrame([_place(geoid="u", dose=np.nan)]), _draws(100), HALF, SLOPE, seed=1)
-    assert res.places["dose_gap_mean"].iloc[0] == pytest.approx(1.0)
+def test_no_coded_place_and_no_pool_raises():
+    """Ben, 2026-11-27: an uncoded place with an empty dose pool is an error, not a silent dose 0."""
+    with pytest.raises(ValueError, match="dose pool is empty"):
+        mm.simulate(pd.DataFrame([_place(geoid="u", dose=np.nan)]), _draws(100), HALF, SLOPE, seed=1)
+
+
+def test_an_empty_pool_is_fine_when_every_place_is_coded():
+    res = mm.simulate(pd.DataFrame([_place(geoid="c", dose=1.0)]), _draws(100), HALF, SLOPE, seed=1)
+    assert res.places["dose_gap_mean"].iloc[0] == pytest.approx(0.0)
 
 
 def test_state_total_is_the_sum_of_places_run_alone():
@@ -214,7 +220,7 @@ def test_remainders_draw_from_coded_remainders():
 
 def test_a_state_with_no_coded_rule_draws_from_the_borrowed_pool():
     """Review A13: an uncoded place draws its dose from `pool_places` when given. With every borrowed place
-    at dose 1 the gap is 0, so nothing is added; without it the state's empty pool gives d = 0 (gap 1)."""
+    at dose 1 the gap is 0, so nothing is added; without it the state's empty pool is an error."""
     from lotline.model.scenarios import mm
 
     places = pd.DataFrame({"geoid": ["A"], "eligible": [1000.0], "dose": [np.nan], "band": [0],
@@ -224,8 +230,9 @@ def test_a_state_with_no_coded_rule_draws_from_the_borrowed_pool():
     )
     pool = pd.DataFrame({"band": [0] * 5, "kind": ["place"] * 5, "dose": [1.0] * 5})
     borrowed = mm.simulate(places, draws, 1.0, 1.0, seed=1, pool_places=pool)
-    own = mm.simulate(places, draws, 1.0, 1.0, seed=1)
-    assert borrowed.buildings.sum() == 0 and own.places["dose_gap_mean"].iloc[0] == 1.0
+    assert borrowed.buildings.sum() == 0
+    with pytest.raises(ValueError, match="dose pool is empty"):
+        mm.simulate(places, draws, 1.0, 1.0, seed=1)
 
 
 def test_cost_index_takes_the_nearest_earlier_year():
@@ -246,3 +253,22 @@ def test_log_sd_refuses_a_swapped_range():
     with pytest.raises(ValueError):
         mm.log_sd(SimpleNamespace(value=1.0, low=2.0, high=0.5))
     assert mm.log_sd(SimpleNamespace(value=1.0, low=1.0, high=1.0)) == 0.0
+
+
+def test_pencils_use_the_feasible_share_not_the_ratio_by_hand():
+    """The funnel's pencil-out stage: newly legal parcels E × (1 − d) × F(PCR), with F(PCR) the lot's feasible
+    share (`f_share`), not the fit's ratio F(PCR) / F(1) (`f_ratio`).
+    Place a: 1000 × (1 − 0.25) × 0.4 = 300; place b: 500 × (1 − 0.6) × 0.5 = 100; total 400.
+    With f_ratio instead (1.2 and 1.5) it would be 900 + 300 = 1200."""
+    a = _place(geoid="a", eligible=1000.0, dose=0.25, f_ratio=1.2) | {"f_share": 0.4}
+    b = _place(geoid="b", eligible=500.0, dose=0.6, f_ratio=1.5) | {"f_share": 0.5}
+    res = mm.simulate(pd.DataFrame([a, b]), _draws(10), HALF, SLOPE, seed=1)
+    assert res.pencils == pytest.approx(np.full(10, 400.0))
+    assert res.legal[:, 2] == pytest.approx(np.full(10, 950.0))  # 750 + 200, both data tier 3 by default
+
+
+def test_pencils_fall_back_to_the_ratio_without_a_share():
+    res = mm.simulate(
+        pd.DataFrame([_place(eligible=1000.0, dose=0.25, f_ratio=1.2)]), _draws(5), HALF, SLOPE, seed=1
+    )
+    assert res.pencils == pytest.approx(np.full(5, 900.0))  # 1000 × 0.75 × 1.2

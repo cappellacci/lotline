@@ -108,7 +108,8 @@ REMAINDER = "county_unincorporated"  # a county remainder: unincorporated land t
 
 def dose_pools(places: pd.DataFrame, min_coded: int) -> dict:
     """Doses of coded places by size band, for places with no coded rule (D-022): the band's coded doses if
-    it has at least `min_coded`, else every coded place in the state; empty if none is coded (then d = 0).
+    it has at least `min_coded`, else every coded place in the state; empty if none is coded (then
+    `simulate` raises for any uncoded place rather than draw d = 0).
 
     D-067: the pool holds each coded place's `pool_dose` (its dose at the origin) where that column is
     given, so a place's own 2026-27 rule changes its own dose but not what uncoded places draw.
@@ -193,7 +194,12 @@ def simulate(
         u = r.gamma(1 / al, al)
         if pd.isna(p.dose):
             pool = pools.get(remainder_pool_key(getattr(p, "kind", None), p.band, pools), pools["all"])
-            d = r.choice(pool, size=n) if len(pool) else np.zeros(n)
+            if not len(pool):  # Ben, 2026-11-27: no silent dose 0 (every eligible lot newly legal)
+                raise ValueError(
+                    f"place {p.geoid} has no coded missing-middle rule and the dose pool is empty: "
+                    "no coded place to draw from. Code one, or pass `pool_places` (`borrowed_pool`)."
+                )
+            d = r.choice(pool, size=n)
         else:
             d = np.full(n, float(p.dose))
         gap = np.clip(1.0 - d, 0.0, 1.0)
