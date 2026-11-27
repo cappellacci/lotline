@@ -61,7 +61,7 @@ them); if a field would be cleaner, open a `contract-change` issue.
 ## Tasks (stop where marked)
 
 **1. Tag handling (code and tests; one PR).**
-- One helper (e.g. in `model/estimate_adu.py`, shared with `estimate_mm.py`, or a new small module) that returns,
+- One helper (e.g. in `calibrate/adu/estimate_adu.py`, shared with `estimate_mm.py`, or a new small module) that returns,
   per rule row: is-event, always-treated (`[predates]`), earliest-known and unconfirmed flags.
 - Use it in both panel builders (`estimate_adu.build_panel` with `pooled_adu`, and `estimate_mm.build_panel` and
   `adoption_year`). A `[predates]` row should put its rule in force before the panel's first year, not at its date.

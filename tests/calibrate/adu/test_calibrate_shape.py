@@ -1,13 +1,13 @@
-"""Approaches 2 and 3 (model/calibrate_shape.py, D-047): hand-worked examples and recovery on simulated
-places. Synthetic inputs only."""
+"""Approaches 2 and 3 (calibrate/adu/calibrate_shape.py, D-047): hand-worked examples and recovery on
+simulated places. Synthetic inputs only."""
 
 import math
 
 import numpy as np
 import pytest
 
-from lotline.model import calibrate_adu as cal
-from lotline.model import calibrate_shape as cs
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_shape as cs
 from lotline.model import hazard
 
 P = {"adu_ramp_slope_years": 0.75, "adu_ref_home_value_usd": 400_000.0, "adu_equity_elasticity": 0.25}

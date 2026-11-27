@@ -204,7 +204,7 @@ STEPS: tuple[Step, ...] = (
         "adu_new_rule",
         "D-099",
         {"adu": ("adu_new_rule_share",)},
-        "scripts/archive/adu_new_rule.py (model/adu_new_rule.py)",
+        "scripts/archive/adu_new_rule.py (calibrate/adu/adu_new_rule.py)",
         "hand",
         after=("adu_joint",),
         notes="The held-out check rejected the fit, so the share stays 1.",

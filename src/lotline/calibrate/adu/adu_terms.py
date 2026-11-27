@@ -27,8 +27,8 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.model import adu_screen as scr
-from lotline.model import calibrate_adu as cal
 
 ZV_KEY = "place_zv"
 Z_90 = 1.6448536269514722

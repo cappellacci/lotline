@@ -532,7 +532,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Forecast use:** for a target place, the scenario's added ADUs = Eligible × [exp(η_with rule) − exp(η_without)] summed over the forecast window (2026–2030 when written; 2027–2031 since D-061). η uses the place's α (or, for places without ADU data, a hierarchical prior by state, size band and modifiers; protocol §5.7), the event-time β, its own modifiers, ρ at the stated rate path (`mortgage_rate_forecast`) and γ_2026–2030 held at the 2025 level with the rate effect added. Uncertainty comes from bootstrap draws of all coefficients plus Poisson-gamma noise. The net-new and formalization shares (D-019) then apply as before.
 - **Robustness (reported, not used to choose):** negative-binomial with place random effects (protocol §5.7); the Borusyak imputation estimator; the dose as a binary by-right indicator.
 - **What would change the plan:** if the pre-trend check fails, report it and use HonestDiD bounds; there is no re-specification without a new dated entry. If too few places have dated rules after the adoption-date run, report the estimates as underpowered rather than adding assumptions.
-- **Code:** `src/lotline/model/estimate_adu.py`, tested by recovering known β, θ and ρ from simulated staggered-adoption panels before any real run.
+- **Code:** `src/lotline/calibrate/adu/estimate_adu.py`, tested by recovering known β, θ and ρ from simulated staggered-adoption panels before any real run.
 - **Implementation choices (Ben, 2026-10-20, before the real run):** dose grades in equal steps (1/3, 2/3, 1; `adu.yaml`); T_i is the first year a rule with P(by right) >= 0.5 is in force on 1 July; modifiers are measured at T-1 (price-to-cost with that year's rent and real construction cost; log home value; mean 1-unit permits per 1,000 eligible parcels over T-3..T-1; log household growth T-6..T-1); places that adopted before 2010 (Bloomington, Plymouth) don't inform the modifier terms; a new place's level comes from its own pre-adoption years where it has them, otherwise a draw from the Minnesota places. Hastings was removed before the run (Ben's lookup matched St. Paul's Ord. 23-43).
 - **Decided by:** Ben, 2026-10-20.
 - **Implementation notes (2026-10-20, WS-ENGINE; choices the specification leaves open, for Ben to confirm
@@ -987,7 +987,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   ADU, 143 of 760 place-years kept, no modifier identified, the bootstrap tripped the guard; D-023 notes).
   Ben approved options 1 and 2 together (2026-10-20): pool the event-time effects and make the protocol's
   pooled model (§5.7) the main model. Written and pushed before any run of it on real data.
-- **Main model (`src/lotline/model/pooled_adu.py`):**
+- **Main model (`src/lotline/calibrate/adu/pooled_adu.py`):**
 
   y_it ~ NegBin(mean μ_it, variance μ + κμ²),
   μ_it = Eligible_it · exp( a + u_i + γ_t + Σ_b β_b · D_it · 1[t − T_i ∈ band b] + Σ_m θ_m · z_im · 1[t ≥ T_i]
@@ -1133,7 +1133,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   of BFGS from the main fit's curvature was tried and **not adopted**: its estimates differ from a cold
   start's at the stopping tolerance (~1e-4) and on the hard panels it excluded 41 refits instead of 30
   (`WARM_START`, off). A real rerun still needs Ben's approval; the scripts' check against the logged
-  estimates (1e-4) is how it would confirm equivalence. Tests: `tests/model/test_pooled_adu.py` (speed
+  estimates (1e-4) is how it would confirm equivalence. Tests: `tests/calibrate/adu/test_pooled_adu.py` (speed
   section).
 - **Four-state refresh (2026-11-02; written and pushed before any estimate on the new data; thread 14):**
   - **Why:** the data threads closed; Ben decided on 2026-10-30 to pool Texas into this estimate, and the
@@ -1327,7 +1327,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - fewer than 3 contributing treated places means "not estimable". Given D-025's imputation run (7
     imputable treated place-years), this is the expected outcome in Minnesota. The estimator's value there is
     to state the exclusions and the zero-pre bound plainly.
-- **Evidence (synthetic panels, `tests/model/test_estimate_adu.py`):** each regime test asserts that D-023
+- **Evidence (synthetic panels, `tests/calibrate/adu/test_estimate_adu.py`):** each regime test asserts that D-023
   fails and D-031 passes on the same panel. Zero pre-periods: D-023 2.5–3.2 against log 50; D-031's
   additive ATT within 10%. A 2016 cohort: D-023 ≈ −0.1 against ~0.9; D-031 within 15%. Pre-panel adopters
   whose effect keeps growing past k = 5: D-023 ≈ 0 against ~0.45; D-031 within 15%. Singleton cohorts:
@@ -4001,7 +4001,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Code, when Ben approves the method:**
   - `scripts/dev/adu_reference.py --fit-set`: prints both ranges and writes the main one into `hazard.yaml`
     with sources;
-  - the weighted percentile and the fold-wise range in `model/calibrate_adu.py`, each with a hand-worked
+  - the weighted percentile and the fold-wise range in `calibrate/adu/calibrate_adu.py`, each with a hand-worked
     unit test;
   - `--range-test` in `scripts/dev/calibrate_adu.py`, writing to `reports/adu-d060-range/`.
 - **Run once:** `LOTLINE_FIT_WITH_OR=1 uv run python scripts/dev/calibrate_adu.py --range-test --out
@@ -5203,7 +5203,7 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   (D-075 §6), and D-072's two-step zone model (#354, proposed), which is a separate proposal. If D-072 is
   accepted first, this entry's tests apply to it as a third form, with the same rule.
 - **Decided by:** Ben, 2026-11-11 ("Accept as made"). Proposed by Claude Code.
-- **Built (2026-11-11, PR `ws/adu-joint-refit-prep`, before any fit).** Code: `lotline.model.joint_refit` and
+- **Built (2026-11-11, PR `ws/adu-joint-refit-prep`, before any fit).** Code: `lotline.calibrate.adu.joint_refit` and
   `scripts/dev/adu_joint_refit.py`. Nothing was fitted or scored. The fit set and the event list below come from
   `--inputs-only`, which fits nothing. Choices made in building, for Ben to confirm in the PR:
   - **Fit set: 64 places, 395 place-years** (MN 43, NC 13, OH 1, TX 3, OR 4). That is D-053's 53 places plus 11
@@ -5693,11 +5693,11 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   `adu_owner_refit.py`'s adds test D.
 - **Built, 2026-11-13, before any fit.** These choices were fixed and committed before the run:
   - **Code:**
-    - `src/lotline/model/adu_trend.py`: the trend, the fitter, test D's forecast and log score, the persistence
+    - `src/lotline/validation/adu_trend.py`: the trend, the fitter, test D's forecast and log score, the persistence
       benchmark and the decision rules;
     - `joint_refit.GlobalsA` carries γ per draw, with an optional year after which the trend is held flat;
     - `scripts/archive/adu_trend_refit.py` runs everything;
-    - the hand-worked tests are in `tests/model/test_adu_trend.py`;
+    - the hand-worked tests are in `tests/validation/test_adu_trend.py`;
     - the reference year (2020) and the split (2016–2020 against 2021–2025) are in
       `config/params/adu_trend.yaml`.
   - **Two fitters.** A and A′ use D-084's fitter, so their numbers are D-084's. The trend forms use
@@ -6134,9 +6134,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
 - **Built and run, 2026-11-14** (`reports/adu-state-profiles/`, page
   https://claude.ai/artifact/GoxSAAjVEv2szddSuRSJEb):
   - **Code:**
-    - `src/lotline/model/adu_profiles.py`: the profile, the evidence flags, the label rule, the town prior's
+    - `src/lotline/validation/adu_profiles.py`: the profile, the evidence flags, the label rule, the town prior's
       width, and the statewide current-rules totals;
-    - hand-worked tests in `tests/model/test_adu_profiles.py`, including a check that the totals match
+    - hand-worked tests in `tests/validation/test_adu_profiles.py`, including a check that the totals match
       `scenarios.adu.pool_paths` draw by draw;
     - `scripts/archive/adu_state_profiles.py` and `scripts/archive/adu_profiles_page.py`.
   - **Build choices, made before reading any total:**
@@ -6313,12 +6313,12 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   of the two-term likelihood, plus a run script like `adu_owner_refit.py`.
 - **Built, 2026-11-14, before any fit.** These choices were fixed and committed before the run:
   - **Code:**
-    - `src/lotline/model/adu_terms.py`: the fitter for any set of place terms (`fit3_terms`), the joint
+    - `src/lotline/calibrate/adu/adu_terms.py`: the fitter for any set of place terms (`fit3_terms`), the joint
       β draws and the within-state sensitivity;
     - `joint_refit.GlobalsA` takes β as (draws, terms) for a place carrying a vector of terms; D-084's
       one-term path is unchanged;
     - `scripts/archive/adu_age_refit.py` runs everything, and reuses D-084's owner-share reader;
-    - hand-worked tests in `tests/model/test_adu_terms.py`, including that `fit3_terms` reproduces
+    - hand-worked tests in `tests/calibrate/adu/test_adu_terms.py`, including that `fit3_terms` reproduces
       `adu_owner.fit3_term` for Form A and Form A′;
     - the center and scale in `config/params/adu_age.yaml`.
   - **One fitter for all three forms**, so they are compared on the same inputs. The β's are found by
@@ -6445,9 +6445,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   fit set; bypass the holdout filter or pass `--unblind`. It runs offline from cached data.
 - **Built and run** only after Ben accepts this entry. The code adds a year cut to the fit places, the u
   posterior, and F0, each with a hand-worked test, plus a dev run script like `adu_age_refit.py`'s.
-- **Built, 2026-11-14, before any fit.** `src/lotline/model/adu_forecast.py` (the split, place classes, rule
+- **Built, 2026-11-14, before any fit.** `src/lotline/calibrate/adu/adu_forecast.py` (the split, place classes, rule
   changes, F0, the within-state fit, the own-history update, the trend, the rule), 16 hand-worked tests in
-  `tests/model/test_adu_forecast.py`, and `scripts/archive/adu_time_split.py`. Its `--inputs-only` step wrote
+  `tests/calibrate/adu/test_adu_forecast.py`, and `scripts/archive/adu_time_split.py`. Its `--inputs-only` step wrote
   `reports/adu-time-split/places.csv` (class, fit and window years, rule changes, z_age per place) before any
   fit. What it found and what the build settles that the entry left open:
   1. **Places with history: 43** (MN 27, NC 11, TX 2, OR 3). New places in a known state: MN 15, TX 1 (San
@@ -6593,9 +6593,9 @@ Dated, append-only. Each entry says what changed from the research documents, wh
   - It extends `scripts/archive/adu_time_split.py` with a `--drift` step that reads D-090's outputs.
 - **Built, 2026-11-14, before any run.**
   - **Code:**
-    - `src/lotline/model/adu_forecast.py` gains the drift options and the fixed-drift log-score grids. It also
+    - `src/lotline/calibrate/adu/adu_forecast.py` gains the drift options and the fixed-drift log-score grids. It also
       gains `drift_loglik`, `fit_sigma`, `fit_mu_sigma`, `drift_mult`, `coverage` and `predict_new`.
-    - Eight hand-worked tests sit in `tests/model/test_adu_forecast.py`.
+    - Eight hand-worked tests sit in `tests/calibrate/adu/test_adu_forecast.py`.
     - The run script is `scripts/archive/adu_drift.py`.
 
   What the build settles that the entry left open:

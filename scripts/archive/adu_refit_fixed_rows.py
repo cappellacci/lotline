@@ -19,8 +19,8 @@ import os
 import sys
 from pathlib import Path
 
+from lotline.calibrate.adu import adu_fit_set as fs
 from lotline.config import CONFIG_DIR
-from lotline.model import adu_fit_set as fs
 
 HERE = Path(__file__).resolve().parent
 ENV = "LOTLINE_REFIT_TARGET"
@@ -49,7 +49,7 @@ def patch() -> dict[str, set[int]]:
     """Cut the unknown years in whichever place builders the target script ended up with:
     `adu_owner_refit.inputs` (D-084 to D-095) and `adu_joint_refit`'s `fit_set`, `all_places` and
     `limit_years` (D-079's fit set), which now pass the years to the library builders
-    (`lotline.model.adu_fit_set`). The calibration scripts (`adu_mx_grid`, `adu_config_fit`,
+    (`lotline.calibrate.adu.adu_fit_set`). The calibration scripts (`adu_mx_grid`, `adu_config_fit`,
     `adu_types_slopes`, `adu_reference --fit-set`, `adu_new_rule`) cut them through the library and no
     longer need this wrapper."""
     gone = unknown_years()

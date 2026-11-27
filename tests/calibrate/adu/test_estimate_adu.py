@@ -1,4 +1,4 @@
-"""ADU estimators in model/estimate_adu.py. Synthetic data only.
+"""ADU estimators in calibrate/adu/estimate_adu.py. Synthetic data only.
 
 - D-023 extended TWFE PPML (superseded by D-025): PPML by hand, recovery of known effects, a common shock,
   separation and numerical guards.
@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import estimate_adu as est
+from lotline.calibrate.adu import estimate_adu as est
 
 YEARS = np.arange(2016, 2026)
 

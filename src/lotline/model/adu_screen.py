@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from lotline.model import calibrate_adu as cal
+from lotline.model import adu_rates as ar
 
 LOG_THETA = (-16.0, 2.0)
 LOG_ALPHA = (math.log(1e-4), math.log(50.0))
@@ -82,8 +82,8 @@ def prepare_arrays(
     return Prepared(tuple(geoids), tuple(states), log_w, big_k, head, tot)
 
 
-def prepare(places: Sequence[cal.PlaceData], cvals: np.ndarray) -> Prepared:
-    """Arrays from the fit's PlaceData at the model's rule shares (`cal._cvals(m_o, m_x)`)."""
+def prepare(places: Sequence[ar.PlaceData], cvals: np.ndarray) -> Prepared:
+    """Arrays from the fit's PlaceData at the model's rule shares (`ar._cvals(m_o, m_x)`)."""
     return prepare_arrays(
         [pl.y for pl in places],
         [pl.k(cvals) for pl in places],

@@ -19,10 +19,10 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import calibrate_adu as run  # noqa: E402
 
+from lotline.calibrate.adu import calibrate_adu as cal  # noqa: E402
+from lotline.calibrate.adu import calibrate_shape as shp  # noqa: E402
+from lotline.calibrate.adu import score  # noqa: E402
 from lotline.io import DataStore  # noqa: E402
-from lotline.model import calibrate_adu as cal  # noqa: E402
-from lotline.model import calibrate_shape as shp  # noqa: E402
-from lotline.model import score  # noqa: E402
 from lotline.model.scenarios import adu  # noqa: E402
 
 REPORTS = Path(__file__).resolve().parents[2] / "reports"

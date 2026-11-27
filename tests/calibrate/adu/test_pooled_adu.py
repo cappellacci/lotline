@@ -1,5 +1,5 @@
-"""D-025 pooled model (model/pooled_adu.py): quadrature, recovery on sparse panels (~70% all-zero places),
-a common shock, separation, guards, transport and the imputation robustness. Synthetic data only."""
+"""D-025 pooled model (calibrate/adu/pooled_adu.py): quadrature, recovery on sparse panels (~70% all-zero
+places), a common shock, separation, guards, transport and the imputation robustness. Synthetic data only."""
 
 import math
 
@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import pooled_adu as pa
-from lotline.model.estimate_adu import EstimationError
+from lotline.calibrate.adu import pooled_adu as pa
+from lotline.calibrate.adu.estimate_adu import EstimationError
 
 YEARS = np.arange(2016, 2026)
 RATE = np.interp(YEARS, [2016, 2020, 2021, 2022, 2025], [3.8, 3.1, 3.0, 5.3, 6.6])

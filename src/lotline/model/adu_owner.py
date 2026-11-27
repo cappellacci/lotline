@@ -27,8 +27,8 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
+from lotline.model import adu_rates as ar
 from lotline.model import adu_screen as scr
-from lotline.model import calibrate_adu as cal
 
 Z_KEY = "place_z"
 Z_90 = 1.6448536269514722
@@ -39,24 +39,24 @@ def owner_z(share: float, center: float, scale: float) -> float:
     return (float(share) - center) / scale
 
 
-def with_z(pl: cal.PlaceData, z: float) -> cal.PlaceData:
+def with_z(pl: ar.PlaceData, z: float) -> ar.PlaceData:
     """The place carrying its standardized owner share (read by `place_z` and `joint_refit`)."""
     return replace(pl, extra=dict(pl.extra or {}) | {Z_KEY: float(z)})
 
 
-def place_z(pl: cal.PlaceData) -> float:
+def place_z(pl: ar.PlaceData) -> float:
     """The place's z, 0 if it carries none (Form A)."""
     return float((pl.extra or {}).get(Z_KEY, 0.0))
 
 
-def scaled(pl: cal.PlaceData, beta: float) -> cal.PlaceData:
+def scaled(pl: ar.PlaceData, beta: float) -> ar.PlaceData:
     """The place with exp(β z) folded into its exposure: Form A′ at a fixed β is Form A on these places.
     By hand: base (100, 200), z 1, β log 2 -> base (200, 400)."""
     return replace(pl, base=pl.base * math.exp(beta * place_z(pl)))
 
 
 @dataclass(frozen=True)
-class Fit3Term(cal.Fit3):
+class Fit3Term(ar.Fit3):
     """A Form A′ fit: fit 3's fields at the chosen cell, plus β_o and its 90% profile interval."""
 
     beta: float = 0.0
@@ -78,9 +78,9 @@ def _loglik(p: scr.Prepared, z: np.ndarray, lt: float, la: float, beta: float) -
 
 
 def fit3_term(
-    places: Sequence[cal.PlaceData],
+    places: Sequence[ar.PlaceData],
     estimate_beta: bool = True,
-    grid=cal.GRID3,
+    grid=ar.GRID3,
     judgment=(0.5, 0.3),
     ranges=((0.2, 1.0), (0.1, 0.6)),
     log_theta_range=(-14.0, 0.0),
@@ -91,7 +91,7 @@ def fit3_term(
     its range is estimated, else held at the judgment value (fit 3's rule). θ's 90% interval is profiled over
     the candidate cells and α at β̂; β_o's is profiled over θ and α at the chosen cell."""
     z = np.array([place_z(pl) for pl in places])
-    preps = {(mo, mx): scr.prepare(places, cal._cvals(mo, mx)) for mo in grid for mx in grid}
+    preps = {(mo, mx): scr.prepare(places, ar._cvals(mo, mx)) for mo in grid for mx in grid}
     surface = {key: _cell(p, z, estimate_beta) for key, p in preps.items()}
     lls = {key: f.loglik for key, f in surface.items()}
     top = max(lls.values())
@@ -99,7 +99,7 @@ def fit3_term(
     def interval(axis: int):
         vals = sorted({key[axis] for key in lls})
         prof = {v: max(ll for key, ll in lls.items() if key[axis] == v) for v in vals}
-        inside = [v for v in vals if 2 * (top - prof[v]) <= cal.CHI2_90]
+        inside = [v for v in vals if 2 * (top - prof[v]) <= ar.CHI2_90]
         return max(prof, key=prof.get), (min(inside), max(inside))
 
     (mo_hat, mo_int), (mx_hat, mx_int) = interval(0), interval(1)
@@ -120,10 +120,10 @@ def fit3_term(
     ll_hat = max(prof(lt_hat), best.loglik)
 
     def edge(lo, hi):
-        f_lo = 2 * (ll_hat - prof(lo)) - cal.CHI2_90
+        f_lo = 2 * (ll_hat - prof(lo)) - ar.CHI2_90
         for _ in range(40):
             mid = (lo + hi) / 2
-            f_mid = 2 * (ll_hat - prof(mid)) - cal.CHI2_90
+            f_mid = 2 * (ll_hat - prof(mid)) - ar.CHI2_90
             if (f_mid > 0) == (f_lo > 0):
                 lo, f_lo = mid, f_mid
             else:

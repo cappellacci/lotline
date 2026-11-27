@@ -11,7 +11,7 @@ Fit set: Minneapolis and every other Twin Cities place with a coded ADU rule (20
 the V5 blind test), and Austin 2016-2023 once its ADU rules are coded. Test set: Raleigh 2021-2025, and Durham
 once its ADU-eligible parcel count is fixed (every roll the test uses has 1,000+). Place-years enter only with
 a coded ADU rule in force by 1 July and a permit source flagging ADUs that year
-(`lotline.model.calibrate_adu.place_years`). Reforms are read from config/reforms/*.csv at run time.
+(`lotline.calibrate.adu.calibrate_adu.place_years`). Reforms are read from config/reforms/*.csv at run time.
 
 Prints the fit (θ with its 90% profile interval, α, the partial-rule share decision), the test set's observed
 vs predicted counts with 90% predictive intervals, and the comparison with Portland's anchor.
@@ -29,9 +29,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
-from lotline.model import calibrate_adu as cal
 from lotline.model.scenarios import adu
 
 ST_PAUL, DURHAM, RALEIGH, AUSTIN = "2758000", "3719000", "3755000", "4805000"

@@ -18,24 +18,7 @@ from pathlib import Path
 SRC = Path(__file__).resolve().parents[2] / "src"
 
 # module (under lotline.model) -> owner of the move. Fitting code goes to calibrate/, checks to validation/.
-MOVING = {
-    # ADU ("ADU statewide prediction methodology")
-    "adu_fit_set": "ADU",
-    "adu_forecast": "ADU",
-    "adu_new_rule": "ADU",
-    "adu_profiles": "ADU",
-    "adu_reform_check": "ADU",
-    "adu_refit": "ADU",
-    "adu_terms": "ADU",
-    "adu_trend": "ADU",
-    "calibrate_adu": "ADU",  # on the forecast path: adu_owner, adu_screen, adu_types use its helpers
-    "calibrate_shape": "ADU",  # on the forecast path through adu_types
-    "estimate_adu": "ADU",  # on the forecast path through pooled_adu
-    "fit_audit": "ADU",
-    "joint_refit": "ADU",
-    "pooled_adu": "ADU",  # off the forecast path since estimate_mm moved to calibrate/mm/ (MM step 2)
-    "score": "ADU",
-}
+MOVING: dict[str, str] = {}  # empty: both models have moved out (ADU #565, MM step 2)
 
 
 def _modules() -> dict[str, Path]:
@@ -130,7 +113,6 @@ def test_moving_list_only_shrinks():
 MAX_LINES = 620  # "about 600": scenarios/fees.py (604) fits
 OVERSIZE = {
     "scenarios.adu": "ADU",
-    "pooled_adu": "ADU",
 }
 
 

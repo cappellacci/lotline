@@ -6,7 +6,8 @@
 
 The panel: every Twin Cities metro place with Met Council residential permits, 2016-2025 (St. Paul never;
 places with no dated ADU rule left out and counted). The full run: PPML with place and year fixed effects and
-cohort × event-time effects (`lotline.model.estimate_adu`), the wild cluster score bootstrap (999 draws),
+cohort × event-time effects (`lotline.calibrate.adu.estimate_adu`), the wild cluster score bootstrap (999
+draws),
 randomization inference (999 permutations of adoption years), the five checks of D-023, and the transport test
 for Austin (2016-2023), Raleigh (2021-2025) and Durham (2019-2025). --out is a directory: estimates.csv,
 bootstrap_draws.csv, randomization.csv, checks.csv, transport.csv, transport_verdict.csv, dropped.csv and
@@ -20,9 +21,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.calibrate.adu import estimate_adu as est
 from lotline.config import load_params
 from lotline.io import DataStore
-from lotline.model import estimate_adu as est
 
 SOURCE = "metc_residential_permits"
 TRANSPORT = {  # place: (state, panel years incl. pre-adoption, scored years)

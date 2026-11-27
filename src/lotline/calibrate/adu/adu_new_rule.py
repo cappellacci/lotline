@@ -15,7 +15,7 @@ from dataclasses import replace
 import numpy as np
 import pandas as pd
 
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_adu as cal
 
 K = 5  # years after f_i that take ν, fixed in D-099 (the engine's five-year window)
 WINDOW_START = pd.Timestamp("2016-01-01")

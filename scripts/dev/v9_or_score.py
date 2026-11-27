@@ -29,9 +29,9 @@ import numpy as np
 import pandas as pd
 
 from lotline.adapters.national import bps
+from lotline.calibrate.adu import calibrate_adu
 from lotline.calibrate.mm import estimate_mm as mm
 from lotline.io import DataStore
-from lotline.model import calibrate_adu
 from lotline.validation import v9
 from lotline.validation.baseline_scores import crps_from_draws, randomized_coverage
 

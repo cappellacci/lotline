@@ -293,7 +293,7 @@
    "decision": "D-099",
    "how": "hand",
    "status": "current",
-   "script": "scripts/archive/adu_new_rule.py (model/adu_new_rule.py)",
+   "script": "scripts/archive/adu_new_rule.py (calibrate/adu/adu_new_rule.py)",
    "values": {
     "adu:adu_new_rule_share": 1.0
    }

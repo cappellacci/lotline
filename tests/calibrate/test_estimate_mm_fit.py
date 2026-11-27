@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from lotline.calibrate.adu import estimate_adu
 from lotline.calibrate.mm import estimate_mm as mm
-from lotline.model import estimate_adu
 
 YEARS = np.arange(2010, 2026)
 TRUTH = {"beta_0": 0.4, "beta_2": 0.8, "beta_4": 1.0, "theta_pcr": 0.3, "rho": -0.2, "delta": -0.3}

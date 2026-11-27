@@ -2,7 +2,7 @@
 
 **Goal:** build the data panel for estimating the effect of allowing 2–4 unit homes in single-family zones, and write its pre-registration (D-024) **before** any estimate is run. Mirror the ADU design (D-023, and D-025 if approved), adapted to missing middle.
 
-**Read first:** `docs/analysis_plan.md` D-023 (and its notes on the aborted run: separation, thin data); `docs/research/lotline-causal-diagram-mm.md`; `docs/research/lotline-statistical-protocol.md` §5.6–5.7; `src/lotline/model/estimate_adu.py` (reuse its panel and estimator patterns; don't duplicate code: factor shared pieces out if needed and say so in the PR).
+**Read first:** `docs/analysis_plan.md` D-023 (and its notes on the aborted run: separation, thin data); `docs/research/lotline-causal-diagram-mm.md`; `docs/research/lotline-statistical-protocol.md` §5.6–5.7; `src/lotline/calibrate/adu/estimate_adu.py` (reuse its panel and estimator patterns; don't duplicate code: factor shared pieces out if needed and say so in the PR).
 
 **Data already in the repo/data dir:**
 - **Outcome:** permits for duplexes, triplexes and fourplexes by place-year. Met Council `metc_residential_permits` flags building types (DTQ) by parcel from 2016. Also available: Minneapolis CCS, Austin, Raleigh and Durham permits (building_type_std U2/U3_4/DTQ); BPS 2-unit and 3–4-unit counts by place.
