@@ -1,19 +1,23 @@
 # Data dashboard
 
-A single page that shows what Lotline has collected, for every state in the build at once or one state at a
-time. It exists to **check the data** (are the parcel rolls, reforms and permits complete and consistent?) and
-to **show the work** behind the model. It is not a model output: every number is a count or share of data the
-adapters have already processed.
+The data dashboard shows what Lotline has collected, for every state in the build at once or one state at a
+time. We use it to check the data (are the parcel rolls, reforms and permits complete and consistent?) and to
+show the work behind the model. It is not a model output. Every number is a count or share of data the adapters
+have already processed.
+
+The app's data tab is this dashboard. `uv run lotline run` builds it with the page, and `uv run lotline app`
+rebuilds it from the data already in `LOTLINE_DATA_DIR` (`--no-data-tab` skips it). To build the dashboard on its
+own:
 
 ```bash
-python scripts/build_data_dashboard.py            # every configured state; writes reports/data_dashboard/
-python scripts/build_data_dashboard.py --fetch    # also downloads Census population estimates if missing
-python scripts/build_data_dashboard.py --state MN # one state
+uv run python scripts/build_data_dashboard.py            # every configured state; writes reports/data_dashboard/
+uv run python scripts/build_data_dashboard.py --fetch    # also downloads Census population estimates if missing
+uv run python scripts/build_data_dashboard.py --state MN # one state
 ```
 
-Open `reports/data_dashboard/index.html` in a browser (it needs internet access for d3 and the county map;
-see `docs/disclosures.md`). The folder is gitignored: it holds aggregates of downloaded data. The summary is
-also written as `summary.json` beside the page.
+Open `reports/data_dashboard/index.html` in a browser. It needs internet access for d3 and the county map (see
+`docs/disclosures.md`). The folder is gitignored because it holds aggregates of downloaded data. The summary is
+also written as `summary.json` beside the page, and that file is what the app's data tab reads.
 
 ## What is on the page
 
@@ -34,19 +38,19 @@ also written as `summary.json` beside the page.
 The rules live in the docstring of `src/lotline/dashboard/summarize.py`, and each has a hand-worked test in
 `tests/dashboard/test_dashboard.py`. In short:
 
-- **Latest roll per jurisdiction.** Each parcel source is cut to its latest vintage *per jurisdiction*, since
+- **Latest roll per jurisdiction.** Each parcel source is cut to its latest vintage *per jurisdiction*, because
   rolls arrive county by county and some places are kept only in older rolls (St. Paul, under the V5 snapshot
   rule).
 - **One source per jurisdiction.** Where sources overlap, the one named in `parcel_sources` in the state config
   wins if it has parcels there; otherwise the largest. Counts are never added across sources.
-- **Population covered.** A jurisdiction counts as covered if its chosen source has at least one parcel. Population is the
-  2020 Census count; an unincorporated county area gets the county's 2020 estimate less the other listed
-  jurisdictions in that county (floored at zero, marked with *).
+- **Population covered.** A jurisdiction counts as covered if its chosen source has at least one parcel.
+  Population is the 2020 Census count. An unincorporated county area gets the county's 2020 estimate less the
+  other listed jurisdictions in that county (floored at zero, marked with *).
 - **Nothing is dropped silently.** Parcels outside any listed jurisdiction, counties with no jurisdiction in the
   table and reform GEOIDs that match no jurisdiction all show up as data checks.
 - **Holdouts.** Only processed tables are read, and those already exclude held-out outcomes.
-- **Precision.** Outputs are jurisdiction or county counts; no parcel-level record is shown (Official Rules PDF
-  review, point N-series: avoid parcel-level precision).
+- **Precision.** Outputs are jurisdiction or county counts. No parcel-level record is shown. Our review of
+  the Official Rules flagged parcel-level precision as something to avoid.
 
 ## Growth panel caveats
 
@@ -54,12 +58,12 @@ The rules live in the docstring of `src/lotline/dashboard/summarize.py`, and eac
 - Population estimates splice two vintages: 2010–2019 from vintage 2020, then 2020 on from vintage 2025. The
   2020 seam changes the Census base and is marked on the chart.
 - "2010 stock + permits" adds every unit permitted since 2010 to the 2010 ACS count. It ignores demolitions and
-  permits that were never built, so it runs above the ACS line; the gap is a rough sense of both.
+  permits that were never built, so it runs above the ACS line. The gap gives a rough sense of both.
 - County "housing growth minus population growth" compares ACS 2010 with ACS 2024 against estimates for the
   same years. Small counties have wide ACS margins.
 
 ## Adding a state
 
-Nothing in the dashboard names a state. A fifth state shows up once it has `config/states/<st>.yaml`, a built
+The dashboard works for any state because nothing in it names one. A new state shows up once it has `config/states/<st>.yaml`, a built
 `jurisdictions` table and whatever else its adapters have produced. Missing pieces show up as empty panels or
 data checks, never as errors. The end-to-end test builds a made-up state from config and processed tables only.

@@ -1,14 +1,18 @@
 # Lotline: Data Available vs. Used, by State
 
-Hand-written companion to `docs/data_provenance.md` (which is generated and can't hold hand-written text).
-It answers two questions the Rules (§8) and the Handbook (Data and Resources) ask of the data document:
+A reader in another state needs to know what data exist, what we used and what we left out, so they can judge
+how far the results carry. This page is the hand-written companion to `docs/data_provenance.md`, which is
+generated and can't hold hand-written text. It answers two questions the Rules (§8) and the Handbook (Data and
+Resources) ask of the data document:
 
 1. **For each state, what data exist, what Lotline uses, and why the rest isn't used.**
 2. **Could anything Lotline publishes identify a person or a single property** (re-identification and
    small-cell risk)?
 
-**Status date:** 2026-10-19, `main` at commit `99b206c` (Texas section: 2026-10-30, after #244 and the land-use update; North Carolina section: 2026-11-01, at 7fc54e5; Minnesota section: 2026-11-02, thread 13). Every "used" entry names the module that reads the data,
-so it can be checked in `src/lotline/`. "In review" means an open pull request adds it; it is not on `main` yet.
+**Status date:** the shared section and the row counts of the fee and rule tables were checked on 2026-11-27.
+The rest of each state section was last refreshed on 2026-11-02 (Minnesota), 2026-11-01 (North Carolina),
+2026-10-30 (Texas) and 2026-10-19 (Ohio). Every "used"
+entry names the module that reads the data, so it can be checked in `src/lotline/`. "In review" means an open pull request adds it; it is not on `main` yet.
 What "available" means comes from our own scouting: `docs/research/lotline-data-availability.md` (R1–R10),
 `docs/research/lotline-data-catalog.csv`, `docs/research/lotline-data-catalog-mn.csv` and
 `docs/research/lotline-mn-scouting.md`. Update this file in the same PR that adds or drops a source.
@@ -22,19 +26,21 @@ What "available" means comes from our own scouting: `docs/research/lotline-data-
 | not yet | Usable, planned, not built |
 | no | Not used, on purpose; the last column says why |
 
-## Shared by all four states
+## Shared by every state
 
-These national sources feed every state the same way.
+We use national sources wherever we can, because they let the model run in any state. They feed every state
+the same way. The four state sections below cover Minnesota, North Carolina, Ohio and Texas. Oregon and
+Wisconsin use the same national sources.
 
 | Data need | Available | Used | Why not / limits |
 |---|---|---|---|
 | Permits by building size (R4) | Census Building Permits Survey (BPS), every permit-issuing place and township, 1, 2, 3–4, 5+ units | `bps` (place level); `bps_state` (state totals, used only to check `bps`) | No ADU flag: detached ADUs sit inside 1-unit permits and conversions are left out. Places that don't report every month are imputed by Census; the adapter flags those place-years (`imputed`). 5–6 unit buildings sit inside "5+" |
 | Homes by type, year built, values, rents (R1, R2, R7) | ACS 5-year tables B25024, B25034, B25077, B25064, B25003 with margins of error | `acs` | Area estimates, not parcels. 0.3–2% of estimates are suppressed by Census (small places and townships). Where a state has no parcels, ACS one-unit detached homes are the eligible-parcel fallback (`build/eligible.py`, quality always `low`) |
 | Price trends (R7) | FHFA House Price Index (state, county, ZIP, tract) | `fhfa` | Thin places suppressed by FHFA (e.g. 179 of 254 Texas counties have no county index); missing years stay missing, never interpolated |
-| Construction costs and rates | BLS producer price index for residential construction inputs, CPI, 30-year mortgage rate (via FRED); NAHB, Census Characteristics of New Housing and Survey of Construction (published reports) | `fred` (index and rates); `config/params/proforma.yaml` (cost per sq ft, sizes, build times, each with a source) | No local construction-cost data for any of the four states: costs are national, so the same per-sq-ft cost applies everywhere. Several proforma values are marked "approx." in the config and need re-checking |
-| Fees (R8) | Handbook benchmark: $50,000 per unit, cut by 50% | `config/params/fees.yaml` | Fixed by the Handbook. Real local fees we found are much lower (see each state). No state has a machine-readable per-unit fee database |
-| Area median income (the AMI strip) | HUD Section 8 income limits, FY 2026: each HUD area's median family income and limits by household size, one row per county (huduser.gov file or API) | `hud_il` (the file, saved by hand and registered with `lotline manifest register --source hud_income_limits`) | huduser.gov answers every scripted request with a bot challenge (checked 2026-11-19), and the API needs an account token, so the file is downloaded once in a browser (Ben, 2026-11-19). Without it `lotline fetch` still runs and the AMI strip is empty. A place takes its main county's HUD area. AMI is family income for the whole area, owners included |
-| Geography | Census TIGERweb boundaries, 2020 geography code files, CBSA delineations | `tiger_boundaries`, `geoparts`, `cbsa`, `decennial` | One boundary vintage (2025) for every year, so annexations move points near city edges |
+| Construction costs and rates | BLS producer price index for residential construction inputs, CPI, 30-year mortgage rate (via FRED); NAHB, Census Characteristics of New Housing and Survey of Construction (published reports) | `fred` (index and rates); `config/params/proforma.yaml` (cost per sq ft, sizes, build times, each with a source) | No local construction-cost data for any state: costs are national, so the same per-sq-ft cost applies everywhere. Several proforma values are marked "approx." in the config and need re-checking |
+| Fees (R8) | Handbook benchmark: $50,000 per unit, cut by 50% | `config/params/fees.yaml`; `config/fees/<st>.csv` for the local-fee scenario | The benchmark is fixed by the Handbook. Real local fees we found are much lower (see each state). No state has a machine-readable per-unit fee database |
+| Area median income (the AMI strip) | HUD Section 8 income limits, FY 2026: each HUD area's median family income and limits by household size, one row per county (huduser.gov file or API) | `hud_il` (the file, saved by hand and registered with `lotline manifest register --source hud_income_limits`) | huduser.gov answers every scripted request with a bot challenge (checked 2026-11-19), and the API needs an account token, so we download the file once in a browser. Without it `lotline fetch` still runs and the AMI strip is empty. A place takes its main county's HUD area. AMI is family income for the whole area, owners included |
+| Geography | Census TIGER/Line 2025 place and county-subdivision boundaries (`census_tigerline_2025`), 2020 geography code files, CBSA delineations | `tiger_boundaries`, `geoparts`, `cbsa`, `decennial` | One boundary vintage (January 1, 2025) for every year, so annexations move points near city edges. Until 2026-11-27 we read the same vintage from the TIGERweb map service, which began refusing requests |
 | Zoning (R3), every state | National Zoning Atlas | no | Its terms forbid downloading, redistributing or building derivatives without written permission, so it can't sit behind an Apache-2.0 public pipeline (data availability §0) |
 
 ## Minnesota (primary state)
@@ -50,12 +56,12 @@ These national sources feed every state the same way.
 | Parcel history (R2) | Regional Parcels year-end archives 2021–2025 (open); 2002–2020 services token-locked; Minneapolis assessor 2017–2026; MnGeo current roll only | `metc_parcels` (yearly 2021–2026), `mpls_assessor_parcels` (yearly 2017–2026), `mngeo_parcels` (2026) | Pre-2021 metro vintages need a request to Met Council (#11); earlier years are ACS scaled to the rolls (D-035) |
 | Zoning (R3) | Minneapolis Primary Zoning and Built Form (CC0); St. Paul Principal Zoning and its dated archive (2007 on); Met Council Planned Land Use (plan designations, not zoning) | St. Paul archive snapshots of 2023-11-25 and 2023-11-26 (`stpaul_v5`, V5 H1/H2 lots; #259) | No zoning is joined to parcels for the engines yet. The eligible-parcel rule counts a parcel with unknown zoning as single-family-only (`build/eligible.py`), which can overstate eligibility where zoning already allows more |
 | Sale prices and rents (R7) | Regional Parcels last sale price and date; eCRV sales (bulk access for government agencies only); ACS; FHFA | `acs`, `fhfa` | No open sales history; parcel last-sale price waits on a parcel adapter |
-| Fees (R8) | Minneapolis fees paid per permit; city fee schedules (batch-1 records); city fee reports under Minn. Stat. §326B.145 (PDFs); Met Council sewer availability charge | `config/fees/mn.csv` (171 rows, 13 jurisdictions, 2016–2027), `mpls_permits` (`fees_paid_usd`) | No Met Council SAC series yet; places without a per-home total use the Handbook $50,000 (D-034) |
-| Reform dates (R9) | City ordinances and code pages (batch-1 records, Ben's metro ADU adoption records); Minneapolis 2040 Plan litigation; St. Paul 2023 reform; no statewide ADU or middle-housing law enacted | `config/reforms/mn.csv` (113 rows: 100 ADU for 80 places, 9 missing middle, 2 moratorium windows, 2 parking) | Second-coded 2026-11-02 (8 agree, 60 adjudicated, 39 noted); 4 D-025 event dates are DATE UNCONFIRMED (`docs/research/ordinances/mn-second-coder-lookups-2026-11-02.csv`). St. Paul's 2023 rows are coded; its 2024–2026 outcomes stay hidden (V5) |
+| Fees (R8) | Minneapolis fees paid per permit; city fee schedules (batch-1 records); city fee reports under Minn. Stat. §326B.145 (PDFs); Met Council sewer availability charge | `config/fees/mn.csv` (248 rows, 19 jurisdictions, 2016–2027), `mpls_permits` (`fees_paid_usd`) | No Met Council SAC series yet; places without a per-home total use the Handbook $50,000 (D-034) |
+| Reform dates (R9) | City ordinances and code pages (batch-1 records, our own records of metro ADU adoptions); Minneapolis 2040 Plan litigation; St. Paul 2023 reform; no statewide ADU or middle-housing law enacted | `config/reforms/mn.csv` (169 rows: 156 ADU for 99 places, 9 missing middle, 2 moratorium windows, 2 parking) | Second-coded 2026-11-02 (8 agree, 60 adjudicated, 39 noted); 4 D-025 event dates are DATE UNCONFIRMED (`docs/research/ordinances/mn-second-coder-lookups-2026-11-02.csv`). St. Paul's 2023 rows are coded; its 2024–2026 outcomes stay hidden (V5) |
 
 ## North Carolina
 
-*Refreshed 2026-11-01 (thread 13, `docs/build/nc-readiness.md`), `main` at 7fc54e5, after the second-coder review.*
+*Refreshed 2026-11-01, after the second-coder review (`docs/build/nc-readiness.md`).*
 
 | Data need | Available | Used | Why not / limits |
 |---|---|---|---|
@@ -68,8 +74,8 @@ These national sources feed every state the same way.
 | Parcel history (R2) | Wake rolls for Nov 2019 and Dec 2023 (the county folder has no others); NCSU Libraries county archives; a pre-June-2023 Mecklenburg archive (requested) | `wake_realestate` (both rolls; years between them interpolated, D-035 addendum) | Other places have one roll (2026) with ACS-scaled history (D-035). NCSU archives have unclear redistribution terms and irregular years: no |
 | Zoning (R3) | Charlotte UDO translation layer (pre-UDO district per parcel, 2023-05-31); Mecklenburg permits' zoning code; Raleigh and Durham city layers | `clt_udo_translation` (V5 N1 lots, `clt_v5`), `meck_permits` (`zoning_raw`) | Other cities not loaded. Unknown zoning counts as single-family-only |
 | Sale prices and rents (R7) | No statewide sale-price file (OneMap has sale date only); Wake qualified sales; ACS; FHFA | `acs`, `fhfa` | Wake qualified sales are registered but not read (no sales table yet) |
-| Fees (R8) | City and utility fee schedules (Ben's downloads); the statewide fee disclosure (S.L. 2026-59), first report not yet published; 2015 UNC EFC connection-fee tables | `config/fees/nc.csv` (132 rows, 16 jurisdictions: Raleigh, Durham, Greensboro, Winston-Salem and Forsyth, Asheville and Buncombe, Concord and Cabarrus, Wilmington and New Hanover (CFPUA), Apex, Fuquay-Varina, Johnston, Brunswick, Wilson); `config/reforms/nc_carthage_towns.csv` | Charlotte Water, Fayetteville PWC, Cary and High Point are open lookups; places without a per-home total use the Handbook $50,000 (D-034) |
-| Reform dates (R9) | City ordinances and UDO PDFs (batch-1 records, Ben's downloads in `~/lotline-data/manual/nc_udos/`, the second coder's official PDFs); statewide ADU law S.L. 2026-59 (effective 2027-01-15) | `config/reforms/nc.csv` (92 rows: 66 ADU, 25 missing middle, 1 parking; 41 jurisdictions) | Second-coder review 2026-11-01 (#254): 28 of 71 local rows second-coded, 10 tagged `[predates]` (a code rewrite, never an event). Many dates are still the ordinance's adoption date (`[earliest-known]`). Open lookups in `nc-adu-`, `nc-mm-` and `nc-fee-lookups-todo.csv` |
+| Fees (R8) | City and utility fee schedules (downloaded by hand); the statewide fee disclosure (S.L. 2026-59), first report not yet published; 2015 UNC EFC connection-fee tables | `config/fees/nc.csv` (307 rows, 20 jurisdictions, among them Raleigh, Durham, Greensboro, Winston-Salem and Forsyth, Asheville and Buncombe, Concord and Cabarrus, Wilmington and New Hanover (CFPUA), Apex, Fuquay-Varina, Johnston, Brunswick, Wilson); `config/reforms/nc_carthage_towns.csv` | Charlotte Water, Fayetteville PWC, Cary and High Point are open lookups; places without a per-home total use the Handbook $50,000 (D-034) |
+| Reform dates (R9) | City ordinances and UDO PDFs (batch-1 records, our downloads in `~/lotline-data/manual/nc_udos/`, the second coder's official PDFs); statewide ADU law S.L. 2026-59 (effective 2027-01-15) | `config/reforms/nc.csv` (110 rows: 84 ADU, 25 missing middle, 1 parking; 41 jurisdictions) | Second-coder review 2026-11-01 (#254): 28 of 71 local rows second-coded, 10 tagged `[predates]` (a code rewrite, never an event). Many dates are still the ordinance's adoption date (`[earliest-known]`). Open lookups in `nc-adu-`, `nc-mm-` and `nc-fee-lookups-todo.csv` |
 
 ## Ohio (sparse-evidence state)
 
@@ -84,8 +90,8 @@ These national sources feed every state the same way.
 | Parcel history (R2) | 2022 statewide vintage (login required); Franklin Auditor archives | no / not yet | The 2022 vintage is token-gated and skipped |
 | Zoning (R3) | Columbus base zoning (CC0) | not yet | Unknown zoning counts as single-family-only |
 | Sale prices and rents (R7) | County auditor transfer files (88 different systems); ACS; FHFA | `acs`, `fhfa` | No statewide sales file |
-| Fees (R8) | Columbus water and sewer capacity charges; no state fee reporting | not yet | The scenario uses the Handbook $50,000 |
-| Reform dates (R9) | Cincinnati Connected Communities (2024), Columbus Zone In (2024) and ADUs (2025), Cleveland form-based code (2024) | `config/reforms/oh.csv` (8 coded reform components) | No mature statewide reform: Ohio results lean on the mechanism and out-of-state evidence |
+| Fees (R8) | City fee schedules, among them Columbus water and sewer capacity charges; no state fee reporting | `config/fees/oh.csv` (110 rows for Cincinnati, Cleveland, Columbus, Dayton and Toledo, 2026 schedules) | Places without a per-home total use the Handbook $50,000 (D-034) |
+| Reform dates (R9) | Cincinnati Connected Communities (2024), Columbus Zone In (2024) and ADUs (2025), Cleveland form-based code (2024) | `config/reforms/oh.csv` (69 rows: 58 ADU for 49 places, 4 missing middle, 3 parking, 4 other) | No mature statewide reform: Ohio results lean on the mechanism and out-of-state evidence |
 
 ## Texas ("no sale prices" state)
 
@@ -94,14 +100,14 @@ These national sources feed every state the same way.
 | Permits by building size (R4) | BPS; record-level permits for Austin (Census class codes), Fort Worth (filed 2001 on, unit counts), Dallas (1971 to 2024-11, unit counts), San Antonio (2020-07 on, no unit field); Houston monthly aggregates only; Collin CAD and Arlington only from 2023 | `bps`, `austin_permits`, `fw_permits`, `dallas_permits`, `sa_permits` | Fort Worth and Dallas apartment permits repeat project totals and have no parcel number; D-036 groups them by same day and unit count (#230). Dallas's layer ends 2024-11-12 (move to DallasNow); its Socrata set (2018-2025) has no unit field and no license. San Antonio's 2-4 and 5+ units stay with BPS. Houston has no record-level permits |
 | ADU / building type flag (R5) | Austin class R-102; San Antonio's "Res Accessory Dwelling Permit" type; Fort Worth and Dallas only in work descriptions | `austin_permits`, `sa_permits`, `fw_permits`, `dallas_permits` (description parser) | R-102 nearly stops after HOME (2024), when ADUs became 2- and 3-unit uses. Fort Worth's ADUs are non-rental (its rule), Dallas has one in the window |
 | Completions and demolitions (R6) | Austin completion dates and demolitions; Fort Worth final-inspection dates | `austin_permits`, `fw_permits` | Demolitions are not in the Fort Worth, Dallas or San Antonio record sets used |
-| Parcels with land use (R1) | TCAD roll (Travis); TxGIO StratMap Land Parcels, statewide, CC0, from 253 appraisal districts (2019, 2021-2026); Harris CAD | `tcad_parcels` (City of Austin, Travis County part); `stratmap_parcels` (2019-03 and 2025-06 releases, 21.0M parcels; own file geodatabase reader, #238) | Ben downloads and registers both by hand. StratMap's 2022 and 2026 releases carry no land-use codes, so they are not read; partial county extracts (under 80% of the county's parcels in the other release) are left out. Counties with 90%+ known land use: 63 (2019), 65 (2025). Johnson's and Wichita's own state-category codes are read (`config/crosswalks/tx_county_land_use.csv`); other districts' codes are land types and are not used. 478 of 1,006 jurisdictions count from parcels; Houston does not (partial 2019 extract, undocumented Harris Z codes). Parcels outside any Texas jurisdiction are left out. Austin stays on TCAD (`parcel_sources`) |
+| Parcels with land use (R1) | TCAD roll (Travis); TxGIO StratMap Land Parcels, statewide, CC0, from 253 appraisal districts (2019, 2021-2026); Harris CAD | `tcad_parcels` (City of Austin, Travis County part); `stratmap_parcels` (2019-03 and 2025-06 releases, 21.0M parcels; own file geodatabase reader, #238) | We download and register both by hand. StratMap's 2022 and 2026 releases carry no land-use codes, so they are not read; partial county extracts (under 80% of the county's parcels in the other release) are left out. Counties with 90%+ known land use: 63 (2019), 65 (2025). Johnson's and Wichita's own state-category codes are read (`config/crosswalks/tx_county_land_use.csv`); other districts' codes are land types and are not used. 478 of 1,006 jurisdictions count from parcels; Houston does not (partial 2019 extract, undocumented Harris Z codes). Parcels outside any Texas jurisdiction are left out. Austin stays on TCAD (`parcel_sources`) |
 | Year built (R1) | TCAD improvement year built; StratMap (filled by some districts only); ACS B25034 | `tcad_parcels`, `stratmap_parcels`, `acs` | StratMap has year built for 33% (2019) and 36% (2025) of parcels; tiers 125 / 176 / 705 |
 | Lot size (R1) | TCAD land size; StratMap legal and GIS areas, and the polygons | `tcad_parcels`, `stratmap_parcels` | Stated areas where a unit is given; else the polygon's true area (Web Mercator corrected for latitude) |
-| Parcel history (R2) | TCAD annual rolls; StratMap collections 2019 and 2021-2026 | `stratmap_parcels` (2019 and 2025 rolls as D-035 anchors) | 198 jurisdictions have both rolls; the 2024 release is registered but not read (memory: per-vintage files would need a WS-CORE change) |
+| Parcel history (R2) | TCAD annual rolls; StratMap collections 2019 and 2021-2026 | `stratmap_parcels` (2019 and 2025 rolls as D-035 anchors) | 198 jurisdictions have both rolls. The 2024 release is registered but not read, because reading more vintages would need a change to the shared parcel table |
 | Zoning (R3) | Austin zoning GIS; Dallas permits carry base zoning; Mercatus DFW 2024 file (license not stated) | no | Parcels carry no zoning; the HOME reform rows name the zones (SF-1 to SF-3) in `config/reforms/tx.csv` |
 | Sale prices and rents (R7) | Sale prices are confidential in Texas (non-disclosure, Tax Code §22.27); MLS and Zillow terms don't allow redistribution; appraised values (TCAD, StratMap); ACS; FHFA | `tcad_parcels` and `stratmap_parcels` (appraised values, `value_basis = appraisal`), `acs`, `fhfa` | No transaction prices: the pro forma uses appraised values and ACS values moved forward with FHFA |
-| Fees (R8) | City and utility fee schedules and impact-fee ordinances | `config/fees/tx.csv` (55 rows: Austin permit, impact, meter, tap and parkland fees; SAWS by elevation area and basin; Fort Worth by collection date; Houston collected rates 2021 and 2026; Dallas tap and inspection charges; Corpus Christi lot fees) | SAWS and Fort Worth fees vary by area or plat date, so no single per-home amount is formed yet (a rule is proposed to Ben); places without a per-home total use the Handbook $50,000 (D-034). Dallas: no impact fee found, not officially confirmed |
-| Reform dates (R9) | City ordinances and code PDFs (Ben's two research workbooks and his own lookups, 2026-10-27 to 30); the zoneomics.com mirror; 2019 and 2025 state laws | `config/reforms/tx.csv` (102 rows) | ADU rules for 38 places (22 allow ADUs somewhere, 16 "none"); missing-middle rules for 39 (5 dated changes in the window: Austin, Houston, League City, Lewisville, Lubbock). 80 rows await a second coder (`docs/research/ordinances/tx-second-coder-2026-10-30.csv`); open: Pasadena, Laredo (partial) |
+| Fees (R8) | City and utility fee schedules and impact-fee ordinances | `config/fees/tx.csv` (148 rows, 11 jurisdictions, among them Austin permit, impact, meter, tap and parkland fees; SAWS by elevation area and basin; Fort Worth by collection date; Houston collected rates 2021 and 2026; Dallas tap and inspection charges; Corpus Christi lot fees) | SAWS and Fort Worth fees vary by area or plat date, so no single per-home amount is formed yet; places without a per-home total use the Handbook $50,000 (D-034). Dallas: no impact fee found, not officially confirmed |
+| Reform dates (R9) | City ordinances and code PDFs (our two research workbooks and hand lookups, 2026-10-27 to 30); the zoneomics.com mirror; 2019 and 2025 state laws | `config/reforms/tx.csv` (109 rows) | ADU rules for 38 places (22 allow ADUs somewhere, 16 "none"); missing-middle rules for 39 (5 dated changes in the window: Austin, Houston, League City, Lewisville, Lubbock). 80 rows await a second coder (`docs/research/ordinances/tx-second-coder-2026-10-30.csv`); open: Pasadena, Laredo (partial) |
 
 ## Biggest gaps, by state
 
@@ -111,14 +117,16 @@ These national sources feed every state the same way.
 - **North Carolina:** 52 of 100 counties send no usable land use, so 236 of 454 jurisdictions (Charlotte,
   Concord and Greenville among them) stay on the ACS denominator; only Wake has a second real roll; no sale
   prices statewide; 28 of the 71 local rule rows are second-coded (#254), the rest have one coder.
-- **Ohio:** parcels for 2 of 88 counties, with land use and lot size only (no year built, units or values).
-  No ADU flag in Columbus. Thin reform evidence by design.
+- **Ohio:** the statewide parcel layer has land use and lot size only, so year built comes from four county
+  layers (Summit, Cuyahoga, Butler and Franklin), and Dayton, Hamilton and Middletown stay on the ACS fallback.
+  Columbus ADUs are read from free text and council variances, so those counts are approximate. Reform
+  evidence is thin by design.
 - **Texas:** StratMap parcels are loaded (2019 and 2025 releases), but many counties' 2025 records carry no
   land use and several send land-type rather than use codes, so 526 of 1,006 jurisdictions, Houston among them,
   stay on the ACS denominator; no sale prices (state law); record-level permits for four cities, with repeated
   apartment totals in two (D-036); 80 rule rows await a second coder.
 - **All states:** no open zoning statewide (National Zoning Atlas license), national construction costs only,
-  and fees fixed at the Handbook's $50,000.
+  and the benchmark fee fixed at the Handbook's $50,000 (the second fee scenario uses the local fees we coded).
 
 ## Re-identification and small-cell risk
 
@@ -139,8 +147,9 @@ committed (CLAUDE.md; `data/` is gitignored). Two kinds of record-level data are
     addresses, legal descriptions); `wake_realestate` reads only `USECOLS` from the county spreadsheet, so owner,
     mailing, street-address, deed and free-text columns never reach memory; `clt_udo_translation` leaves out
     the site address and editor names. Each module's `PERSONAL` set is checked by a test in `tests/states/nc/`.
-  - Minnesota's parcel adapters (`metc_parcels`, `mpls_assessor_parcels`, `ramsey_parcels`) are on `main` but
-    have not been reviewed against this rule here yet.
+  - Minnesota: `metc_parcels`, `mpls_assessor_parcels`, `mngeo_parcels` and `ramsey_parcels` each list owner
+    names and owner and tax-bill addresses in a `PERSONAL` set and drop those columns on read. Tests in
+    `tests/states/mn/` check them.
 - **Permits: no names or street addresses, but they point to properties.** Every permit adapter requests a
   fixed field list that leaves out applicant, owner and contractor names and street addresses (`FIELDS`,
   `OUT_FIELDS` or `SELECT` in each module; tests for Minneapolis, St. Paul, Columbus, Cincinnati and Austin
@@ -153,10 +162,10 @@ committed (CLAUDE.md; `data/` is gitignored). Two kinds of record-level data are
 and the state, never a parcel, permit or address. Committed reports (`reports/<state>/V0*.md`) hold
 place-by-year totals only.
 
-**Small cells.** Decision D-015 (pending: PR #137, not yet on `main`) sets a publishing minimum,
-`min_eligible_parcels_publish` = 20 eligible parcels (tested range 10–50) in `config/params/aggregate.yaml`. A
-place below it is folded into its county or region and never shown alone. Nothing reads the parameter yet;
-the aggregation step and the app must apply it before any place-level result is published. A small place can
+**Small cells.** We set a publishing minimum so that a result can't point at a single property:
+`min_eligible_parcels_publish` = 20 eligible parcels (range 10–50) in `config/params/aggregate.yaml` (D-015). A
+place below it is to be folded into its county or region and never shown alone. No code reads the parameter
+yet, so the aggregation step and the app must apply it before any place-level result is published. A small place can
 still have very few permits in a year. Those counts come from public BPS and city records, so a published
 count adds nothing a reader couldn't already look up, but the minimum keeps a single home from standing out
 as its own result.

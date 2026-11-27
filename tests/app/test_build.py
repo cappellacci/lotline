@@ -55,7 +55,7 @@ def test_page_builds_from_fixture_and_has_every_section(tmp_path):
         "need_label": head["label"],
     }
     assert _state_file(tmp_path, "ZZ") == fixture  # the full bundle, as-is, in its own file
-    assert "uv run lotline results --all" in html
+    assert "uv run lotline run" in html  # the one-command rebuild named in the footer
 
 
 def test_page_needs_no_server_or_network_and_carries_its_fonts():

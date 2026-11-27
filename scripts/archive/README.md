@@ -1,18 +1,19 @@
 # Archived development scripts
 
-One-off analyses, superseded fits and report-page renderers, moved here from `scripts/dev/` on 2026-11-26
-(calibration phase 6). Nothing in the library, tests, CI or the how-to docs runs them. They stay in the repo
-as the record of how each decision in `docs/analysis_plan.md` was reached; the reports they wrote are under
-`reports/`. Every fitted value in `config/params/` is now reproduced by `uv run lotline calibrate --run`
-(see the README, "Reproduce the fitted parameters"), not by these scripts.
+These scripts are the record of how we reached each decision in `docs/analysis_plan.md`. They are one-off
+analyses, superseded fits and report-page renderers, and we moved them here from `scripts/dev/` on 2026-11-26.
+Nothing in the library, tests, CI or the how-to docs runs them, and the reports they wrote are under
+`reports/`. `uv run lotline calibrate --run` now reproduces every fitted value in `config/params/` (see
+"Reproduce the fitted parameters" in the [README](../../README.md)), so you don't need these scripts for that.
 
-- **Old paths.** `LOGBOOK.md`, `HANDOFF.md` and older logbook fragments still say `scripts/dev/<name>`; the
-  file is now `scripts/archive/<name>`. Every other reference in the repo was updated, except the source
-  column of `config/params/adu_partial_share_grid.csv`, which its calibration step writes.
-- **Rerunning one.** Run from the repo root with `uv run python scripts/archive/<name>`. A script that loads a
-  neighbour by file path may need that path pointed at `scripts/dev/` (for the scripts still there) first.
+`LOGBOOK.md`, `HANDOFF.md` and older logbook fragments still name these files as `scripts/dev/<name>`. The file
+is now `scripts/archive/<name>`. We updated every other reference in the repo, except the source column of
+`config/params/adu_partial_share_grid.csv`, which its calibration step writes.
 
-Summaries are each script's own first docstring line; decision ids are those named near its top.
+To rerun one, run `uv run python scripts/archive/<name>` from the repo root. A script that loads a neighbour by
+file path may first need that path pointed at `scripts/dev/`, for the neighbours still there.
+
+Each summary is the script's own first docstring line, and the decisions are the ones named near its top.
 
 ## ADU
 
@@ -46,14 +47,14 @@ Summaries are each script's own first docstring line; decision ids are those nam
 | `adu_reform_ratio.py` | D-095: does the engine's ADU reform ratio match what happened where coded rules changed? | D-079, D-095 |
 | `adu_reform_ratio_page.py` | Build the D-095 results page from reports/adu-reform-ratio. | D-095 |
 | `adu_screen_page.py` | Build the D-083 results page from reports/adu-covariate-screen (screen.csv, summary.json). | D-083 |
-| `adu_state_profiles.py` | D-089: a profile of each state's places by type, the share of each state outside the fit's evidence, and statewide 5-year ADU totals under Form A + place types with and without … | D-084, D-088, D-089 |
+| `adu_state_profiles.py` | D-089: a profile of each state's places by type, the share of each state outside the fit's evidence, and statewide 5-year ADU totals under Form A + place types with and without the town prior. | D-084, D-088, D-089 |
 | `adu_time_split.py` | D-090: the within-state ADU forecast test. | D-087, D-090 |
 | `adu_time_split_page.py` | Build the D-090 results page from reports/adu-time-split (totals.csv, place_scores.csv, fits.csv, summary.json). | D-090 |
 | `adu_trend_page.py` | Build the D-085 results page from reports/adu-time-trend (fits.csv, test_d_states.csv, tiers.csv, summary.json). | D-085 |
 | `adu_trend_refit.py` | D-085: Form T (a calendar-year trend) against its base, Form A and Form A′, and test D. | D-075, D-084, D-085 |
 | `adu_type_spread.py` | D-094: a place-effect variance per place type (Form S), against A + P, on the checked rule rows. | D-074, D-075, D-088, D-094 |
 | `adu_type_spread_page.py` | Build the D-094 results page from reports/adu-type-spread. | D-094 |
-| `adu_types_checked_page.py` | Build the results page for D-088 rescored on the checked rule rows: reports/adu-place-types (old rows) against reports/adu-place-types-checked (#419's rows). | D-088 |
+| `adu_types_checked_page.py` | Build the results page for D-088 rescored on the checked rule rows: reports/adu-place-types (old rows) against reports/adu-place-types-checked (the checked rows). | D-088 |
 | `adu_types_engine_check.py` | Statewide ADU scenario totals from the engine as it stands (development check, not a published result). | D-088, D-089 |
 | `adu_types_engine_page.py` | Results page for the engine switch to Form A + place types (D-088, D-089): reports/adu-types-engine/. | D-053, D-088, D-089 |
 | `adu_types_page.py` | Build the D-088 results page from reports/adu-place-types (fits.csv, tiers.csv, summary.json, ...). | D-088 |
@@ -75,14 +76,14 @@ Summaries are each script's own first docstring line; decision ids are those nam
 | `calibrate_mm_d058.py` | Missing middle: D-054's statewide backtest, with a baseline rule for unstable pre-reform pace (D-058). | D-038, D-054, D-058 |
 | `calibrate_mm_d059.py` | Missing middle: D-054's statewide backtest with Lubbock out of the fit and targets (D-059, run once). | D-038, D-054, D-055, D-058 |
 | `calibrate_mm_d062.py` | Missing middle: the five-year rate r5 = θ × m(half) by profile likelihood (D-062, run once). | D-054, D-055, D-059, D-062 |
-| `d054_posthoc.py` | D-054 POST-HOC diagnostics (not pre-registered; | D-042, D-054 |
+| `d054_posthoc.py` | D-054 post-hoc diagnostics (not pre-registered; written after the run was seen). | D-042, D-054 |
 | `d055_v9_rescore.py` | D-055: re-score V9 Oregon's missing-middle targets with D-054's refit (not blind; written before the run). | D-038, D-051, D-054, D-055 |
-| `estimate_mm.py` | D-024's missing-middle panel run (`--smoke`, `--full`); archived with the D-092 checks (MM step 2). | D-024 |
+| `estimate_mm.py` | D-024's missing-middle panel run (`--smoke`, `--full`); archived with the D-092 checks. | D-024 |
 | `mm_accuracy_page.py` | Missing-middle accuracy report: reports/mm-d092/accuracy/results.html. | D-038, D-055 |
 | `mm_baseline_choice_page.py` | Results page for D-092 run 8 (choosing the no-reform baseline): reports/mm-d092/run8-baseline/results.html. | D-092 |
 | `mm_config_compare.py` | Statewide five-year added homes, D-055 values against C4 (same places, seed, draws). | D-055 |
 | `mm_config_page.py` | Results page for C4 to config: reports/mm-d092/config-c4/results.html. | D-055 |
-| `mm_counts.py` | D-092 §2-§3 counting rules (building collapse, roll diffs); was `lotline.validation.mm_counts` (MM step 2). | D-092 |
+| `mm_counts.py` | D-092 §2–§3 counting rules (building collapse, roll diffs); was `lotline.validation.mm_counts`. | D-092 |
 | `mm_counts_d092.py` | Inputs and runs for the D-092 missing-middle counts (`mm_counts.py`). | D-092 |
 | `mm_fast_ramp_page.py` | Results page for D-100's fast-ramp sensitivity: reports/mm-d100/fast-ramp/results.html. | D-092 |
 | `mm_fast_ramp_run.py` | Fast-ramp sensitivity for the Handbook missing-middle scenario (D-100, pre-registered 2026-11-17). |  |
@@ -91,78 +92,81 @@ Summaries are each script's own first docstring line; decision ids are those nam
 | `mm_kappa_page.py` | Results page for D-092 run 7 (κ, the baseline's own spread): reports/mm-d092/run7-kappa/results.html. | D-092 |
 | `mm_project_size_d092.py` | Missing middle: buildings per project in city permit files (D-092 deviation 2026-11-15 (d)). | D-092 |
 | `mm_projects_page.py` | Results page for D-092 run 13 (buildings per project): reports/mm-d092/run13-projects/results.html. | D-092 |
-| `mm_ramp_d100.py` | Missing middle's ramp after St. | D-092, D-098 |
-| `mm_ramp_d100_summary.py` | Write D-100 run 1's summary.json from the files the run saved (the run stopped at the summary step on a JSON key bug, fixed since in `mm_ramp_d100.py`; | D-092 |
+| `mm_ramp_d100.py` | Missing middle's ramp after St. Paul (D-100): R0, R1 and R2, chosen by D-092 §5's rule. | D-092, D-098 |
+| `mm_ramp_d100_summary.py` | Write D-100 run 1's summary.json from the files the run saved (the run stopped at the summary step on a JSON key bug, since fixed in `mm_ramp_d100.py`). | D-092 |
 | `mm_ramp_page.py` | Results page for D-100 run 1 (missing middle's ramp): reports/mm-d100/run1/results.html. | D-092 |
 | `mm_results_page_d092.py` | Build the D-092 run-6 results page from the run-4 and run-5 report files (to scale, log axes). | D-092 |
-| `mm_scenario_run.py` | First run of the Handbook missing-middle scenario (D-063), five states, approved by Ben 2026-11-08. | D-055, D-063 |
-| `mm_tests.py` | D-092 §7 accuracy-test pass rules, fixed before any test ran; was `lotline.validation.mm_tests` (MM step 2). | D-092 |
+| `mm_scenario_run.py` | First run of the Handbook missing-middle scenario (D-063), five states, 2026-11-08. | D-055, D-063 |
+| `mm_tests.py` | D-092 §7 accuracy-test pass rules, fixed before any test ran; was `lotline.validation.mm_tests`. | D-092 |
 | `mm_tests_d092.py` | D-092 §7 accuracy tests, scored with `mm_tests.py`. | D-092 |
 | `mm_tests_phi_page.py` | Results page for D-092 runs 9-11 (lumpy years, refit and §7): reports/mm-d092/run11-tests-phi/results.html. | D-092 |
 | `mm_types_d092.py` | Missing middle: place types, φ by type (D-092 deviation 2026-11-15 (c)). | D-088, D-092 |
 | `mm_types_page.py` | Results page for D-092 run 12 (φ by place type): reports/mm-d092/run12-types/results.html. | D-092 |
-| `project_size.py` | Buildings per project (same lot, same day); was `lotline.validation.project_size` (MM step 2). | D-092 |
+| `project_size.py` | Buildings per project (same lot, same day); was `lotline.validation.project_size`. | D-092 |
 
 ## Fees
 
 | Script | What it answered | Decisions |
 |---|---|---|
 | `coverage_fees_mn_2026_11_09.py` | Fee coverage for the six largest uncoded Minnesota places (manual-fee-lookups.md, priority 4) -> config/fees/mn.csv. |  |
-| `coverage_fees_mn_2026_11_09_rows.json` | Data file read by its script |  |
+| `coverage_fees_mn_2026_11_09_rows.json` | Data file read by its script. |  |
 | `coverage_fees_nc_2026_11_09.py` | Fee coverage for the largest uncoded NC places (manual-fee-lookups.md, priority 4) -> config/fees/nc.csv. |  |
-| `coverage_fees_nc_2026_11_09_rows.json` | Data file read by its script |  |
+| `coverage_fees_nc_2026_11_09_rows.json` | Data file read by its script. |  |
 | `coverage_fees_oh_2026_11_09.py` | Fee coverage for Ohio's six largest uncoded places (manual-fee-lookups.md, priority 4) -> config/fees/oh.csv. | D-069 |
-| `coverage_fees_oh_2026_11_09_rows.json` | Data file read by its script |  |
+| `coverage_fees_oh_2026_11_09_rows.json` | Data file read by its script. |  |
 | `coverage_fees_tx_2026_11_09.py` | Fee coverage for the six largest uncoded Texas places (manual-fee-lookups.md, priority 4) -> config/fees/tx.csv. |  |
-| `coverage_fees_tx_2026_11_09_rows.json` | Data file read by its script |  |
-| `eugene_fees_2026_11_09.py` | Eugene, OR: price the known SDCs per house (D-066, Ben's option (a), 2026-11-09) -> config/fees/or.csv. | D-066 |
-| `fee_knobs_export.py` | Export the fee slider's grid for the results page (D-077): statewide five-year units added for each fee change and home type, in every draw, plus the central path (development r… | D-076, D-077 |
-| `fee_pencil_out_table.py` | Pencil-out table: house, duplex and fourplex pro formas per coded place, at today's fees and after a cut (fee plan Phase 2, D-073; office hours 2026-11-03, A5). | D-066, D-073 |
+| `coverage_fees_tx_2026_11_09_rows.json` | Data file read by its script. |  |
+| `eugene_fees_2026_11_09.py` | Eugene, OR: price the known SDCs per house (D-066, option (a), 2026-11-09) -> config/fees/or.csv. | D-066 |
+| `fee_knobs_export.py` | Export the fee slider's grid for the results page (D-077): statewide five-year units added for each fee change and home type, in every draw, plus the central path (development run; not a published result). | D-076, D-077 |
+| `fee_pencil_out_table.py` | Pencil-out table: house, duplex and fourplex pro formas per coded place, at today's fees and after a cut (D-073). | D-066, D-073 |
 | `plex_utility_fees_2026_11_09.py` | Duplex and fourplex water/sewer rows (manual fee lookups, priority 1) -> config/fees/<st>.csv. |  |
-| `v6b_fee_threshold.py` | V6b, the pro forma threshold test (validation plan §V6; |  |
+| `v6b_fee_threshold.py` | V6b, the pro forma threshold test (validation plan §V6). |  |
 
 ## Rule coding and state checks
 
 | Script | What it answered | Decisions |
 |---|---|---|
-| `apply_adu_rules_proposed_2026_11.py` | Apply PR #417's proposed ADU rule rows to config/reforms/*.csv. |  |
-| `mn_lookups_2026_11_02.py` | Apply Ben's decisions on the MN second-coder lookups (2026-11-02) to config/reforms/mn.csv. |  |
-| `mn_mm_batch1_2026_11_02.py` | Minnesota missing-middle rules from the batch-1 ordinance records -> config/reforms/mn.csv (thread 13, M4). | D-022 |
-| `mn_readiness_counts.py` | Counts behind `docs/build/mn-readiness.md` (thread 13, M5). | D-024, D-025 |
+| `apply_adu_rules_proposed_2026_11.py` | Apply the proposed ADU rule rows of November 2026 to config/reforms/*.csv. |  |
+| `mn_lookups_2026_11_02.py` | Apply our decisions on the MN second-coder lookups (2026-11-02) to config/reforms/mn.csv. |  |
+| `mn_mm_batch1_2026_11_02.py` | Minnesota missing-middle rules from the batch-1 ordinance records -> config/reforms/mn.csv. | D-022 |
+| `mn_readiness_counts.py` | Counts behind `docs/build/mn-readiness.md`. | D-024, D-025 |
 | `mn_second_coder_2026_11_02.py` | Apply the MN second-coder review of 2026-11-02 to config/reforms/mn.csv (append-only notes). |  |
-| `mn_second_coder_decisions_2026_11_02.py` | Apply Ben's decisions on the MN second-coder review (2026-11-02) to config/reforms/mn.csv. |  |
-| `mn_second_coder_sheet.py` | Write the Minnesota second-coder worksheet from config/reforms/mn.csv (thread 13, M5). | D-024, D-025 |
-| `nc_readiness_counts.py` | Counts behind `docs/build/nc-readiness.md` (thread 13). | D-024, D-025 |
+| `mn_second_coder_decisions_2026_11_02.py` | Apply our decisions on the MN second-coder review (2026-11-02) to config/reforms/mn.csv. |  |
+| `mn_second_coder_sheet.py` | Write the Minnesota second-coder worksheet from config/reforms/mn.csv. | D-024, D-025 |
+| `nc_readiness_counts.py` | Counts behind `docs/build/nc-readiness.md`. | D-024, D-025 |
 | `nc_second_coder_2026_11_01.py` | Apply the NC second-coder review of 2026-11-01 to config/reforms/nc.csv (append-only notes). |  |
-| `nc_second_coder_decisions_2026_11_01.py` | Apply Ben's decisions on the NC second-coder review (2026-11-01) to config/reforms/nc.csv. |  |
+| `nc_second_coder_decisions_2026_11_01.py` | Apply our decisions on the NC second-coder review (2026-11-01) to config/reforms/nc.csv. |  |
 | `or_adu_new_places.py` | Counts behind §3 of `reports/or/adu-coverage-and-undercount.md`: ADU permits in Oregon's new places. |  |
 | `tx_adu_rows.py` | ADU rules for the 20 largest Texas places (2020 population) -> config/reforms/tx.csv. |  |
-| `tx_ben_lookups_2026_10_30.py` | Texas rule rows from Ben's own lookups (2026-10-30) -> config/reforms/tx.csv and the lookup trackers. | D-021 |
-| `tx_ben_lookups_2026_10_30b.py` | Ben's second batch of lookups (2026-10-30, evening) -> config/reforms/tx.csv and the lookup trackers. |  |
-| `tx_ben_lookups_2026_11_01.py` | Carrollton ADU rule and Dallas utility fees from Ben's lookups (2026-11-01) -> config/ and the trackers. |  |
-| `tx_corrections_2026_10_30.py` | Ben's decisions on the proposed Texas corrections (2026-10-30) -> config/reforms/tx.csv. |  |
-| `tx_research_2026_10_27.py` | Texas rule rows from Ben's research workbook (2026-10-27) -> config/reforms/tx.csv. |  |
-| `tx_research_2026_10_29.py` | Texas rule and fee rows from Ben's second research workbook (2026-10-29) -> config/. |  |
+| `tx_ben_lookups_2026_10_30.py` | Texas rule rows from our own lookups (2026-10-30) -> config/reforms/tx.csv and the lookup trackers. | D-021 |
+| `tx_ben_lookups_2026_10_30b.py` | Our second batch of lookups (2026-10-30, evening) -> config/reforms/tx.csv and the lookup trackers. |  |
+| `tx_ben_lookups_2026_11_01.py` | Carrollton ADU rule and Dallas utility fees from our lookups (2026-11-01) -> config/ and the trackers. |  |
+| `tx_corrections_2026_10_30.py` | Our decisions on the proposed Texas corrections (2026-10-30) -> config/reforms/tx.csv. |  |
+| `tx_research_2026_10_27.py` | Texas rule rows from our research workbook (2026-10-27) -> config/reforms/tx.csv. |  |
+| `tx_research_2026_10_29.py` | Texas rule and fee rows from our second research workbook (2026-10-29) -> config/. |  |
 | `tx_rules_21_40.py` | ADU and missing-middle rules for Texas places 21-40 by 2020 population -> config/reforms/tx.csv. | D-022, D-024, D-025 |
-| `tx_second_coder_2026_10_30.py` | Ben's second-coder review (2026-10-30) -> config/reforms/tx.csv. | D-025 |
+| `tx_second_coder_2026_10_30.py` | Our second-coder review (2026-10-30) -> config/reforms/tx.csv. | D-025 |
 
 ## Results pages and other checks
 
 | Script | What it answered | Decisions |
 |---|---|---|
 | `eligible_proxy_test.py` | Run analysis plan D-056: does the ACS fallback stand in for real eligible-parcel counts? | D-056 |
-| `gutcheck_diagnostics.py` | Gut-check diagnostics for a state's ADU forecast (WS-NC-GUTCHECK tasks 1-3; |  |
+| `gutcheck_diagnostics.py` | Gut-check diagnostics for a state's ADU forecast (not part of the app). |  |
 | `range_drivers.py` | What drives each result's range: first-order sensitivity shares from the runs in the results bundles (#54). | D-097 |
 | `results_run_summary.py` | Summarize a set of results bundles for a run's results page (not part of the app). |  |
-| `mn_denominators.py` | Minnesota eligible parcels from the rolls against the ACS fallback, side by side (round 3, task 4; was `lotline.adapters.states.mn.denominators`, archived 2026-11-27). | D-014, D-017 |
+| `mn_denominators.py` | Minnesota eligible parcels from the rolls against the ACS fallback, side by side (was `lotline.adapters.states.mn.denominators`, archived 2026-11-27). | D-014, D-017 |
 
 ## Library modules archived 2026-11-27
 
-These were library code (`src/lotline/validation/`, `src/lotline/calibrate/`) with no caller in the library.
-Ben decided on 2026-11-27 that they aren't needed to prove the results. Their tests came with them, to
-`scripts/archive/tests/`. The archived scripts that used them now import them as neighbours (`import
-adu_trend`). Run their tests from this folder: `cd scripts/archive && PYTHONPATH=. uv run --project ../..
-python -m pytest tests -c /dev/null`.
+These modules were library code (`src/lotline/validation/`, `src/lotline/calibrate/`) that nothing in the
+library called. We archived them on 2026-11-27 because the results don't depend on them. Their tests moved with
+them to `scripts/archive/tests/`, and the archived scripts that used them now import them as neighbours
+(`import adu_trend`). To run their tests from this folder:
+
+```bash
+cd scripts/archive && PYTHONPATH=. uv run --project ../.. python -m pytest tests -c /dev/null
+```
 
 | Module | What it does | Decisions |
 |---|---|---|
