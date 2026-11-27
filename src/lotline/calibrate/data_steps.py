@@ -172,3 +172,12 @@ def mortgage_rate_forecast(ctx) -> dict:
     value = {"value": _r(float(nat.loc[2025]), 2), "low": _r(float(window.min()), 2),
              "high": _r(float(window.max()), 2)}  # fmt: skip
     return {"market": {"mortgage_rate_forecast": value}}
+
+
+def adu_rule_priors(ctx) -> dict:
+    """D-022, D-067, saved for borrowing states (Ben 2026-11-27): what a state outside `REFORM_STATES`
+    borrows, the pooled field-restriction counts and the rule priors by state and size band, as of
+    31 December of each origin in `PRIOR_YEARS`. Two whole tables (CSV text), compared row by row."""
+    from lotline.model.scenarios import adu_rule_inputs as ri
+
+    return ri.borrowed_pools(ctx.store)

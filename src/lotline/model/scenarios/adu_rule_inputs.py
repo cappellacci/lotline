@@ -122,6 +122,10 @@ def rule_inputs(
 
     D-068: in a state flagged `adu_state_law_rows_complete`, a place with no ADU row is outside the state law,
     so it takes `no_state_rule_priors` (coded places of the unflagged states, by size band).
+
+    A state outside `REFORM_STATES` reads what it borrows (field counts and priors) from the saved tables of
+    calibration step `adu_rule_priors` (`saved_priors`), so its results never depend on which other states'
+    tables are in the data folder; only its own reforms and parcels are read.
     Returns (table: geoid, rule_class, p_* over TYPES, coverage, rule_age, …, prior_source; info dict).
     """
     from lotline.config import load_state
@@ -129,51 +133,28 @@ def rule_inputs(
     prior_as_of = as_of if prior_as_of is None else prior_as_of
     p = load_params("adu")
     central = {k: v.value for k, v in p.items()}
-    min_count = int(central["adu_rule_min_coded"])
-    edges = (central["adu_rule_band_small_max_pop"], central["adu_rule_band_mid_max_pop"])
+    min_count, edges = _counts_and_edges(central)
     reforms = {st: r.assign(state=st) for st, r in reforms_with(state).items()}
-    pooled = pooled_states(reforms)
-    counts = field_restrict_counts(pd.concat(pooled.values(), ignore_index=True), prior_as_of)
-    covs = {st: coverage_map(st, store, r, central) for st, r in reforms.items()}
-
-    def coded_on(date: pd.Timestamp) -> pd.DataFrame:
-        out = []
-        for st, r in pooled.items():
-            local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
-            if not local:
-                continue
-            cm = covs[st]
-            fp_st = field_probabilities(counts, st, min_count)
-            cr = current_rules(
-                r, local, load_state(st).fips, date, fp_st, dict(zip(cm.reform_id, cm.coverage, strict=True))
+    if state not in REFORM_STATES:  # borrow only: the saved pools, never the other states' tables
+        counts, priors = saved_priors(state, prior_as_of)
+        covs = {state: coverage_map(state, store, reforms[state], central)}
+        coded = coded_prior = pd.DataFrame(columns=["state", "geoid", "rule_class", *P_COLS])
+    else:
+        counts, covs, coded_on = _pools(store, reforms, prior_as_of, central)
+        coded_prior = coded_on(prior_as_of)
+        coded = coded_prior if prior_as_of == as_of else coded_on(as_of)
+        priors = rule_priors(coded_prior.dropna(subset=["population"]), edges, min_count)
+        law_states = {st for st in REFORM_STATES if load_state(st).adu_state_law_rows_complete}
+        if state in law_states:  # D-068: an uncoded place is outside the state law
+            outside = no_state_rule_priors(
+                coded_prior.dropna(subset=["population"]), edges, min_count, law_states, state
             )
-            cr = cr[cr["rule_class"] != "unknown"]
-            pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
-            j = store.read(st, "jurisdictions").set_index("geoid")
-            kind = j["kind"] if "kind" in j else pd.Series(dtype=object)
-            out.append(
-                cr.assign(state=st, population=cr["geoid"].map(pop).astype(float), kind=cr["geoid"].map(kind))
-            )
-        return pd.concat(out, ignore_index=True)
-
-    coded_prior = coded_on(prior_as_of)
-    coded = coded_prior if prior_as_of == as_of else coded_on(as_of)
-    priors = rule_priors(coded_prior.dropna(subset=["population"]), edges, min_count)
-    law_states = {st for st in REFORM_STATES if load_state(st).adu_state_law_rows_complete}
-    if state in law_states:  # D-068: an uncoded place is outside the state law
-        outside = no_state_rule_priors(
-            coded_prior.dropna(subset=["population"]), edges, min_count, law_states, state
-        )
-        keep = (priors["state"] != state) | (
-            priors["band"] == REMAINDER_BAND
-        )  # (b): own remainders still apply
-        priors = pd.concat([priors[keep], outside], ignore_index=True)
-    elif not ((priors["state"] == state) & (priors["band"] != REMAINDER_BAND)).any():
-        # A state outside REFORM_STATES (e.g. Wisconsin): borrow from every coded place by size band, not
-        # the all-bands mean `apply_priors` falls back to.
-        every = no_state_rule_priors(coded_prior.dropna(subset=["population"]), edges, min_count, (), state)
-        every["source"] = every["source"].str.replace("states without a coded state ADU law", "all states")
-        priors = pd.concat([priors, every], ignore_index=True)
+            keep = (priors["state"] != state) | (
+                priors["band"] == REMAINDER_BAND
+            )  # (b): own remainders still apply
+            priors = pd.concat([priors[keep], outside], ignore_index=True)
+        elif not ((priors["state"] == state) & (priors["band"] != REMAINDER_BAND)).any():
+            priors = pd.concat([priors, _every(coded_prior, edges, min_count, state)], ignore_index=True)
     fp = field_probabilities(counts, state, min_count)
     cm = covs[state]
     rules = current_rules(
@@ -199,6 +180,114 @@ def rule_inputs(
         "coverage": covs,
     }
     return rules, info
+
+
+def _counts_and_edges(central: Mapping[str, float]) -> tuple[int, tuple[float, float]]:
+    return int(central["adu_rule_min_coded"]), (
+        central["adu_rule_band_small_max_pop"],
+        central["adu_rule_band_mid_max_pop"],
+    )
+
+
+def _pools(store, reforms: Mapping[str, pd.DataFrame], prior_as_of: pd.Timestamp, central):
+    """What the `REFORM_STATES` contribute: field-restriction counts on `prior_as_of`, every state's rule
+    coverage (D-021, on its parcels), and `coded_on(date)`, the coded places of the pooled states on a date
+    with their population and kind. Reads every pooled state's reforms, parcels and jurisdictions."""
+    from lotline.config import load_state
+
+    min_count, _ = _counts_and_edges(central)
+    pooled = pooled_states(reforms)
+    counts = field_restrict_counts(pd.concat(pooled.values(), ignore_index=True), prior_as_of)
+    covs = {st: coverage_map(st, store, r, central) for st, r in reforms.items()}
+
+    def coded_on(date: pd.Timestamp) -> pd.DataFrame:
+        out = []
+        for st, r in pooled.items():
+            local = sorted(g for g in r.loc[r["theme"] == "adu", "jurisdiction_geoid"].unique() if len(g) > 2)
+            if not local:
+                continue
+            cm = covs[st]
+            fp_st = field_probabilities(counts, st, min_count)
+            cr = current_rules(
+                r, local, load_state(st).fips, date, fp_st, dict(zip(cm.reform_id, cm.coverage, strict=True))
+            )
+            cr = cr[cr["rule_class"] != "unknown"]
+            pop = store.read(st, "jurisdictions").set_index("geoid")["pop_2020"]
+            j = store.read(st, "jurisdictions").set_index("geoid")
+            kind = j["kind"] if "kind" in j else pd.Series(dtype=object)
+            out.append(
+                cr.assign(state=st, population=cr["geoid"].map(pop).astype(float), kind=cr["geoid"].map(kind))
+            )
+        return pd.concat(out, ignore_index=True)
+
+    return counts, covs, coded_on
+
+
+def _every(coded_prior: pd.DataFrame, edges, min_count: int, state: str) -> pd.DataFrame:
+    """A state outside `REFORM_STATES` (e.g. Wisconsin) borrows from every coded place by size band, not the
+    all-bands mean `apply_priors` falls back to."""
+    every = no_state_rule_priors(coded_prior.dropna(subset=["population"]), edges, min_count, (), state)
+    every["source"] = every["source"].str.replace("states without a coded state ADU law", "all states")
+    return every
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Saved pools for borrowing states (calibration step `adu_rule_priors`, Ben 2026-11-27)
+# ---------------------------------------------------------------------------------------------------------
+
+PRIORS_FILE = "adu_rule_priors.csv"  # config/params/: rule_priors rows, plus the borrowed rows as state "*"
+COUNTS_FILE = "adu_field_counts.csv"  # config/params/: field_restrict_counts of the pooled states
+PRIOR_YEARS = range(2016, 2026)  # origins saved (Ben 2026-11-27): priors as of 31 December of each
+BORROWER = "*"
+PRIORS_DIR = CONFIG_DIR / "params"
+
+
+def borrowed_pools(store, years=PRIOR_YEARS) -> dict[str, str]:
+    """The two saved tables as CSV text, one block per origin year: what a state outside `REFORM_STATES`
+    borrows (`saved_priors`). Computed from the pooled states' reforms, parcels and jurisdictions, exactly as
+    `rule_inputs` pools them for a listed state."""
+    central = {k: v.value for k, v in load_params("adu").items()}
+    min_count, edges = _counts_and_edges(central)
+    reforms = {st: r.assign(state=st) for st, r in reforms_with(REFORM_STATES[0]).items()}
+    priors, counts = [], []
+    for year in years:
+        date = pd.Timestamp(f"{year}-12-31")
+        c, _, coded_on = _pools(store, reforms, date, central)
+        coded = coded_on(date)
+        pr = pd.concat(
+            [
+                rule_priors(coded.dropna(subset=["population"]), edges, min_count),
+                _every(coded, edges, min_count, BORROWER),
+            ],
+            ignore_index=True,
+        )
+        priors.append(pr.assign(origin=year))
+        counts.append(c.assign(origin=year))
+    first = lambda df: df[["origin", *[k for k in df if k != "origin"]]]  # noqa: E731
+    return {
+        PRIORS_FILE: first(pd.concat(priors, ignore_index=True)).to_csv(index=False),
+        COUNTS_FILE: first(pd.concat(counts, ignore_index=True)).to_csv(index=False),
+    }
+
+
+def saved_priors(state: str, prior_as_of: pd.Timestamp) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """(field counts, priors) for a state outside `REFORM_STATES`, from the saved tables for the origin whose
+    31 December is `prior_as_of`. The borrowed rows (state "*") are labelled `state`. No other state's data
+    is read; an origin not saved is an error (rerun `lotline calibrate --run --step adu_rule_priors`)."""
+    year = pd.Timestamp(prior_as_of).year
+    if pd.Timestamp(prior_as_of) != pd.Timestamp(f"{year}-12-31"):
+        raise ValueError(f"saved ADU priors are as of 31 December; got {prior_as_of:%Y-%m-%d}")
+    priors = pd.read_csv(PRIORS_DIR / PRIORS_FILE, dtype={"state": str})
+    counts = pd.read_csv(PRIORS_DIR / COUNTS_FILE, dtype={"state": str, "field": str})
+    priors, counts = priors[priors["origin"] == year], counts[counts["origin"] == year]
+    if priors.empty or counts.empty:
+        raise KeyError(
+            f"no saved ADU rule priors for origin {year} in config/params/{PRIORS_FILE}; add the year to "
+            "PRIOR_YEARS and run `lotline calibrate --run --write --step adu_rule_priors`"
+        )
+    priors = priors.drop(columns="origin").reset_index(drop=True)
+    priors.loc[priors["state"] == BORROWER, "state"] = state
+    return counts.drop(columns="origin").reset_index(drop=True), priors
 
 
 def county_mix(places: pd.DataFrame, state: str, store, origin: int, coded: pd.DataFrame) -> pd.DataFrame:

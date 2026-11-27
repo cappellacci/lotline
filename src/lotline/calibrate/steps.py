@@ -201,6 +201,18 @@ STEPS: tuple[Step, ...] = (
         runner="lotline.calibrate.adu_steps:town_prior_sd",
     ),
     Step(
+        "adu_rule_priors",
+        "D-022, D-067, D-068",
+        {},
+        "lotline.model.scenarios.adu_rule_inputs.borrowed_pools",
+        "code",
+        reads=("config/reforms (the REFORM_STATES)", "parcels", "jurisdictions"),
+        tables=("adu_rule_priors.csv", "adu_field_counts.csv"),
+        notes="What a state outside REFORM_STATES borrows, saved once per origin 2016-2025 "
+        "(Ben 2026-11-27), so its results never read the other states' tables.",
+        runner="lotline.calibrate.data_steps:adu_rule_priors",
+    ),
+    Step(
         "adu_new_rule",
         "D-099",
         {"adu": ("adu_new_rule_share",)},

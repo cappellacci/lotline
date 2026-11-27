@@ -135,7 +135,7 @@ Full detail is in [docs/calibration.md](docs/calibration.md).
 
 ```bash
 uv run lotline calibrate --check               # seconds, no data: every fitted value is accounted for and matches the lock
-uv run lotline calibrate --list                # the 22 steps in run order: what each produces and from which decision
+uv run lotline calibrate --list                # the 23 steps in run order: what each produces and from which decision
 uv run lotline calibrate --run --quick         # fewer draws: every runnable step re-derives its values (about 18 minutes)
 uv run lotline calibrate --run                 # the full fits, same seeds and draws as config (several hours; the ADU joint fit dominates)
 uv run lotline calibrate --run --step mm_c4    # one step (repeatable); add --write to update config and the lock
@@ -151,7 +151,7 @@ uv run lotline calibrate --run --step mm_c4    # one step (repeatable); add --wr
   - the partial-share grid (3 rows instead of 10).
 
   A full `--run` uses config's own grids.
-- **What runs from code.** 18 of the 22 steps re-derive their values from the fetched tables.
+- **What runs from code.** 19 of the 23 steps re-derive their values from the fetched tables.
   - Three are recorded values, each with the script that measured it in `scripts/dev/`: the completion
     factors (a judgment informed by measured ratios), the ADU undercount factors (one check per row) and two
     small ADU inputs (the survey report rate and the covariate centres).

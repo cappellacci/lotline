@@ -135,10 +135,10 @@ bundle for a synthetic national-data-only state with no permits and no reforms f
 3. **No test pins the list of states.** `tests/core/test_config.py` checks that the five states are present,
    not that they are the only ones.
 
-Also needed, but not a code change: `rule_inputs` reads the built `jurisdictions` table of **every** state in
-`REFORM_STATES`, since those feed the priors your state borrows. Your data directory must hold those states'
-tables too. Run
-`uv run lotline fetch --source jurisdictions` once with no `--state` to build them all.
+What your state borrows is saved in config, so you don't need the other states' data. The pooled field
+counts and rule priors are kept per origin year (2016-2025) in `config/params/adu_rule_priors.csv` and
+`adu_field_counts.csv`, written by calibration step `adu_rule_priors` (Ben 2026-11-27). Your run reads only
+your own state's tables. An origin outside those years stops with an error that names the step to rerun.
 
 ---
 
