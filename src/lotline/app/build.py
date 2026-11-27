@@ -355,6 +355,20 @@ def state_script(bundle: dict) -> str:
     return f"LotlineState({_json(bundle)});\n"
 
 
+MODEL_SKIP = ("draws",)  # the Model page compares every state from summary tables; draws are ~95% of a file
+
+
+def model_file(state: str) -> str:
+    """The page-relative path of a state's Model-page script: its bundle without the draws."""
+    return state_file(state).removesuffix(".js") + ".model.js"
+
+
+def model_script(bundle: dict) -> str:
+    """A state's bundle less `MODEL_SKIP`, handed to the page as `LotlineModel`, so opening the Model page
+    loads a few tens of kilobytes per state instead of every state's full draws (review, 2026-11-26)."""
+    return f"LotlineModel({_json({k: v for k, v in bundle.items() if k not in MODEL_SKIP})});\n"
+
+
 def headline(bundle: dict) -> dict:
     """Each scenario's five-year net new homes (P10/P50/P90) and its midpoint share of the headline need,
     embedded so the Model tab's every-state chart can draw before any state file loads (Ben, 2026-11-17). Read
@@ -582,6 +596,7 @@ def build_app(
         old.unlink()
     for b in bundles:
         (out / state_file(b["meta"]["state"])).write_text(state_script(b), encoding="utf-8")
+        (out / model_file(b["meta"]["state"])).write_text(model_script(b), encoding="utf-8")
     dash_file = out / DASHBOARD_FILE
     if dashboard is not None:
         dash_file.write_text(f"LotlineDashboard({_json(dashboard)});\n", encoding="utf-8")

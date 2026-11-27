@@ -36,6 +36,7 @@ import re
 import httpx
 import pandas as pd
 
+from lotline.adapters import snapshots
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp
 from lotline.schemas import validate
@@ -187,8 +188,8 @@ PROVENANCE = {
         "jurisdiction_geoid = 2743000 (Minneapolis); held-out place-years removed (validation/holdout.py)",
     ],
     "limitations": [
-        "Rolling window: the layer starts in Dec 2016 and older permits drop out; only dated snapshots keep "
-        "them. 2016 holds December only",
+        "Rolling window: the layer starts in Dec 2016 and older permits drop out; every dated snapshot is "
+        "read and each permit's newest copy kept, so they stay in. 2016 holds December only",
         "dwellingUnitsNew is 0 on most ADU permits; ADU units are therefore inferred (1 per ADU permit), not "
         "reported",
         "ADU typing is inferred from free text: it misses ADUs whose scope of work doesn't say 'ADU'",
@@ -207,20 +208,27 @@ def load(
 ) -> pd.DataFrame:
     if state.upper() != "MN":
         raise ValueError(f"{SOURCE} covers Minneapolis, Minnesota only, not {state}")
-    raw = download_layer(
-        LAYER_URL,
-        store=store,
-        source=SOURCE,
-        license=LICENSE,
-        adapter=ADAPTER,
-        adapter_version=VERSION,
-        name="ccs_permits",
-        where=WHERE,
-        out_fields=",".join(FIELDS),
-        refresh=refresh,
-        http=http,
+
+    def read(vintage: str | None) -> pd.DataFrame:
+        return download_layer(
+            LAYER_URL,
+            store=store,
+            source=SOURCE,
+            license=LICENSE,
+            adapter=ADAPTER,
+            adapter_version=VERSION,
+            name="ccs_permits",
+            where=WHERE,
+            out_fields=",".join(FIELDS),
+            vintage=vintage,
+            refresh=refresh and vintage is None,
+            http=http,
+        )
+
+    # every dated snapshot, newest copy of each permit: permits that roll out of the layer are kept
+    return to_permits(
+        snapshots.newest_rows(snapshots.all_snapshots(read, store, SOURCE, "ccs_permits"), "permitNumber")
     )
-    return to_permits(raw)
 
 
 def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
