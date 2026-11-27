@@ -61,7 +61,7 @@ the rule (precision and missed phrasings). Before parsing, converted records' tr
 ("- R3SingleFamilyResidence Structure", `LEGACY_SUFFIX`) is removed and underscores become spaces.
 
 **Jurisdiction.** Each permit is placed by its point (`Lat`/`Lon`) against Census place boundaries
-(`lotline.geo.place_or_township`, TIGERweb ACS 2025): Wilmington is 3774440; points outside every place are
+(`lotline.geo.place_or_township`, TIGER/Line 2025): Wilmington is 3774440; points outside every place are
 unincorporated New Hanover County (37129). Permits with no point fall back to the county's own `DISTRICT`
 label (EnerGov permits only), else 37129. One boundary vintage applies to every year.
 
@@ -221,7 +221,7 @@ PROVENANCE = {
         "parser terms plus the county's: 'garage apt', 'additional dwelling unit' ...), unless a note "
         "rules it out ('Not to be used as an accessory dwelling unit'), it is an existing ADU, the ADU is "
         "on another permit ('ADU to be permitted separately') or it is a duplex: ADU, 1 unit, inferred",
-        "jurisdiction_geoid by point in Census place polygons (TIGERweb ACS 2025): Wilmington 3774440, else "
+        "jurisdiction_geoid by point in Census place polygons (TIGER/Line 2025): Wilmington 3774440, else "
         "unincorporated New Hanover 37129; no point: the county's DISTRICT label, else 37129",
         "parcel_id = 37129 + NC PIN via the county parcel layer (PID -> PIN); zoning_raw = MAIN_ZONE; "
         "valuation_usd = VALUATION; floor_area_sqft = SQUARE_FEET; final_date = FINALED_DATE",

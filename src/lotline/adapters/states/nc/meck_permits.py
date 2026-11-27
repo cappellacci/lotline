@@ -124,7 +124,7 @@ PROVENANCE = {
         "never kept",
         "File points (x_coord/y_coord, NC State Plane feet, EPSG:2264) converted to lon/lat by "
         "stateplane.to_lonlat (checked: median 7 m from the pre-UDO parcel centroids of the same parcels)",
-        "jurisdiction_geoid = place of the permit point (TIGERweb ACS 2025), else taxjuris, else 37119",
+        "jurisdiction_geoid = place of the permit point (TIGER/Line 2025), else taxjuris, else 37119",
         "building_type_std and units from the Census item code in usdcdesc "
         "(config/crosswalks/nc_meck_usdc_codes.csv, including the county's own 102 townhouse, 112 mobile "
         "home, 114 and 115 condominium codes); numunits when it fits the type; description parser "

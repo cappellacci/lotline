@@ -1,69 +1,68 @@
-"""Census TIGERweb boundaries of incorporated places and county subdivisions, for assigning points.
+"""Census TIGER/Line 2025 boundaries of incorporated places and county subdivisions, for assigning points.
 
 Parcel and permit layers often carry only a county field (Ohio's statewide parcels, for one). `lotline.geo`
 places each point in an incorporated place, else (where townships issue permits) a county subdivision, using
 these polygons.
 
-Source: TIGERweb `Places_CouSub_ConCity_SubMCD` MapServer, **ACS 2025 vintage** (layer group 13): layer 18
-"Incorporated Places" and layer 15 "County Subdivisions" (boundaries as of January 1, 2025). A fixed vintage,
-not the "current" layers, so reruns give the same answer. Public domain (U.S. Government work).
+Source: the TIGER/Line 2025 shapefiles, one zip per state and level (`tl_2025_<fips>_place.zip`,
+`tl_2025_<fips>_cousub.zip`), boundaries as of January 1, 2025. These are static files Census keeps
+archived by year, so a fetch years from now gets the same polygons. Until 2026-11-27 this read the same
+vintage from the TIGERweb map service, whose layer numbers move when Census adds a vintage and which began
+refusing requests (stability review, 2026-11-27). On the four states cached from both, the places and
+townships are identical and fewer than 1 in 1,000 sample points land differently (all on a boundary).
+Public domain.
 
-Census-designated places (layer 19) are left out on purpose: they are statistical areas, not governments,
-so they don't issue permits. Polygons are heavy (Columbus alone has 256 rings), so pages are small.
+Census-designated places (class U) and military areas (class M) are left out on purpose: they are not
+governments, so they don't issue permits. Only incorporated places (class C) are kept, the same set as
+TIGERweb's "Incorporated Places" layer.
 """
 
 from __future__ import annotations
 
-import json
-
 import pandas as pd
 
 from lotline.config import load_state
-from lotline.io import DataStore
-from lotline.io.arcgis import download_layer
+from lotline.io import DataStore, shapefile
+from lotline.io.http import fetch
 
 ADAPTER = "national.tiger_boundaries"
-VERSION = "1.0"
-SOURCE = "census_tigerweb_acs2025"
+VERSION = "2.0"
+SOURCE = "census_tigerline_2025"
 LICENSE = "Public domain (U.S. Government work, 17 U.S.C. §105)"
-VINTAGE = "acs2025"
-SERVICE = (
-    "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer"
-)
-LAYERS = {"place": 18, "cousub": 15}  # ACS 2025: Incorporated Places, County Subdivisions
-LAYER_NAMES = {"place": "Incorporated Places", "cousub": "County Subdivisions"}
-GROUP_NAME = "ACS 2025"  # the layer group the IDs above sit in; Census renumbers when it adds a vintage
+VINTAGE = "2025"
+BASE_URL = "https://www2.census.gov/geo/tiger/TIGER2025"
+FOLDERS = {"place": "PLACE", "cousub": "COUSUB"}
+INCORPORATED = "C"  # TIGER/Line place class codes C1-C9; U = census-designated, M = military
 
 
-def check_layer(meta: dict, level: str) -> None:
-    """Raise unless the layer description is `LAYER_NAMES[level]` inside the `GROUP_NAME` group.
-
-    The service holds several vintages, and a new one can shift the layer IDs: without this check a new
-    state's first fetch could save another vintage's polygons under the `acs2025` folder."""
-    name = str(meta.get("name", "")).strip()
-    group = str((meta.get("parentLayer") or {}).get("name", "")).strip()
-    if name != LAYER_NAMES[level] or group != GROUP_NAME:
-        raise ValueError(
-            f"TIGERweb layer {LAYERS[level]} is now {name!r} in group {group!r}, not "
-            f"{LAYER_NAMES[level]!r} in {GROUP_NAME!r}: Census has renumbered the service. Find the "
-            f"{GROUP_NAME} layer IDs at {SERVICE} and update LAYERS."
-        )
+def url(fips: str, level: str) -> str:
+    return f"{BASE_URL}/{FOLDERS[level]}/tl_2025_{fips}_{level}.zip"
 
 
-PAGE_SIZE = 50  # polygons per page: some boundaries have tens of thousands of vertices
+def raw_path(store: DataStore, fips: str, level: str):
+    return store.raw(SOURCE, VINTAGE) / f"tl_2025_{fips}_{level}.zip"
+
+
+def cached(state: str, store: DataStore, level: str) -> bool:
+    """Whether the state's boundary file for `level` is already downloaded."""
+    return raw_path(store, load_state(state).fips, level).is_file()
+
 
 PROVENANCE = {
-    "title": "Census TIGERweb boundaries, ACS 2025 vintage (incorporated places, county subdivisions)",
-    "landing_url": "https://tigerweb.geo.census.gov/tigerwebmain/TIGERweb_main.html",
+    "title": "Census TIGER/Line 2025 boundaries (incorporated places, county subdivisions)",
+    "landing_url": "https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html",
     "table": "none (boundaries for point assignment)",
     "cleaning": [
-        "Query layers 18 (incorporated places) and 15 (county subdivisions) of the ACS 2025 group by state",
-        "Keep GEOID (7-digit place, 10-digit county subdivision), NAME, FUNCSTAT and polygon rings in WGS84",
+        "Download the state's TIGER/Line 2025 place and county-subdivision zips; read them with the built-in "
+        "shapefile reader (lotline.io.shapefile)",
+        "Keep incorporated places only (class C); every county subdivision",
+        "Keep GEOID (7-digit place, 10-digit county subdivision), NAME, FUNCSTAT and polygon rings (NAD83 "
+        "longitude/latitude, within a metre of WGS84)",
         "Points are assigned with the even-odd rule over every ring, so holes and enclaves are respected",
     ],
     "limitations": [
         "One boundary vintage (January 2025) is applied to every year: annexations move points near edges",
-        "Census-designated places are excluded on purpose: they are statistical areas, not permit issuers",
+        "Census-designated places and military areas are excluded on purpose: they are not permit issuers",
         "A point exactly on a boundary goes to one side by a fixed rule, not by any legal determination",
     ],
 }
@@ -71,29 +70,26 @@ PROVENANCE = {
 
 def load_polygons(state: str, store: DataStore, level: str, *, refresh: bool = False) -> pd.DataFrame:
     """geoid, name, funcstat, rings (list of [[lon, lat], ...] rings) for one state's places or townships."""
-    if level not in LAYERS:
-        raise ValueError(f"level must be one of {sorted(LAYERS)}")
+    if level not in FOLDERS:
+        raise ValueError(f"level must be one of {sorted(FOLDERS)}")
     fips = load_state(state).fips
-    df = download_layer(
-        f"{SERVICE}/{LAYERS[level]}",
+    dest = raw_path(store, fips, level)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    path = fetch(
+        url(fips, level),
+        dest,
         store=store,
         source=SOURCE,
         license=LICENSE,
         adapter=ADAPTER,
         adapter_version=VERSION,
-        name=f"{level}_{fips}",
-        where=f"STATE='{fips}'",
-        out_fields="GEOID,NAME,FUNCSTAT",
-        geometry="polygon",
-        vintage=VINTAGE,
-        page_size=PAGE_SIZE,
         refresh=refresh,
     )
-    meta = store.raw(SOURCE, VINTAGE) / f"{level}_{fips}" / "layer.json"
-    if meta.exists():  # written by every fetch; checked on every load, so a cached copy is checked too
-        check_layer(json.loads(meta.read_text(encoding="utf-8")), level)
+    df = pd.DataFrame(shapefile.read_zip(path))
     if df.empty:
         return pd.DataFrame(columns=["geoid", "name", "funcstat", "rings"])
+    if level == "place":
+        df = df[df["CLASSFP"].str.startswith(INCORPORATED)]
     out = df.rename(columns={"GEOID": "geoid", "NAME": "name", "FUNCSTAT": "funcstat"})
     out = out[["geoid", "name", "funcstat", "rings"]].dropna(subset=["rings"])
     return out.sort_values("geoid", ignore_index=True)

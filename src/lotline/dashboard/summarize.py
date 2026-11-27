@@ -337,14 +337,13 @@ def _land_use_dict(df: pd.DataFrame) -> dict[str, int]:
 def jurisdiction_points(
     state: str, store: DataStore, township_permits: bool
 ) -> dict[str, tuple[float, float]]:
-    """A map point (lon, lat) per place and township: centroid of its largest ring, from cached TIGERweb."""
+    """A map point (lon, lat) per place and township: centroid of its largest ring, from cached TIGER/Line."""
     from lotline.adapters.national import tiger_boundaries
 
-    fips = load_state(state).fips
     pts: dict[str, tuple[float, float]] = {}
     levels = ["place", "cousub"] if township_permits else ["place"]
     for level in levels:
-        if not (store.raw(tiger_boundaries.SOURCE, tiger_boundaries.VINTAGE) / f"{level}_{fips}").exists():
+        if not tiger_boundaries.cached(state, store, level):
             continue
         polys = tiger_boundaries.load_polygons(state, store, level)
         for r in polys.itertuples(index=False):
