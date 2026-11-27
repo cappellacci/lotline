@@ -1,6 +1,6 @@
 """Missing middle: the fit sets and panels behind each fitted parameter (calibration phase 3).
 
-`lotline.model.calibrate_mm` holds the likelihoods and `mm_routes` the two-ramp fit. This module holds what
+`calibrate_mm` holds the likelihoods and `mm_routes` the two-ramp fit. This module holds what
 used to live only in `scripts/dev`: which places each fit uses, built from the D-024 panel and the coded rule
 rows. `lotline.calibrate.mm_steps` calls it to re-derive the values in `config/params/mm_hazard.yaml`, and the
 scripts in `scripts/dev` import it, so both build the same sets.
@@ -24,7 +24,7 @@ from collections.abc import Iterable, Mapping, Sequence
 
 import pandas as pd
 
-from lotline.model import calibrate_mm as cal
+from lotline.calibrate.mm import calibrate_mm as cal
 
 STATES = ("MN", "NC", "OH", "TX", "OR")  # D-092's five states
 TESTS = {"2743000": "Minneapolis", "3719000": "Durham city", "37063": "Durham County", "3755000": "Raleigh"}
@@ -134,7 +134,7 @@ def d038_units(store) -> dict:
 
 def panel(store, include: Sequence[str] = ()) -> pd.DataFrame:
     """D-092's panel over its five states, every listed holdout dropped except `include` (D-100: St. Paul)."""
-    from lotline.model import estimate_mm as mm
+    from lotline.calibrate.mm import estimate_mm as mm
 
     data = mm.build_panel(store, states=STATES, include=tuple(include)).data
     return data[~data["place"].isin(set(HOLDOUTS) - set(include))]
@@ -153,8 +153,8 @@ def bps_classes(store, places: set[str], states: Sequence[str] = STATES) -> pd.D
 
 def rule_rows(store, states: Sequence[str] = STATES) -> dict:
     """Per state: raw in-force missing-middle rows, the same after `rule_tags.apply`, and their coverage."""
+    from lotline.calibrate.mm import estimate_mm as mm
     from lotline.config import load_params
-    from lotline.model import estimate_mm as mm
     from lotline.model import rule_tags
     from lotline.model.scenarios import adu
 

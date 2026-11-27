@@ -11,14 +11,13 @@ running these by hand, except the steps marked "hand step" below.
 | `adu_joint_refit.py` | imported by adu_covariate_screen.py |
 | `adu_reference.py` | used by tests/model/test_hazard.py |
 | `calibrate_adu.py` | hand step adu_survey_report_rate |
-| `calibrate_mm.py` | imported by mm_tests_d092.py |
+| `calibrate_mm.py` | named by the lock (mm_units_per_project) |
 | `calibrate_mm_d042.py` | imported by calibrate_mm_d054.py |
 | `calibrate_mm_d054.py` | imported by calibrate_mm_d092.py |
-| `calibrate_mm_d092.py` | imported by mm_tests_d092.py |
+| `calibrate_mm_d092.py` | imported by mm_kappa_d092.py |
 | `completion_factors.py` | hand step completion_factors |
 | `create_issues.py` | used by pyproject.toml |
-| `estimate_adu.py` | imported by estimate_mm.py |
-| `estimate_mm.py` | imported by mm_tests_d092.py |
+| `estimate_adu.py` | used by docs/model_and_assumptions.md |
 | `fee_dev_run.py` | used by config/onboarding/steps.yaml |
 | `fee_levels_table.py` | used by config/fees/README.md |
 | `fee_ranges_2026_11_09.py` | used by config/fees/README.md |
@@ -28,10 +27,8 @@ running these by hand, except the steps marked "hand step" below.
 | `houston_bps_check.py` | live tool: check cited by adapters/checks/houston_permits |
 | `merge_logbook.py` | used by tests/test_merge_logbook.py |
 | `missing_input_matrix.py` | used by docs/adding_a_state.md |
-| `mm_baseline_choice_d092.py` | used by tests/model/test_mm_baseline_spread.py |
-| `mm_counts_d092.py` | used by tests/model/test_mm_counts.py |
+| `mm_baseline_choice_d092.py` | used by tests/calibrate/test_mm_baseline_spread.py |
 | `mm_kappa_d092.py` | imported by mm_baseline_choice_d092.py |
-| `mm_tests_d092.py` | used by docs/adding_a_state.md |
 | `mn_adu_coverage.py` | hand step adu_undercount_k |
 | `mn_mpls_roll_adu_diff.py` | live tool: roll check for mpls_roll_diff |
 | `nc_onemap_crosswalks.py` | live tool: writes config/crosswalks/nc_land_use_*.csv (onemap_codes) |

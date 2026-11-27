@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import place_types as pt
+from lotline.calibrate import place_types as pt
 
 
 def _juris():

@@ -7,7 +7,7 @@
 - **R0:** C4 as on main: D-092's 93 fit places, the C0 baseline, config's φ (13.63 when D-100 ran),
   the θ_L prior, one ramp.
 - **R1:** the same with St. Paul added (released 2026-11-16, D-098), one ramp.
-- **R2:** R1's places, one half-way point per adoption route (`lotline.model.mm_routes`): HB 2001-covered
+- **R2:** R1's places, one half-way point per adoption route (`lotline.calibrate.mm.mm_routes`): HB 2001-covered
   Oregon places (state-required) against every other place (locally adopted); θ shared.
 
 Each is fitted on all its places and in leave-one-state-out folds. Every fold scores the held-out state's
@@ -28,11 +28,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
+from lotline.calibrate.mm import mm_routes as mr
 from lotline.config import load_params
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
-from lotline.model import mm_routes as mr
 
 
 def _load(name: str, file: str):

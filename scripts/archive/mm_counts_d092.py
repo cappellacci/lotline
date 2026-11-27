@@ -1,4 +1,4 @@
-"""Inputs and runs for the D-092 missing-middle counts (`lotline.model.mm_counts`).
+"""Inputs and runs for the D-092 missing-middle counts (`mm_counts.py`, archived beside it).
 
     uv run python scripts/dev/mm_counts_d092.py --dry                                  # structure only
     uv run python scripts/dev/mm_counts_d092.py --coverage --out reports/mm-d092/run1-coverage   # run 1
@@ -28,10 +28,10 @@ from __future__ import annotations
 import argparse
 import sys
 
+import mm_counts as mc  # archived beside this script
 import pandas as pd
 
 from lotline.io import DataStore
-from lotline.model import mm_counts as mc
 from lotline.validation.undercount import wilson
 
 # D-092 §2: the strong permit candidates (review §2), by state and processed file name
@@ -158,7 +158,7 @@ def coverage(store: DataStore, out) -> pd.DataFrame:
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     d092 = _d092()
-    from lotline.model import estimate_mm as mm
+    from lotline.calibrate.mm import estimate_mm as mm
 
     panel = mm.build_panel(store, states=d092.STATES).data
     events, _ = d092.events_d092(panel, d092.rule_rows(store, d092.STATES))

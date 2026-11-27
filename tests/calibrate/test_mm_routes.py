@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from lotline.model import calibrate_mm as cal
-from lotline.model import mm_routes as mr
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import mm_routes as mr
 from lotline.model.hazard import ramp
 
 

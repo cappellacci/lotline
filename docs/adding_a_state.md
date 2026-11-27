@@ -305,7 +305,7 @@ Booleans are `True`, `False` or blank. **Blank means unknown, never "no restrict
   - it requires parking.
   
   Where several rules apply, the most permissive one wins (`scenarios/adu.py`, `current_rules`).
-- **Missing middle.** The rule's "dose" is units grade × approval grade × coverage (`src/lotline/model/estimate_mm.py`).
+- **Missing middle.** The rule's "dose" is units grade × approval grade × coverage (`src/lotline/model/mm_rates.py`).
   - Units grade: 2 per lot is 1/3, 3 is 2/3, 4 or more is 1.
   - Approval grade: by right is 1, otherwise 0.333.
 
@@ -607,12 +607,12 @@ state might later be a blind test, freeze its prediction first.
 - **Shared rule priors:** add the state to `REFORM_STATES` (`scenarios/adu.py`), so its coded rules feed the
   priors other states borrow. Record the before/after bundles.
 - **Missing middle:**
-  1. Add the state to `STATES` in `src/lotline/model/mm_fitsets.py` (and to `SPREAD_STATES` if its uncoded
+  1. Add the state to `STATES` in `src/lotline/calibrate/mm/mm_fitsets.py` (and to `SPREAD_STATES` if its uncoded
      places should count toward φ).
   2. Rerun `mm_units_per_project`, `mm_year_spread`, `mm_c4` and `mm_fast_ramp` the same way (`--run`, then
      `--run --write`).
-  3. Rerun D-092's §7 tests, `uv run python scripts/dev/mm_tests_d092.py` (marked "only with Ben's
-     go-ahead"); they have no `lotline calibrate` step yet.
+  3. Optional: D-092's §7 accuracy tests are archived (`scripts/archive/mm_tests_d092.py`, the record of how
+     D-092 was scored). They have no `lotline calibrate` step; rerun one only with Ben's go-ahead.
 - **Validation:** decide whether the state joins `FIT_STATES` in `src/lotline/validation/v5.py`,
   `v5_stpaul.py` and `v9.py`.
 
@@ -672,10 +672,10 @@ OR). It reads no permits.
 |---|---|---|
 | `src/lotline/model/scenarios/adu.py` `REFORM_STATES` | States whose rules feed shared priors | Only when pooling (step 14) |
 | `tests/core/test_ordinance_records.py` ≈ 208 | States whose fee CSVs are validated | When you add a fee file |
-| `src/lotline/model/estimate_mm.py:47` `STATES` | D-024 missing-middle panel | Only when refitting |
+| `src/lotline/calibrate/mm/estimate_mm.py:48` `STATES` | D-024 missing-middle panel | Only when refitting |
 | `src/lotline/calibrate/adu/adu_fit_set.py` `STATES` | ADU fit set | Only when pooling (step 14) |
 | `config/params/adu_state_effect.yaml` | `adu_state_effect_fitted__XX` | Generated when pooling |
-| `src/lotline/model/mm_fitsets.py` `STATES`, `SPREAD_STATES` | Missing-middle fit sets | Only when pooling (step 14) |
+| `src/lotline/calibrate/mm/mm_fitsets.py` `STATES`, `SPREAD_STATES` | Missing-middle fit sets | Only when pooling (step 14) |
 | `src/lotline/validation/v5.py`, `v5_stpaul.py`, `v9.py` `FIT_STATES` | Validation fit sets | Only if the state joins a fit |
 | `config/params/housing_need.yaml` `*_xx` keys | Housing-need context | Optional |
 | Scripts in `scripts/dev/` and `scripts/archive/` with their own `STATES` tuples | Research and page scripts | Only if you rerun that script |

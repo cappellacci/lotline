@@ -180,8 +180,8 @@ def summarize(d: Mapping[str, np.ndarray]) -> dict:
 
 def charlotte_dose(blanks=None) -> tuple[float, float]:
     """(dose on 1 July 2022, dose on 1 July 2023) of Charlotte's coded missing-middle rules, coverage 1."""
+    from lotline.calibrate.mm import estimate_mm as mm
     from lotline.config import load_params
-    from lotline.model import estimate_mm as mm
     from lotline.model import rule_tags
     from lotline.model.scenarios import adu
 
@@ -204,10 +204,10 @@ def charlotte_dose(blanks=None) -> tuple[float, float]:
 
 def inputs(store) -> Inputs:
     from lotline.adapters.states.nc import clt_v5
+    from lotline.calibrate.mm import estimate_mm as mm
+    from lotline.calibrate.mm.calibrate_mm import feasibility_ratio
     from lotline.config import load_params
-    from lotline.model import estimate_mm as mm
     from lotline.model import hazard, money
-    from lotline.model.calibrate_mm import feasibility_ratio
     from lotline.model.scenarios import adu
     from lotline.validation import holdout
 

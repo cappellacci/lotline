@@ -80,7 +80,7 @@ uv run lotline calibrate --run --quick --step mm_c4   # minutes: a coarse half-w
 uv run lotline calibrate --run --step mm_c4           # the full fit (5-17 minutes, depending on machine load)
 ```
 
-The fit sets are library code in `lotline.model.mm_fitsets`: D-092's panel, events, fit and test split, the
+The fit sets are library code in `lotline.calibrate.mm.mm_fitsets`: D-092's panel, events, fit and test split, the
 always-allowed level set, the year-spread places, and D-038's named places. They used to live only in
 development scripts, which now import them. Every fit is deterministic (grid and golden-section search), so a
 full run on unchanged tables reproduces config. C4 and D-100 read φ from config rather than refitting it in

@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import calibrate_mm as cal
-from lotline.model import mm_fitsets as fs
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import mm_fitsets as fs
 
 
 def test_short_names():

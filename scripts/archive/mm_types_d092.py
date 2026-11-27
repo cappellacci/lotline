@@ -4,7 +4,7 @@
     uv run python scripts/archive/mm_types_d092.py --out /tmp/x --dry                     # inputs count only
     uv run python scripts/archive/mm_types_d092.py --out reports/mm-d092/run12-types  # Ben's go-ahead
 
-Types every place each part of the deviation uses, by D-088's rule (`lotline.model.place_types`):
+Types every place each part of the deviation uses, by D-088's rule (`lotline.calibrate.place_types`):
 - the fit places (M's 93), the scored test places, test C's places;
 - the uncoded places φ is learned from (`mm_kappa_d092.kept_ids`).
 Then applies the minimum size rule to the fit places (for a type term on the reform rate) and to the uncoded
@@ -28,10 +28,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate import place_types as pt
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
-from lotline.model import place_types as pt
 from lotline.model import rule_tags
 
 

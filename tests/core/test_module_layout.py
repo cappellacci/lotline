@@ -18,17 +18,7 @@ from pathlib import Path
 SRC = Path(__file__).resolve().parents[2] / "src"
 
 # module (under lotline.model) -> owner of the move. Fitting code goes to calibrate/, checks to validation/.
-MOVING = {
-    # Missing middle ("Missing Middle Analysis refresh")
-    "calibrate_mm": "MM",
-    "estimate_mm": "MM",  # on the forecast path: scenarios/mm.py imports helpers from it
-    "mm_counts": "MM",
-    "mm_fitsets": "MM",
-    "mm_routes": "MM",
-    "mm_tests": "MM",
-    "place_types": "MM",
-    "project_size": "MM",
-}
+MOVING: dict[str, str] = {}  # empty: both models have moved out (ADU #565, MM step 2)
 
 
 def _modules() -> dict[str, Path]:

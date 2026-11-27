@@ -1,4 +1,4 @@
-"""D-024 estimator (model/estimate_mm.py): recovery of known effects from simulated staggered adoption with
+"""D-024 estimator (calibrate/mm/estimate_mm): recovers known effects from simulated staggered adoption with
 state × year shocks, the random-effects fallback with mostly-zero places, randomization inference, the
 checks and the out-of-sample prediction. Synthetic data only."""
 
@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from lotline.calibrate.adu import estimate_adu
-from lotline.model import estimate_mm as mm
+from lotline.calibrate.mm import estimate_mm as mm
 
 YEARS = np.arange(2010, 2026)
 TRUTH = {"beta_0": 0.4, "beta_2": 0.8, "beta_4": 1.0, "theta_pcr": 0.3, "rho": -0.2, "delta": -0.3}

@@ -158,8 +158,8 @@ def summarize(d: Mapping[str, np.ndarray], years=YEARS) -> dict:
 def stpaul_dose() -> tuple[float, float]:
     """(dose on 1 July 2023, dose on 1 July 2024) of St. Paul's coded missing-middle rules, coverage 1
     (E already counts only H1/H2 lots)."""
+    from lotline.calibrate.mm import estimate_mm as mm
     from lotline.config import load_params
-    from lotline.model import estimate_mm as mm
     from lotline.model import rule_tags
     from lotline.model.scenarios import adu
 
@@ -181,10 +181,10 @@ def stpaul_dose() -> tuple[float, float]:
 
 def inputs(store) -> Inputs:
     from lotline.adapters.states.mn import stpaul_v5
+    from lotline.calibrate.mm import estimate_mm as mm
+    from lotline.calibrate.mm.calibrate_mm import feasibility_ratio
     from lotline.config import load_params
-    from lotline.model import estimate_mm as mm
     from lotline.model import hazard, money
-    from lotline.model.calibrate_mm import feasibility_ratio
     from lotline.model.scenarios import adu
     from lotline.validation import holdout
 

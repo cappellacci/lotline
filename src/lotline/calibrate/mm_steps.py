@@ -1,8 +1,8 @@
 """Missing-middle calibration runners (calibration design, phase 3).
 
 One function per step in `steps.py`, each taking a `RunContext` and returning
-{params file: {key: value or {value, low, high}}}. The fit sets come from `lotline.model.mm_fitsets`, the
-likelihoods from `lotline.model.calibrate_mm` and `mm_routes`. Every fit here is deterministic (grid and
+{params file: {key: value or {value, low, high}}}. The fit sets come from `calibrate.mm.mm_fitsets`, the
+likelihoods from `calibrate.mm.calibrate_mm` and `mm_routes`. Every fit here is deterministic (grid and
 golden-section search, no random draws), so a full run reproduces config exactly when the data and rule rows
 are unchanged.
 
@@ -16,8 +16,8 @@ from __future__ import annotations
 import math
 
 from lotline.calibrate.data_steps import _r
-from lotline.model import calibrate_mm as cal
-from lotline.model import mm_fitsets as fs
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import mm_fitsets as fs
 
 QUICK_HALVES = (0.5, 1.0, 2.0, 4.0, 6.0)  # a quick run's half-way-point grid (the full grid is cal.HALF_GRID)
 FILE = "mm_hazard"
@@ -104,7 +104,7 @@ ST_PAUL = "2758000"
 
 def local_route_ids(store, places, panel) -> set[str]:
     """D-100's locally adopted places among `places` (`mm_routes.route_of`)."""
-    from lotline.model import mm_routes as mr
+    from lotline.calibrate.mm import mm_routes as mr
 
     metro = mr.metro_geoids()
     pop = {}
@@ -123,7 +123,7 @@ def mm_fast_ramp(ctx) -> dict:
     """D-100 run 1, R2: one half-way point per adoption route on C4's places plus St. Paul. The value and
     low are the locally adopted route's half-way point and its 90% set's floor; the high is C4's low end
     (D-100's cheaper alternative), read from config."""
-    from lotline.model import mm_routes as mr
+    from lotline.calibrate.mm import mm_routes as mr
 
     x = c4_inputs(ctx.store, _config("mm_year_spread_phi").value, include=(ST_PAUL,))
     if ST_PAUL not in {q.geoid for q in x["fit"]}:

@@ -32,7 +32,7 @@ Precedence (the first rule that matches decides; the order is the method):
 6. `conversion`: `is_conversion` is True and the row adds homes → `conversion` (e.g. a house converted to a
    triplex, Austin class 436). Conversions come before new buildings, because a converted building is not a
    new 2-4 unit building even when its result is typed U2 or U3_4.
-7. `new_2_4`: `building_type_std` in `MM_TYPES` (U2, U3_4, DTQ, as `model.estimate_mm.MM_TYPES`) → `mm_2_4`.
+7. `new_2_4`: `building_type_std` in `MM_TYPES` (U2, U3_4, DTQ, as `estimate_mm.MM_TYPES`) → `mm_2_4`.
 8. `other_type`: everything else (SFD, TH, U5_6, U7P, MF5, OTHER, UNKNOWN) → `other`. Townhouses and 5-6 unit
    buildings stay `other` here; D-092 §3's ratios select them by `building_type_std`, not by theme.
 
@@ -64,7 +64,7 @@ __all__ = [
 ADU, MM_2_4, CONVERSION, OTHER = "adu", "mm_2_4", "conversion", "other"
 THEMES = (ADU, MM_2_4, CONVERSION, OTHER)
 
-# Same as model.estimate_mm.MM_TYPES; repeated here so build/ does not import the model layer.
+# Same as calibrate.mm.estimate_mm.MM_TYPES; repeated so build/ imports neither model/ nor calibrate/.
 MM_TYPES = ("U2", "U3_4", "DTQ")
 
 # Every rule, in precedence order, with the theme it gives.

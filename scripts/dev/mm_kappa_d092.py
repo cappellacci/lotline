@@ -26,10 +26,10 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
+from lotline.calibrate.mm import mm_fitsets as fs
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
-from lotline.model import mm_fitsets as fs
 
 _spec = importlib.util.spec_from_file_location("d092", Path(__file__).with_name("calibrate_mm_d092.py"))
 d092 = importlib.util.module_from_spec(_spec)

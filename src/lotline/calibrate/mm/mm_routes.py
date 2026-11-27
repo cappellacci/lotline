@@ -19,9 +19,9 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from lotline.model import calibrate_mm as cal
+from lotline.calibrate.mm import calibrate_mm as cal
 
-REPO = Path(__file__).resolve().parents[3]
+REPO = Path(__file__).resolve().parents[4]
 METRO_CSV = REPO / "config" / "crosswalks" / "or_hb2001_metro.csv"
 HB2001_MIN_POP = (
     10_000  # ORS 197.758(1): a "medium city" has 10,000 to 25,000 people; larger ones are covered

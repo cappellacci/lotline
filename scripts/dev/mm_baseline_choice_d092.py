@@ -33,9 +33,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.mm import calibrate_mm as cal
+from lotline.calibrate.mm import estimate_mm as mm
 from lotline.io import DataStore
-from lotline.model import calibrate_mm as cal
-from lotline.model import estimate_mm as mm
 
 HERE = Path(__file__).resolve().parent
 

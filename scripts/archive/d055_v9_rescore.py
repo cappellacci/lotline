@@ -20,8 +20,8 @@ import numpy as np
 import pandas as pd
 
 from lotline.adapters.national import bps
+from lotline.calibrate.mm import estimate_mm as mm
 from lotline.io import DataStore
-from lotline.model import estimate_mm as mm
 from lotline.validation import v9
 
 REPO = Path(__file__).resolve().parents[2]

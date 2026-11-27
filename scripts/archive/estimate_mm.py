@@ -32,9 +32,9 @@ import pandas as pd
 
 from lotline.calibrate import runs
 from lotline.calibrate.adu import estimate_adu
+from lotline.calibrate.mm import estimate_mm as mm
 from lotline.config import CONFIG_DIR, load_params
 from lotline.io import DataStore
-from lotline.model import estimate_mm as mm
 from lotline.model import rule_tags
 
 ROOT = CONFIG_DIR.parent

@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from lotline.calibrate.adu import calibrate_adu as cal_adu
-from lotline.model import calibrate_mm as cal
+from lotline.calibrate.mm import calibrate_mm as cal
 
 
 def test_centred_mean_and_growth_index_by_hand():
