@@ -43,8 +43,8 @@ noted, which suits public-sector reuse, and it is one of the licenses the Challe
 
 ## Setup
 
-You need [uv](https://docs.astral.sh/uv/getting-started/installation/), which installs Python 3.12 if it is
-missing. The app tests (`tests/app`) also run the page's JavaScript under [Node](https://nodejs.org/) 22; without
+You need [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.13.5 or newer (`uv self update`),
+which installs Python 3.12 if it is missing. The app tests (`tests/app`) also run the page's JavaScript under [Node](https://nodejs.org/) 22; without
 Node they are skipped on a laptop.
 
 ```bash
