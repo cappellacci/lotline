@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from lotline.model import baseline, hazard
-from lotline.model.scenarios import adu
+from lotline.model.scenarios import adu, adu_rule_inputs
 
 P = adu.central_params()
 A4 = {
@@ -656,10 +656,10 @@ def test_borrowers_use_the_origin_mix_and_own_rules_the_d064_date(monkeypatch):
             geoids = [f"990000{i}" for i in range(1, 7)]
             return pd.DataFrame({"geoid": geoids, "pop_2020": [20_000] * 6})
 
-    monkeypatch.setattr(adu, "REFORM_STATES", ("ZZ",))
-    monkeypatch.setattr(adu, "load_reforms", lambda st: reforms.copy())
+    monkeypatch.setattr(adu_rule_inputs, "REFORM_STATES", ("ZZ",))
+    monkeypatch.setattr(adu_rule_inputs, "load_reforms", lambda st: reforms.copy())
     monkeypatch.setattr(
-        adu,
+        adu_rule_inputs,
         "coverage_map",
         lambda st, store, r, c: pd.DataFrame({"reform_id": r["reform_id"], "coverage": 1.0}),
     )
@@ -740,10 +740,10 @@ def test_flagged_state_borrows_the_no_law_prior_and_keeps_its_coded_places(monke
 
     flags = {"LL": True, "NN": False}
     fips = {"LL": "11", "NN": "22"}
-    monkeypatch.setattr(adu, "REFORM_STATES", ("LL", "NN"))
-    monkeypatch.setattr(adu, "load_reforms", lambda st: reforms[st].copy())
+    monkeypatch.setattr(adu_rule_inputs, "REFORM_STATES", ("LL", "NN"))
+    monkeypatch.setattr(adu_rule_inputs, "load_reforms", lambda st: reforms[st].copy())
     monkeypatch.setattr(
-        adu,
+        adu_rule_inputs,
         "coverage_map",
         lambda st, store, r, c: pd.DataFrame({"reform_id": r["reform_id"], "coverage": 1.0}),
     )

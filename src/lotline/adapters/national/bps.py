@@ -20,6 +20,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline import geo
 from lotline.config import load_state
 from lotline.io import DataStore, fetch
 from lotline.schemas import validate
@@ -190,6 +191,28 @@ def _name_key(name: pd.Series) -> pd.Series:
     return s.str.replace(r"\s+(city|village|town|borough)$", "", regex=True).str.strip()
 
 
+def id_aliases(state: str, config_dir=None) -> dict[str, str]:
+    """`bps_id -> GEOID` corrections from `config/crosswalks/<st>_aliases.csv` (source `bps`, field `bps_id`);
+    empty when the state lists none. For an ID whose latest file codes it under another
+    place's GEOID, so the backfill would move its whole history there (Minnetonka Beach, MN: 2767130 in the
+    latest file)."""
+    try:
+        return geo.aliases(state, "bps", "bps_id", config_dir=config_dir)
+    except (FileNotFoundError, KeyError):
+        return {}
+
+
+def apply_id_aliases(df: pd.DataFrame, aliases: dict[str, str]) -> pd.DataFrame:
+    """Every row of an aliased ID from 1992 on (when IDs link years) takes the alias GEOID, before
+    `backfill_geoids`, so the backfill and the re-key report both see the corrected filing."""
+    if not aliases:
+        return df
+    df = df.copy()
+    hit = (df["year"] >= ID_ERA_START) & df["bps_id"].isin(list(aliases))
+    df.loc[hit, "geoid"] = df.loc[hit, "bps_id"].map(aliases)
+    return df
+
+
 def backfill_geoids(df: pd.DataFrame) -> pd.DataFrame:
     """Fill missing GEOIDs from the latest year that has one.
 
@@ -226,6 +249,43 @@ def backfill_geoids(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+REKEY_FILE = (
+    "bps_rekeys.csv"  # in the state's interim folder: written by every `load`, read by `lotline unlisted`
+)
+
+
+def rekeys(df: pd.DataFrame) -> pd.DataFrame:
+    """Building-permit IDs whose GEOID changed over the years, before `backfill_geoids` moves them all to the
+    latest one. One row per (ID, earlier GEOID): bps_id, name, old_geoid, first_year, last_year, new_geoid.
+
+    Most are expected (Elko New Market's 2007-2015 code; a township that incorporates). The risk is anything
+    keyed by the old GEOID (holdouts, `train_until`, parcel sources, reform rows): after the move it matches
+    nothing, with no error. `lotline unlisted` prints this table so a person can check each one."""
+    cols = ["bps_id", "name", "old_geoid", "first_year", "last_year", "new_geoid"]
+    known = df[(df["year"] >= ID_ERA_START) & df["geoid"].notna()].sort_values("year")
+    if known.empty:
+        return pd.DataFrame(columns=cols)
+    latest = known.groupby("bps_id").agg(new_geoid=("geoid", "last"), name=("name", "last"))
+    spans = known.groupby(["bps_id", "geoid"])["year"].agg(first_year="min", last_year="max").reset_index()
+    out = spans.merge(latest, on="bps_id").rename(columns={"geoid": "old_geoid"})
+    out = out[out["old_geoid"] != out["new_geoid"]]
+    return out[cols].sort_values(["bps_id", "first_year"], ignore_index=True)
+
+
+def write_rekeys(report: pd.DataFrame, state: str, store: DataStore) -> Path:
+    folder = store.interim(state)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / REKEY_FILE
+    report.to_csv(path, index=False)
+    return path
+
+
+def read_rekeys(state: str, store: DataStore) -> pd.DataFrame | None:
+    """The last `load`'s re-key report for a state, or None when BPS hasn't been built since this existed."""
+    path = store.interim(state) / REKEY_FILE
+    return pd.read_csv(path, dtype=str) if path.exists() else None
+
+
 def load(
     state: str,
     store: DataStore,
@@ -256,6 +316,13 @@ def load(
             refresh=refresh,
         )
         frames.append(to_canonical(parse(path.read_text(encoding="latin-1"), year), state))
-    df = backfill_geoids(pd.concat(frames, ignore_index=True))
+    raw = apply_id_aliases(pd.concat(frames, ignore_index=True), id_aliases(state))
+    filed = raw["geoid"].copy()  # each row's GEOID as filed, before the backfill moves it to the latest one
+    df = backfill_geoids(raw)
     df = holdout.apply(df, state, unblind=unblind, geoid_col="geoid", year_col="year")
+    # the re-key report reads only rows the holdout left in, so it never names a hidden place-year
+    report = rekeys(df.assign(geoid=filed.loc[df.index]))
+    write_rekeys(report, state, store)
+    if len(report):
+        print(f"note: {state}: {len(report)} building-permit ID(s) changed GEOID; see `lotline unlisted`")
     return validate(df.reset_index(drop=True), "bps_place_year")
