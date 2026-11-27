@@ -13,7 +13,7 @@ from dataclasses import dataclass, replace
 import numpy as np
 import pandas as pd
 
-from lotline.model.calibrate_adu import CHI2_90
+from lotline.calibrate.adu.calibrate_adu import CHI2_90
 
 from .fit import Fit, _best_at_half, fit, profile_theta
 from .likelihood import Stack, _interval

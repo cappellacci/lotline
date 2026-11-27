@@ -12,7 +12,7 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 import pandas as pd
 
-from lotline.model.calibrate_adu import CHI2_90, LOG_ALPHA, _golden_max, gh_log_nodes
+from lotline.calibrate.adu.calibrate_adu import CHI2_90, LOG_ALPHA, _golden_max, gh_log_nodes
 
 from .likelihood import KAPPA_NONE, Stack, _log_pois, _w_mixed, _ylogmu, loglik, place_loglik
 from .places import ALPHA_POISSON, LOG_THETA, Place

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from lotline.model.estimate_adu import nearest_roll
+from lotline.calibrate.adu.estimate_adu import nearest_roll
 from lotline.model.mm_rates import _mm_coverage, blank_shares, plex_price_to_cost, rule_dose
 
 ST_PAUL = "2758000"  # V5 blind test: never used
@@ -160,8 +160,9 @@ def build_panel(
     Paul after D-098); a place whose holdout is still blind is refused.
     """
     from lotline.build import eligible as eligible_rule
+    from lotline.calibrate.adu import estimate_adu
     from lotline.config import load_params, load_state
-    from lotline.model import estimate_adu, hazard, money, rule_tags
+    from lotline.model import hazard, money, rule_tags
     from lotline.model.scenarios import adu
     from lotline.validation import holdout as hold
 

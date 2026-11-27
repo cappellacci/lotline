@@ -48,7 +48,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from lotline.model.estimate_adu import nearest_roll
+from lotline.calibrate.adu.estimate_adu import nearest_roll
 from lotline.model.mm_rates import _mm_coverage, blank_shares, plex_price_to_cost, rule_dose
 
 from .checks import (

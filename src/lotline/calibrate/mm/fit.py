@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from lotline.model.calibrate_adu import CHI2_90, LOG_ALPHA, Z_95, _golden_max
+from lotline.calibrate.adu.calibrate_adu import CHI2_90, LOG_ALPHA, Z_95, _golden_max
 from lotline.model.hazard import ramp
 
 from .likelihood import Stack, _interval, loglik

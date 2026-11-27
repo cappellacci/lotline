@@ -30,7 +30,7 @@
 6. **`scripts/dev/simulate_state.py --state MN`:** the end-to-end command. Baseline + scenarios (real where available, stubs labelled otherwise) → combine → aggregate → absorption → a results bundle for the app (place, county, state × year × scenario × outcome with P10/P50/P90/mean, plus the drivers needed for "what moves this"). Runtime target: statewide in a few minutes.
 
 ## Coordinate
-- **WS-ENGINE (D-025)** edits `model/estimate_adu.py`; **thread 1** adds `model/estimate_mm.py`; **thread 2** adds `model/scenarios/fees.py`. Don't edit those files. Consume their outputs through the contract; if a change is needed, say so in your PR.
+- **WS-ENGINE (D-025)** edits `calibrate/adu/estimate_adu.py`; **thread 1** adds `model/estimate_mm.py`; **thread 2** adds `model/scenarios/fees.py`. Don't edit those files. Consume their outputs through the contract; if a change is needed, say so in your PR.
 - **The results bundle format** feeds thread 5 (the app). Document it in `docs/schemas.md` or a README.
 
 ## Done when

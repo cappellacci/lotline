@@ -53,7 +53,7 @@ def build_design(
     Returns an `estimate_adu.Design` whose bin columns are named beta_0 / beta_2 / beta_4, so the D-023
     aggregation (`estimate_adu.aggregate`) weights them by counterfactual expected homes.
     """
-    from lotline.model.estimate_adu import Design, modifier_scale
+    from lotline.calibrate.adu.estimate_adu import Design, modifier_scale
 
     e = panel["year"].to_numpy(dtype=float) - panel["T"].to_numpy(dtype=float)
     post = np.nan_to_num((e >= 0).astype(float) * ~np.isnan(e))
@@ -93,7 +93,7 @@ def estimate(panel: pd.DataFrame, method: str = "ppml", **design_kw):
     year fixed effects, `estimate_adu.ppml` with its separation removal and guards), 'nb' (the pre-specified
     fallback: D-025's negative binomial with normal place random effects, `fit_nb`) or 're' (Poisson-gamma
     place random effects, `fit_re`; a robustness model). Returns an `estimate_adu.Estimate`."""
-    from lotline.model.estimate_adu import Estimate, ppml
+    from lotline.calibrate.adu.estimate_adu import Estimate, ppml
 
     p = panel[panel["y"].notna()].reset_index(drop=True)
     d = build_design(p, **design_kw)
@@ -171,7 +171,7 @@ def fit_nb(p: pd.DataFrame, d, modifiers=MAIN_MODIFIERS, leads=(), binary_dose=F
            use_adu=True, scale_from=None) -> NBFit:  # fmt: skip
     """D-025's estimator (`pooled_adu.build_pooled_design` and `fit_pooled`, unchanged) on the D-024 panel
     (`pooled_panel`); its guards raise `EstimationError`. `d` is the D-024 design of the same rows."""
-    from lotline.model import pooled_adu as pa
+    from lotline.calibrate.adu import pooled_adu as pa
 
     if scale_from is not None:
         raise ValueError("the D-025 design scales modifiers on its own panel")
@@ -306,7 +306,7 @@ def fit_re(y, X, offset, place, year, names, tol: float = 1e-9, max_iter: int = 
     year effects and intercept are dropped. log a is held at `LOG_A_BOUND` when the data show no place
     heterogeneity (Poisson counts), and left out of the step test there. Fails loudly (`EstimationError`) on
     non-convergence or a coefficient beyond ±20."""
-    from lotline.model.estimate_adu import COEF_BOUND, EstimationError, _independent_columns
+    from lotline.calibrate.adu.estimate_adu import COEF_BOUND, EstimationError, _independent_columns
 
     y = np.asarray(y, dtype=float)
     X = np.asarray(X, dtype=float).reshape(len(y), -1)
@@ -394,11 +394,17 @@ def fit_re(y, X, offset, place, year, names, tol: float = 1e-9, max_iter: int = 
 def bootstrap(est_, draws: int = 999, seed: int = 0) -> pd.DataFrame:
     """Wild cluster score bootstrap by place (Webb weights): `estimate_adu.score_bootstrap` for PPML (CR2
     scores), the same one-step draw b* = b̂ + I⁻¹ Σ_g w_g S_g with the random-effects scores otherwise."""
-    from lotline.model.estimate_adu import COEF_BOUND, WEBB, EstimationError, aggregate, score_bootstrap
+    from lotline.calibrate.adu.estimate_adu import (
+        COEF_BOUND,
+        WEBB,
+        EstimationError,
+        aggregate,
+        score_bootstrap,
+    )
 
     fit = est_.fit
     if isinstance(fit, NBFit):
-        from lotline.model import pooled_adu as pa
+        from lotline.calibrate.adu import pooled_adu as pa
 
         raw = pa.score_bootstrap(fit.pooled, draws=draws, seed=seed).rename(columns=NB_NAMES)
         rows = []
@@ -423,13 +429,13 @@ def bootstrap(est_, draws: int = 999, seed: int = 0) -> pd.DataFrame:
 
 def summary(est_, draws: int = 999, seed: int = 0, level: float = 0.90) -> tuple[pd.DataFrame, pd.DataFrame]:
     """(summary table with 90% basic bootstrap intervals, bootstrap draws) for one fit."""
-    from lotline.model.estimate_adu import summarize
+    from lotline.calibrate.adu.estimate_adu import summarize
 
     boot = bootstrap(est_, draws=draws, seed=seed)
     return summarize(est_, boot, level=level), boot
 
 
 def overall(est_) -> float:
-    from lotline.model.estimate_adu import aggregate
+    from lotline.calibrate.adu.estimate_adu import aggregate
 
     return aggregate(est_).get("att", np.nan)

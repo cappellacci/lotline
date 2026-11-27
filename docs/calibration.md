@@ -59,8 +59,8 @@ uv run lotline calibrate --run --step adu_joint           # the full fit
 uv run lotline calibrate --run --write                    # rewrite config and the lock after a full run
 ```
 
-The fit set they share is library code: `lotline.model.adu_fit_set` (D-079's places, D-096's unknown years,
-the owner and age readers, place types) and `lotline.model.adu_refit` (the m_x grid weights, the slopes'
+The fit set they share is library code: `lotline.calibrate.adu.adu_fit_set` (D-079's places, D-096's unknown years,
+the owner and age readers, place types) and `lotline.calibrate.adu.adu_refit` (the m_x grid weights, the slopes'
 central differences). These used to live only in development scripts that loaded one another by file path.
 Heavy steps run in a process pool of `LOTLINE_CALIBRATE_WORKERS` workers (default 4). The grid step returns
 the whole CSV; `--run` compares it row by row and `--write` writes it.

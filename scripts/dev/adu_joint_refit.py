@@ -52,13 +52,10 @@ import numpy as np
 import pandas as pd
 
 from lotline.build import eligible as eligible_rule
-from lotline.config import load_params, load_state
-from lotline.io import DataStore, offline
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
-from lotline.model import score as sc
-from lotline.model import undercount as uc
-from lotline.model.adu_fit_set import (  # noqa: F401  the fit set (D-079), now library code; other scripts read R.<name>
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
+from lotline.calibrate.adu import score as sc
+from lotline.calibrate.adu.adu_fit_set import (  # noqa: F401  the fit set (D-079), now library code; other scripts read R.<name>
     D053,
     MIN_PERMITS,
     ROCHESTER,
@@ -74,6 +71,9 @@ from lotline.model.adu_fit_set import (  # noqa: F401  the fit set (D-079), now 
     fit_set,
     limit_years,
 )
+from lotline.config import load_params, load_state
+from lotline.io import DataStore, offline
+from lotline.model import undercount as uc
 from lotline.model.scenarios import adu
 
 TARGET_YEARS = range(2021, 2025)  # D-075: ADU permits a year over 2021-2024

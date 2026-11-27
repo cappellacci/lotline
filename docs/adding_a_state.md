@@ -597,7 +597,7 @@ priors (section 3). Adding its data to the fits is a separate method decision, m
 state might later be a blind test, freeze its prediction first.
 
 - **ADU:**
-  1. Add the state to `STATES` in `src/lotline/model/adu_fit_set.py`. Its places enter by rule: a coded rule
+  1. Add the state to `STATES` in `src/lotline/calibrate/adu/adu_fit_set.py`. Its places enter by rule: a coded rule
      in force, eligible lots and a permit source that flags ADUs (`fit_set`, D-079).
   2. Rerun the ADU chain, in the order `uv run lotline calibrate --list` prints: `adu_joint`,
      `adu_partial_share_grid`, `adu_anchor_slopes`, `adu_calibration_range`, `adu_town_prior_sd`,
@@ -611,8 +611,8 @@ state might later be a blind test, freeze its prediction first.
      places should count toward φ).
   2. Rerun `mm_units_per_project`, `mm_year_spread`, `mm_c4` and `mm_fast_ramp` the same way (`--run`, then
      `--run --write`).
-  3. Rerun D-092's §7 tests, `uv run python scripts/dev/mm_tests_d092.py` (marked "only with Ben's
-     go-ahead"); they have no `lotline calibrate` step yet.
+  3. Optional: D-092's §7 accuracy tests are archived (`scripts/archive/mm_tests_d092.py`, the record of how
+     D-092 was scored). They have no `lotline calibrate` step; rerun one only with Ben's go-ahead.
 - **Validation:** decide whether the state joins `FIT_STATES` in `src/lotline/validation/v5.py`,
   `v5_stpaul.py` and `v9.py`.
 
@@ -673,7 +673,7 @@ OR). It reads no permits.
 | `src/lotline/model/scenarios/adu.py` `REFORM_STATES` | States whose rules feed shared priors | Only when pooling (step 14) |
 | `tests/core/test_ordinance_records.py` ≈ 208 | States whose fee CSVs are validated | When you add a fee file |
 | `src/lotline/calibrate/mm/estimate_mm.py:48` `STATES` | D-024 missing-middle panel | Only when refitting |
-| `src/lotline/model/adu_fit_set.py` `STATES` | ADU fit set | Only when pooling (step 14) |
+| `src/lotline/calibrate/adu/adu_fit_set.py` `STATES` | ADU fit set | Only when pooling (step 14) |
 | `config/params/adu_state_effect.yaml` | `adu_state_effect_fitted__XX` | Generated when pooling |
 | `src/lotline/calibrate/mm/mm_fitsets.py` `STATES`, `SPREAD_STATES` | Missing-middle fit sets | Only when pooling (step 14) |
 | `src/lotline/validation/v5.py`, `v5_stpaul.py`, `v9.py` `FIT_STATES` | Validation fit sets | Only if the state joins a fit |

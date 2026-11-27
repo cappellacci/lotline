@@ -5,7 +5,7 @@
 
 For Minneapolis, Raleigh and Austin, compare, year by year over 2016-2022, the observed ADU permits with the
 model's expected permits under each place's coded current rules. Uses the same place-years as the anchor fit
-(`lotline.model.calibrate_adu.place_years`): coded rules in force by 1 July (config/reforms/*.csv, read at run
+(`lotline.calibrate.adu.calibrate_adu.place_years`): coded rules in force by 1 July (config/reforms/*.csv, read at run
 time), each year's actual rent, home value and mortgage rate, and blank rule fields integrated as a mixture
 (D-022), rule types with graded shares and coverage (D-019 fit 3, D-021): expected = θ × Σ_c w_c k_c for a
 typical place (place effect u = 1). The range is over the anchor θ only (triangular on its low, central and
@@ -18,9 +18,9 @@ from __future__ import annotations
 
 import numpy as np
 
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.config import load_params
 from lotline.io import DataStore
-from lotline.model import calibrate_adu as cal
 from lotline.model.scenarios import adu
 
 YEARS = range(2016, 2023)

@@ -229,7 +229,7 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
 
 <footer>
   <div>Types by D-088's rule (core: the largest place in its metro by housing units, or a third of it; other metro places suburbs; the rest towns). Fit: Form A + P, θ {summ["a_p_fit"]["theta"] * 1000:.3f} per 1,000, core term {summ["a_p_fit"]["b_core"]:+.3f}, α {summ["a_p_fit"]["alpha"]:.2f}. Town prior sd {summ["town_prior_sd"]:.3f}. 20,000 draws, seed 20261111.</div>
-  <div>Sources: <code>reports/adu-state-profiles/</code>, <code>src/lotline/model/adu_profiles.py</code>, on branch <code>ws/adu-state-profiles</code>. Method: D-089 in <code>docs/analysis_plan.md</code>. Run offline from cached data; no ADU count read for the profiles. Nothing was unblinded and nothing was written to config.</div>
+  <div>Sources: <code>reports/adu-state-profiles/</code>, <code>src/lotline/validation/adu_profiles.py</code>, on branch <code>ws/adu-state-profiles</code>. Method: D-089 in <code>docs/analysis_plan.md</code>. Run offline from cached data; no ADU count read for the profiles. Nothing was unblinded and nothing was written to config.</div>
 </footer>
 </main>
 """

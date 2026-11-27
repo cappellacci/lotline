@@ -30,8 +30,8 @@ import numpy as np
 import pandas as pd
 
 from lotline.calibrate import adu_steps as steps
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.model import adu_types as ty
-from lotline.model import calibrate_adu as cal
 from lotline.model.scenarios import adu
 
 REPO = Path(__file__).resolve().parents[2]

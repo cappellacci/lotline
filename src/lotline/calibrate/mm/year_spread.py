@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
-from lotline.model.calibrate_adu import _golden_max
+from lotline.calibrate.adu.calibrate_adu import _golden_max
 
 from .likelihood import KAPPA_NONE, LOG_KAPPA, Stack, _interval, _log_pois, _w_mixed, _ylogmu
 from .places import Place

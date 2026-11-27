@@ -51,7 +51,7 @@ def reassign(panel: pd.DataFrame, rng: np.random.Generator, pool: set | None = N
 
 def _ri_one(args):
     panel, seed, i, pool, method, kw = args
-    from lotline.model.estimate_adu import EstimationError
+    from lotline.calibrate.adu.estimate_adu import EstimationError
 
     try:
         return overall(
@@ -131,7 +131,7 @@ def _interval(est_, draws, seed, term="att"):
 
 def _safe(name, fn):
     """Run one check; a fit that fails becomes a failed check with the reason, never a crash."""
-    from lotline.model.estimate_adu import EstimationError
+    from lotline.calibrate.adu.estimate_adu import EstimationError
 
     try:
         return fn()
@@ -141,7 +141,7 @@ def _safe(name, fn):
 
 def check_leads(panel, draws=999, seed=0, method="ppml", **kw) -> dict:
     """1. Leads k = −3…−1 jointly 0 at the 10% level (pass: bootstrap Wald p >= 0.10)."""
-    from lotline.model.estimate_adu import joint_wald
+    from lotline.calibrate.adu.estimate_adu import joint_wald
 
     def run():
         e = estimate(panel, method=method, leads=LEADS, **kw)
@@ -239,7 +239,12 @@ def transport_predict(est_, boot, target: pd.DataFrame, draws=4000, seed=0, wide
     with the fit's overdispersion κ. Returns place, name, year, observed, mean, p05, p10, p90, p95,
     outside_range, with a 'total' row per place.
     """
-    from lotline.model.estimate_adu import MAX_YEARLY_RATE, EstimationError, modifier_scale, overdispersion
+    from lotline.calibrate.adu.estimate_adu import (
+        MAX_YEARLY_RATE,
+        EstimationError,
+        modifier_scale,
+        overdispersion,
+    )
 
     rng = np.random.default_rng(seed)
     f, fp = est_.fit, est_.panel
@@ -335,7 +340,7 @@ def imputation_effects(panel: pd.DataFrame) -> dict[str, float]:
     δ) on untreated place-years only (never treated, or before adoption), impute each treated place-year's
     untreated mean μ0, and report log(Σ y / Σ μ0) per event-time bin and overall (same scale as β and att;
     the dose is not used). Treated places without untreated years with homes are left out."""
-    from lotline.model.estimate_adu import ppml
+    from lotline.calibrate.adu.estimate_adu import ppml
 
     p = panel[panel["y"].notna()].reset_index(drop=True)
     e = p["year"] - p["T"]

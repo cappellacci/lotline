@@ -14,7 +14,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from lotline.model.calibrate_adu import CHI2_90
+from lotline.calibrate.adu.calibrate_adu import CHI2_90
 from lotline.model.hazard import ramp
 
 from .places import _V, ALPHA_LOCAL, ALPHA_POISSON, SLOPE, Place

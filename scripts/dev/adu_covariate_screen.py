@@ -22,10 +22,10 @@ import numpy as np
 import pandas as pd
 
 from lotline.build import eligible as eligible_rule
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.config import load_params
 from lotline.io import DataStore, offline
 from lotline.model import adu_screen as scr
-from lotline.model import calibrate_adu as cal
 from lotline.validation import holdout
 
 HERE = Path(__file__).resolve().parent

@@ -236,7 +236,7 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
 
 <footer>
   <div>The base forms match D-084 to the digit (Form A θ 0.7563 per 1,000, log-lik −1,347.71). Test D: 38 places in the 2016–20 fit, 37 forecast (MN 21, NC 10, OR 4, TX 2), 178 place-years. Each place's effect is updated from its own early counts. 20,000 draws, seed 20261111.</div>
-  <div>Sources: <code>reports/adu-time-trend/</code>, <code>src/lotline/model/adu_trend.py</code>, on branch <code>ws/adu-time-trend</code>. Method: D-085 in <code>docs/analysis_plan.md</code>. Run offline from cached data. St. Paul stays out. Nothing was unblinded and nothing was written to config.</div>
+  <div>Sources: <code>reports/adu-time-trend/</code>, <code>src/lotline/validation/adu_trend.py</code>, on branch <code>ws/adu-time-trend</code>. Method: D-085 in <code>docs/analysis_plan.md</code>. Run offline from cached data. St. Paul stays out. Nothing was unblinded and nothing was written to config.</div>
 </footer>
 </main>
 """

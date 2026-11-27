@@ -2,7 +2,8 @@
 
 Each runner takes a `RunContext` and returns {params file: {key: value or {value, low, high}}}, rounded to the
 precision config holds (so a rerun on unchanged data reproduces config exactly). The fit inputs come from
-`lotline.model.adu_fit_set` (the D-096 fit set) and the arithmetic from `lotline.model.adu_refit`; both used
+`lotline.calibrate.adu.adu_fit_set` (the D-096 fit set) and the arithmetic from
+`lotline.calibrate.adu.adu_refit`; both used
 to live only in development scripts.
 
 Quick runs (`--quick`) check the code path and the central values in minutes instead of hours:
@@ -27,16 +28,16 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.adu import adu_fit_set as fs
+from lotline.calibrate.adu import adu_new_rule as nr
+from lotline.calibrate.adu import adu_refit as rf
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
+from lotline.calibrate.adu import score as sc
 from lotline.config import load_params
 from lotline.io import DataStore, offline
-from lotline.model import adu_fit_set as fs
-from lotline.model import adu_new_rule as nr
-from lotline.model import adu_refit as rf
 from lotline.model import adu_screen as scr
 from lotline.model import adu_types as ty
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
-from lotline.model import score as sc
 from lotline.model.scenarios import adu
 
 Z_90 = 1.645  # a 90% interval spans ± this many SEs (D-030; config's intervals use it)
