@@ -41,6 +41,7 @@ from collections.abc import Iterable
 import pandas as pd
 
 from lotline import geo
+from lotline.adapters.common import size_class
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer
 from lotline.schemas import validate
@@ -122,12 +123,6 @@ def jurisdiction(city: pd.Series, office: pd.Series) -> pd.Series:
     c = city.astype("string").str.strip().str.upper().map(CITIES)
     o = office.astype("string").str.strip().str.upper().map(OFFICES)
     return c.fillna(o).astype("string")
-
-
-def size_class(n) -> str:
-    if pd.isna(n) or n < 2:
-        return "UNKNOWN"
-    return "U2" if n == 2 else "U3_4" if n <= 4 else "MF5"
 
 
 def build(raw: pd.DataFrame, state: str = "OR", keep: tuple[str, ...] | None = KEEP) -> pd.DataFrame:
