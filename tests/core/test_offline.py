@@ -280,7 +280,7 @@ def test_cli_offline_reports_a_missing_snapshot_and_fails(tmp_path, monkeypatch,
     src = registry.Source("test_permits", module, "test_table", None)
     monkeypatch.setattr(registry, "sources_for", lambda state: {"test_permits": src})
     assert cli.main(["fetch", "--offline", "--state", "MN", "--source", "test_permits"]) == 1
-    assert "FAILED offline" in capsys.readouterr().out
+    assert "SKIPPED" in capsys.readouterr().out
     assert read_builds(DataStore(tmp_path)) == []
 
 

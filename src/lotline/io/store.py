@@ -30,13 +30,23 @@ import pandas as pd
 DEFAULT_DATA_DIR = "~/lotline-data"
 
 
+REPO_ENV = Path(__file__).resolve().parents[3] / ".env"  # the checkout's .env, found from any folder
+
+
 def data_dir() -> Path:
-    """Resolve LOTLINE_DATA_DIR (env var, then .env in the working directory, then ~/lotline-data)."""
+    """Resolve LOTLINE_DATA_DIR (env var, then .env in the working directory or the checkout, then
+    ~/lotline-data)."""
     value = os.environ.get("LOTLINE_DATA_DIR") or _dotenv_value("LOTLINE_DATA_DIR") or DEFAULT_DATA_DIR
     return Path(value).expanduser().resolve()
 
 
-def _dotenv_value(key: str, path: Path = Path(".env")) -> str | None:
+def _dotenv_value(key: str, path: Path | None = None) -> str | None:
+    """`key` from `path`, or (default) from .env in the working directory, then the checkout's .env, so a
+    command run from another folder still finds the key (usability review, 2026-11-27)."""
+    if path is None:
+        return _dotenv_value(key, Path(".env")) or (
+            _dotenv_value(key, REPO_ENV) if REPO_ENV != Path(".env").resolve() else None
+        )
     if not path.is_file():
         return None
     for line in path.read_text().splitlines():
