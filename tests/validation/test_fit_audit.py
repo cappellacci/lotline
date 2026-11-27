@@ -68,3 +68,9 @@ def test_noise_floor_by_hand():
     assert useful == pytest.approx(0.7)
     expect = np.sqrt(np.mean(np.log((np.arange(1, 11) + 0.5) / 6.0) ** 2))
     assert rms == pytest.approx(expect)
+
+
+def test_noise_floor_both_zero_is_useful():
+    """Draws all 0: P10 = P50 = P90 = 0, and a 0 inside that range is useful (D-040 clarification)."""
+    useful, _ = fa.noise_floor(np.zeros(10))
+    assert useful == 1.0

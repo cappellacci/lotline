@@ -85,6 +85,6 @@ def noise_floor(totals) -> tuple[float, float]:
     ..., 10 (P10 1.9, P50 5.5, P90 9.1): useful are 3 to 9, so 0.7."""
     t = np.asarray(totals, dtype=float)
     lo, med, hi = np.percentile(t, [10, 50, 90])
-    useful = (t >= lo) & (t <= hi) & (t > 0) & (t >= med / 2) & (t <= 2 * med)
+    useful = (t >= lo) & (t <= hi) & (t >= med / 2) & (t <= 2 * med)  # both 0 counts as useful
     rms = float(np.sqrt(np.mean(log_ratio(t, med) ** 2)))
     return float(useful.mean()), rms

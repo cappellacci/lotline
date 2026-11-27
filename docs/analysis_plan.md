@@ -8360,3 +8360,16 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Also corrected:** the 2026-11-26 entry's line on why C4 moved read "a lower φ" as "lumpier".
 - **Decision:** Ben in chat, 2026-11-27: "yes, make the forecast match the fit and rerun"; "yes, fix that
   entry too".
+
+### Clarification · 2026-11-27 · D-040's verdict when the prediction and the outcome are both 0
+- **Was (D-040):** a total is **useful** if it is inside P10–P90 and its P50 is within a factor of 2 of the
+  observed total. The rule didn't say what happens when the P50 is 0, because "within a factor of 2 of 0" has
+  no meaning.
+- **Now:** when the observed total and the P50 are both 0 (and 0 is inside P10–P90), the verdict is
+  **useful**: the model said nothing would happen and nothing did. A P50 of 0 with an observed total above 0
+  is **inside only** if it is inside P10–P90, else missed.
+- **Why:** `validation/v5.py` (`verdict`) and the missing-middle calibration's verdict already score it this
+  way. `validation/fit_audit.py` (`noise_floor`) did not: it never counted a draw of 0 as useful, so a state
+  whose P50 is 0 got a noise floor of 0. It now follows the same rule. No published number changes: no
+  state total in the app has a P50 of 0.
+- **Decided by:** Ben, 2026-11-27 (code review follow-up).
