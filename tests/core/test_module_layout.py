@@ -121,9 +121,7 @@ def test_moving_list_only_shrinks():
 # not counted. OVERSIZE lists the engine modules still over the limit, with the owner splitting them; the
 # owner deletes the line when the split lands, and a stale line fails.
 MAX_LINES = 620  # "about 600": scenarios/fees.py (604) fits
-OVERSIZE = {
-    "scenarios.adu": "ADU",
-}
+OVERSIZE: dict[str, str] = {}
 
 
 def test_engine_modules_stay_small():
