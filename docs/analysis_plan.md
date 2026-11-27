@@ -8320,8 +8320,10 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Why φ moved:** the same rules now keep 713 unused places (1,379 pseudo-forecasts) where run 9 kept 483
   (941). The tables have grown since 2026-11-15. The library port gives the same place sets as the old
   scripts on today's tables, so the drift comes from the data, not the code.
-- **Why C4 moved:** C4 takes φ as an input. With lumpier years allowed (a lower φ), the profile favours a
-  slower ramp (4.5 years) with a higher mature rate. C4's 93 fit places and 299 place-years are unchanged.
+- **Why C4 moved:** C4 takes φ as an input. With smoother years (a lower φ, since φ is the variance of the
+  yearly multiplier), the profile favours a slower ramp (4.5 years) with a higher mature rate. [Corrected
+  2026-11-27: this line first read "lumpier years allowed (a lower φ)", which inverts φ; see the deviation
+  of 2026-11-27.] C4's 93 fit places and 299 place-years are unchanged.
 - **Effect** (origin 2025; five-year missing middle, homes net statewide, P10 / P50 / P90; before and after
   on the same code):
   - MN 170 / 1,140 / 6,911 → 194 / 1,254 / 7,451 (P50 +10.0%).
@@ -8332,3 +8334,29 @@ calls ADUs in permit places is reported as a correction for BPS places, not appl
 - **Not rerun:** D-092's held-out log-score comparison of C4 against M, and the §7 tests. Both were run at
   φ 13.63.
 - **Decision:** approved by Ben in chat on 2026-11-26 ("Update φ now"; then, in this session, "yes").
+
+### Deviation · 2026-11-27 · Missing middle: the forecast's yearly spread now uses φ as the fit does
+- **What was wrong:** the fit (D-092 run 9, `calibrate.mm.likelihood._nb_core`), its backtests and the
+  pre-registered form treat φ as the variance of the yearly multiplier g (NB size 1/φ, variance μ + φμ²).
+  The scenario forecast (`model/scenarios/mm.py`) drew g ~ Gamma(φ, 1/φ), which has variance 1/φ. At φ =
+  13.03 its yearly noise had variance 0.08 instead of 13.03. Each side's tests checked only its own form,
+  so CI stayed green. Found in the code review of main@98b3f113.
+- **What changed:** the forecast draws g ~ Gamma(1/φ, φ). A test pins the variance by hand (φ 0.5: 0.9952
+  + 0.5 × 0.9904 = 1.4904). Another matches the draws' frequencies to the fit's NB pmf at φ 2.
+- **V5 St. Paul:** `validation/v5_stpaul.py` used the same narrow draw for its frozen prediction (2024–2025
+  range 9–28). The frozen file and the code are left as they are, so the prediction reproduces. Its range
+  is narrower than the fitted model implies, and its score should be read with that in mind.
+- **Effect** (origin 2025; five-year missing middle, homes net statewide, P10 / P50 / P90; same code and
+  data otherwise):
+  - MN 194 / 1,254 / 7,451 → 178 / 1,234 / 7,796.
+  - NC 352 / 2,230 / 13,452 → 326 / 2,117 / 13,127.
+  - OH 286 / 1,884 / 11,168 → 266 / 1,846 / 11,342.
+  - TX 1,348 / 8,761 / 52,814 → 1,149 / 8,390 / 53,085.
+  - OR 29 / 193 / 1,141 → 23 / 178 / 1,171.
+  - WI 80 / 529 / 3,256 → 68 / 514 / 3,358.
+  Statewide ranges barely widen: g is drawn per place and year, so it averages out across a state's places
+  and five years. The width comes from θ and the place effect u. P50s fall 1–8%: the right-skewed g puts
+  more draws at zero for a place. The ADU and fee scenarios are unchanged.
+- **Also corrected:** the 2026-11-26 entry's line on why C4 moved read "a lower φ" as "lumpier".
+- **Decision:** Ben in chat, 2026-11-27: "yes, make the forecast match the fit and rerun"; "yes, fix that
+  entry too".

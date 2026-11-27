@@ -158,12 +158,26 @@ def test_dose_pool_holds_origin_doses_by_hand():
 
 def test_year_spread_keeps_the_mean_and_adds_nb_variance():
     # one place, dose 0, θ 0.001 × E 1000 × F 1 = 1 a year at maturity; half 0.5 -> year 5 mean 0.9952.
-    # φ 2: variance = mean + mean² / φ = 0.9952 + 0.9952² / 2 = 1.4904 (Poisson: 0.9952)
+    # φ is the fit's variance (D-092, `likelihood._nb_core`: size r = 1/φ). φ 0.5: variance = mean + φ mean²
+    # = 0.9952 + 0.5 × 0.9904 = 1.4904 (Poisson: 0.9952).
+    # The old draw (variance 1/φ = 2) gave 0.9952 + 1.9808 = 2.976.
     p = pd.DataFrame([_place(dose=0.0, f_ratio=1.0)])
-    res = mm.simulate(p, _draws(n=200_000), HALF, SLOPE, seed=3, phi=2.0)
+    res = mm.simulate(p, _draws(n=200_000), HALF, SLOPE, seed=3, phi=0.5)
     y5 = res.buildings[:, 4]
     assert y5.mean() == pytest.approx(0.9952, rel=0.01)
     assert y5.var() == pytest.approx(1.4904, rel=0.03)
+
+
+def test_year_spread_matches_the_fits_negative_binomial():
+    """The forecast's yearly count is the fit's NB: its draws' frequencies match `_nb_core`'s pmf at φ 2."""
+    from lotline.calibrate.mm.likelihood import _lg, _nb_core
+
+    p = pd.DataFrame([_place(dose=0.0, f_ratio=1.0)])
+    y5 = mm.simulate(p, _draws(n=200_000), HALF, SLOPE, seed=5, phi=2.0).buildings[:, 4]
+    mu, ys = 0.9952, np.arange(4)
+    # _nb_core is the log-likelihood without its constant −ln y!, added back here
+    pmf = np.exp(_nb_core(ys, np.full(4, mu), 2.0, _lg(ys, 2.0))) / np.array([1, 1, 2, 6])
+    assert [np.mean(y5 == y) for y in ys] == pytest.approx(pmf, abs=0.005)
 
 
 def test_no_phi_is_poisson_and_unchanged():
