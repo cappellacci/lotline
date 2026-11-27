@@ -1,4 +1,4 @@
-"""scripts/dev/params_table.py renders config/params/*.yaml into the Model & Assumptions Overview."""
+"""scripts/dev/params_table.py renders config/params/*.yaml into docs/parameters.md."""
 
 import importlib.util
 from pathlib import Path

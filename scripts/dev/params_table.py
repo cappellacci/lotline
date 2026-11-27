@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the parameter table in docs/model_and_assumptions.md from config/params/*.yaml.
+"""Write the parameter table in docs/parameters.md from config/params/*.yaml.
 
 Every model parameter lives in a YAML file with a value, a low-high range, a unit and a source. This script
 renders them as Markdown tables (one per file) and puts them between the markers
@@ -23,7 +23,7 @@ from pathlib import Path
 from lotline.config import CONFIG_DIR, Parameter, load_params, load_undercount
 
 ROOT = Path(__file__).resolve().parents[2]
-DOC = ROOT / "docs" / "model_and_assumptions.md"
+DOC = ROOT / "docs" / "parameters.md"
 START = "<!-- params-table:start -->"
 END = "<!-- params-table:end -->"
 SENTENCE_END = re.compile(r"(?<![.])\. (?=[A-Z])")
