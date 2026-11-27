@@ -26,5 +26,8 @@ numbers in date order (then file name) after the last entry in `LOGBOOK.md`.
 - **Open / next:**
 ```
 
+**Archive:** fragments the nightly review has already summarized in `LOGBOOK.md` move to
+[`archive/`](archive/README.md), which the merge script ignores.
+
 Workstreams: `Rules` · `Scope` · `Data feasibility` · `Policy analysis` · `Literature` · `Study design` · `Build` ·
 `Validation` · `Deliverables` · `Admin`
