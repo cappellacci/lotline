@@ -28,6 +28,7 @@ from __future__ import annotations
 import httpx
 import pandas as pd
 
+from lotline.adapters import snapshots
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp
 from lotline.schemas import validate
@@ -109,7 +110,8 @@ PROVENANCE = {
         "No unit counts and no ADU flag: units are known only for new single-family houses and duplexes; "
         "use Met Council permits for St. Paul outcomes",
         "Rolling 10-year window: permits issued before 2015-06-30 had already dropped out at the first "
-        "snapshot (2026-10-19); the layer was last edited on 2025-07-01 (layer metadata)",
+        "snapshot (2026-10-19); the layer was last edited on 2025-07-01 (layer metadata). Every dated "
+        "snapshot is read and each permit's newest copy kept, so later roll-outs lose nothing",
         "No demolition or wrecking permits in the layer",
         "Multifamily and mixed-use permits can't be sized (UNKNOWN), so DTQ vs MF5 can't be told apart here",
         "St. Paul permits from 2024 on are held out (V5 blind test) and absent from the table",
@@ -123,19 +125,24 @@ def load(
 ) -> pd.DataFrame:
     if state.upper() != "MN":
         raise ValueError(f"{SOURCE} covers St. Paul, Minnesota only, not {state}")
-    raw = download_layer(
-        LAYER_URL,
-        store=store,
-        source=SOURCE,
-        license=LICENSE,
-        adapter=ADAPTER,
-        adapter_version=VERSION,
-        name="building_permits",
-        out_fields=",".join(FIELDS),
-        refresh=refresh,
-        http=http,
-    )
-    return to_permits(raw)
+
+    def read(vintage: str | None) -> pd.DataFrame:
+        return download_layer(
+            LAYER_URL,
+            store=store,
+            source=SOURCE,
+            license=LICENSE,
+            adapter=ADAPTER,
+            adapter_version=VERSION,
+            name="building_permits",
+            out_fields=",".join(FIELDS),
+            vintage=vintage,
+            refresh=refresh and vintage is None,
+            http=http,
+        )
+
+    # every dated snapshot; `to_permits` keeps each permit's newest copy after the holdout filter
+    return to_permits(snapshots.all_snapshots(read, store, SOURCE, "building_permits"))
 
 
 def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
@@ -147,6 +154,7 @@ def to_permits(raw: pd.DataFrame, state: str = "MN") -> pd.DataFrame:
     raw = holdout.apply(
         raw, state, geoid_col="jurisdiction_geoid", date_col="issue_date", year_col="issue_year"
     )
+    raw = snapshots.newest_rows(raw, "PERMITNUMBER")  # stacked snapshots: each permit's newest copy
     raw = raw[raw["issue_date"].notna()]
 
     sub = raw["SUB_TYPE"].astype("string").str.strip()
