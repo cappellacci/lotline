@@ -69,6 +69,11 @@ The one exception is below, with its justification.
 |---|---|---|---|
 | certifi | MPL-2.0 | httpx | CA certificate bundle only, used unmodified as a runtime dependency; not copied into or distributed with our code. MPL-2.0 is file-level copyleft and places no obligations on our Apache-2.0 code. |
 
+The SBOM is GitHub's own export (Insights → Dependency graph → Export SBOM). To refresh it:
+`gh api repos/cappellacci/lotline/dependency-graph/sbom -q .sbom > sbom.spdx.json`. It also lists the six
+GitHub Actions the CI and Pages workflows use (actions/checkout, setup-python, setup-node, upload-pages-artifact,
+deploy-pages and astral-sh/setup-uv). GitHub records no license for them; all six are MIT.
+
 numpy (BSD-3-Clause) bundles a few small components under 0BSD, MIT, Zlib and CC0-1.0, all permissive. CC0 is barred only as the license of our own code (Rules §7b), not for dependencies.
 
 Datasets, with each one's license and terms, are listed in [`data_provenance.md`](data_provenance.md).
