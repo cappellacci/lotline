@@ -948,3 +948,19 @@ def test_one_gap_falls_back_only_on_its_own_row():
     p = adu.type_probs(places)
     assert p[0].tolist() == [0.0 if t != "owner" else 1.0 for t in adu.TYPES]
     assert p[1].tolist() == [0.0 if t != "other" else 1.0 for t in adu.TYPES]
+
+
+def test_every_draw_turns_added_permits_into_homes_by_the_same_factor():
+    """Homes = ADU permits added × adu_net_new_share × (1 − adu_formalization_share), in the central path and
+    in every draw (the per-draw path is what the results bundle reads). By hand: 0.65 × (1 − 0.10) = 0.585;
+    with net-new 0.5 and formalization 0.2 held in every draw, 0.5 × 0.8 = 0.4 homes per permit added."""
+    shares = {"adu_net_new_share": 0.65, "adu_formalization_share": 0.10}
+    assert adu.net_new_homes(1.0, shares) == pytest.approx(0.585)
+    held = {"adu_net_new_share": 0.5, "adu_formalization_share": 0.2}
+    places = _places(rule_class=["none", "partial"], rule_age=[np.nan, 6.0])
+    *_, draws = adu.run(places, 2025, draws=20, params=held, return_draws=True)
+    added, homes = np.asarray(draws["added"]), np.asarray(draws["homes"])
+    assert added.sum() > 0
+    np.testing.assert_allclose(homes, added * 0.4, rtol=1e-12)
+    central = adu.central_path(places, params=A4 | held)
+    np.testing.assert_allclose(central["homes"], central["added"] * 0.4, rtol=1e-12)

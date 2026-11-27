@@ -101,6 +101,7 @@ from lotline.model.scenarios.adu_params import (  # noqa: F401
     central_params,
     draw_params,
     log_sd,
+    net_new_homes,
     partial_share_grid,
     specs,
 )
@@ -215,7 +216,7 @@ def central_path(
         if p["adu_own_rate_drift"]
         else None,
     )
-    homes = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
+    homes = net_new_homes(paths.added, p)
     return {
         "mature_hazard": hm,
         "handbook": paths.handbook,
@@ -361,7 +362,7 @@ def run(
             own[d],
         )
         out["handbook"][d], out["current"][d], out["added"][d] = paths.handbook, paths.current, paths.added
-        out["homes"][d] = paths.added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
+        out["homes"][d] = net_new_homes(paths.added, p)
         if return_draws:
             ptc = hazard.adu_price_to_cost(places["rent"], params=p)
             pencil[d] = hazard.feasible_share(ptc, p["adu_margin"], p["adu_feasibility_dispersion"])
