@@ -611,8 +611,8 @@ state might later be a blind test, freeze its prediction first.
      places should count toward φ).
   2. Rerun `mm_units_per_project`, `mm_year_spread`, `mm_c4` and `mm_fast_ramp` the same way (`--run`, then
      `--run --write`).
-  3. Rerun D-092's §7 tests, `uv run python scripts/dev/mm_tests_d092.py` (marked "only with Ben's
-     go-ahead"); they have no `lotline calibrate` step yet.
+  3. Optional: D-092's §7 accuracy tests are archived (`scripts/archive/mm_tests_d092.py`, the record of how
+     D-092 was scored). They have no `lotline calibrate` step; rerun one only with Ben's go-ahead.
 - **Validation:** decide whether the state joins `FIT_STATES` in `src/lotline/validation/v5.py`,
   `v5_stpaul.py` and `v9.py`.
 

@@ -77,10 +77,13 @@ Summaries are each script's own first docstring line; decision ids are those nam
 | `calibrate_mm_d062.py` | Missing middle: the five-year rate r5 = θ × m(half) by profile likelihood (D-062, run once). | D-054, D-055, D-059, D-062 |
 | `d054_posthoc.py` | D-054 POST-HOC diagnostics (not pre-registered; | D-042, D-054 |
 | `d055_v9_rescore.py` | D-055: re-score V9 Oregon's missing-middle targets with D-054's refit (not blind; written before the run). | D-038, D-051, D-054, D-055 |
+| `estimate_mm.py` | D-024's missing-middle panel run (`--smoke`, `--full`); archived with the D-092 checks (MM step 2). | D-024 |
 | `mm_accuracy_page.py` | Missing-middle accuracy report: reports/mm-d092/accuracy/results.html. | D-038, D-055 |
 | `mm_baseline_choice_page.py` | Results page for D-092 run 8 (choosing the no-reform baseline): reports/mm-d092/run8-baseline/results.html. | D-092 |
 | `mm_config_compare.py` | Statewide five-year added homes, D-055 values against C4 (same places, seed, draws). | D-055 |
 | `mm_config_page.py` | Results page for C4 to config: reports/mm-d092/config-c4/results.html. | D-055 |
+| `mm_counts.py` | D-092 §2-§3 counting rules (building collapse, roll diffs); was `lotline.validation.mm_counts` (MM step 2). | D-092 |
+| `mm_counts_d092.py` | Inputs and runs for the D-092 missing-middle counts (`mm_counts.py`). | D-092 |
 | `mm_fast_ramp_page.py` | Results page for D-100's fast-ramp sensitivity: reports/mm-d100/fast-ramp/results.html. | D-092 |
 | `mm_fast_ramp_run.py` | Fast-ramp sensitivity for the Handbook missing-middle scenario (D-100, pre-registered 2026-11-17). |  |
 | `mm_gut_check_data.py` | Missing-middle gut check, numbers: reports/mm-gut-check/summary.json. |  |
@@ -93,9 +96,12 @@ Summaries are each script's own first docstring line; decision ids are those nam
 | `mm_ramp_page.py` | Results page for D-100 run 1 (missing middle's ramp): reports/mm-d100/run1/results.html. | D-092 |
 | `mm_results_page_d092.py` | Build the D-092 run-6 results page from the run-4 and run-5 report files (to scale, log axes). | D-092 |
 | `mm_scenario_run.py` | First run of the Handbook missing-middle scenario (D-063), five states, approved by Ben 2026-11-08. | D-055, D-063 |
+| `mm_tests.py` | D-092 §7 accuracy-test pass rules, fixed before any test ran; was `lotline.validation.mm_tests` (MM step 2). | D-092 |
+| `mm_tests_d092.py` | D-092 §7 accuracy tests, scored with `mm_tests.py`. | D-092 |
 | `mm_tests_phi_page.py` | Results page for D-092 runs 9-11 (lumpy years, refit and §7): reports/mm-d092/run11-tests-phi/results.html. | D-092 |
 | `mm_types_d092.py` | Missing middle: place types, φ by type (D-092 deviation 2026-11-15 (c)). | D-088, D-092 |
 | `mm_types_page.py` | Results page for D-092 run 12 (φ by place type): reports/mm-d092/run12-types/results.html. | D-092 |
+| `project_size.py` | Buildings per project (same lot, same day); was `lotline.validation.project_size` (MM step 2). | D-092 |
 
 ## Fees
 
