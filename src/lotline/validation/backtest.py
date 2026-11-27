@@ -10,7 +10,7 @@ supplementary check that scores the same gap. Its `horizon` column counts years 
   become rates with the target year's denominator (carried forward from the newest ACS estimate, as the panel
   does), the same for every method. The model's point forecast is its P50.
 - **Coverage:** randomized coverage of the central [P10, P90] band (analysis plan D-003;
-  `baseline.randomized_coverage`): for whole-number outcomes, each observed value counts as covered by the
+  `scores.randomized_coverage`): for whole-number outcomes, each observed value counts as covered by the
   share of its predictive-CDF step that lies inside the band, so a calibrated forecast covers 80% on average.
   The pass range is 70-90%. The inclusive share (ends included) is still reported, but it flatters forecasts
   of mostly-zero counts, so it is not the test.
@@ -49,10 +49,11 @@ import pandas as pd
 from lotline.build import eligible
 from lotline.config import CONFIG_DIR, Parameter, load_params
 from lotline.model import baseline
+from lotline.validation import baseline_scores as scores
 from lotline.validation import demand
 
 EXCLUDED_CSV = CONFIG_DIR / "params" / "v1_excluded_places.csv"
-METHODS = ("model", *baseline.BENCHMARKS)
+METHODS = ("model", *scores.BENCHMARKS)
 TERCILES = ("small", "medium", "large")
 KEY = "geoid"
 SPECS = ("B", "C")
@@ -148,7 +149,7 @@ def _window(
 
     Columns: state, geoid, size_class, fit_end, year, horizon, method, tercile, parcels (target year),
     actual, forecast, mean, p10, p90 (rates per 1,000 eligible parcels; mean/p10/p90 only for the model;
-    the model's forecast is its P50), coverage_rand (model only, see `baseline.randomized_coverage`), spec,
+    the model's forecast is its P50), coverage_rand (model only, see `scores.randomized_coverage`), spec,
     and the demand term behind the model row: multiplier (1 in spec B), fallback (spec C: True where the
     place used multiplier 1), beta_h and beta_p (NaN in spec B).
     """
@@ -177,13 +178,13 @@ def _window(
     seen = observed.notna().to_numpy()
     lo, hi = p["interval_low_quantile"].value, p["interval_high_quantile"].value
     table["coverage_rand"] = np.nan
-    table.loc[seen, "coverage_rand"] = baseline.randomized_coverage(
+    table.loc[seen, "coverage_rand"] = scores.randomized_coverage(
         draws[seen], observed[seen].to_numpy(dtype=float), lo, hi
     )
     model = table.assign(method="model", forecast=table["p50"])
     model = model[[KEY, "year", "method", "forecast", "mean", "p10", "p90", "coverage_rand"]]
     trend_first = fit_end - int(p["benchmark_trend_years"].value) + 1
-    bench = baseline.benchmark_forecasts(fit, value, fit_end, trend_first_year=trend_first, params=p)
+    bench = scores.benchmark_forecasts(fit, value, fit_end, trend_first_year=trend_first, params=p)
     bench = bench.rename(columns={"benchmark": "method"})
     fc = pd.concat([model, bench], ignore_index=True)
     fc = fc[(fc["year"] >= first) & (fc["year"] <= last)]
@@ -239,7 +240,7 @@ STATE_COLUMNS += [
     "pit_lo",
     "pit_hi",
     "crps",
-    *[f"fc_{b}" for b in baseline.BENCHMARKS],
+    *[f"fc_{b}" for b in scores.BENCHMARKS],
 ]
 
 
@@ -274,15 +275,15 @@ def _state_totals(
             fc = bench.reindex(idx).sum()
             rows.append(
                 {"state": state, "scope": scope, "year": year, "places": g[KEY].nunique()}
-                | {f"fc_{b}": float(fc.get(b, np.nan)) for b in baseline.BENCHMARKS}
+                | {f"fc_{b}": float(fc.get(b, np.nan)) for b in scores.BENCHMARKS}
             )
     s = np.vstack(sums).astype(float)
     y = np.array(observed)
     res = pd.DataFrame(rows).assign(actual=y)
     res["p10"], res["p50"], res["p90"], res["mean"] = baseline.interval_from_draws(s, low, high)
-    res["pit_lo"], res["pit_hi"] = baseline.pit_step(s, y)
-    res["coverage_rand"] = baseline.step_share(res["pit_lo"].to_numpy(), res["pit_hi"].to_numpy(), low, high)
-    res["crps"] = baseline.crps_from_draws(s, y)
+    res["pit_lo"], res["pit_hi"] = scores.pit_step(s, y)
+    res["coverage_rand"] = scores.step_share(res["pit_lo"].to_numpy(), res["pit_hi"].to_numpy(), low, high)
+    res["crps"] = scores.crps_from_draws(s, y)
     return res.reindex(columns=STATE_COLUMNS)
 
 
@@ -296,7 +297,7 @@ def score_state(
     r = states.assign(
         err_model=(states["p50"] - states["actual"]).abs(), err_mean=states["mean"] - states["actual"]
     )
-    for b in baseline.BENCHMARKS:
+    for b in scores.BENCHMARKS:
         r[f"err_{b}"] = (r[f"fc_{b}"] - r["actual"]).abs()
     g = r.groupby([*by, "scope"], sort=True)
     out = pd.DataFrame(
@@ -305,7 +306,7 @@ def score_state(
             "coverage_rand": g["coverage_rand"].mean(),
             "crps": g["crps"].mean(),
             "mae_model": g["err_model"].mean(),
-            **{f"mae_{b}": g[f"err_{b}"].mean() for b in baseline.BENCHMARKS},
+            **{f"mae_{b}": g[f"err_{b}"].mean() for b in scores.BENCHMARKS},
             "bias_mean": g["err_mean"].mean(),
             "ratio_mean": g["mean"].sum() / g["actual"].sum(),
         }
@@ -323,7 +324,7 @@ def pit_histogram(
     lo, hi = states["pit_lo"].to_numpy(dtype=float), states["pit_hi"].to_numpy(dtype=float)
     mass = pd.DataFrame(
         {
-            f"{a:.1f}-{b:.1f}": baseline.step_share(lo, hi, a, b)
+            f"{a:.1f}-{b:.1f}": scores.step_share(lo, hi, a, b)
             for a, b in zip(edges[:-1], edges[1:], strict=True)
         },
         index=states.index,
@@ -386,7 +387,7 @@ def verdict(summary: pd.DataFrame, params: dict[str, Parameter] | None = None) -
     out = pd.DataFrame(index=wide.index)
     for method in METHODS:
         out[f"mae_{method}"] = wide[method]
-    out["beats_benchmarks"] = (wide["model"] < wide[list(baseline.BENCHMARKS)].min(axis=1)).astype(bool)
+    out["beats_benchmarks"] = (wide["model"] < wide[list(scores.BENCHMARKS)].min(axis=1)).astype(bool)
     out["coverage"] = m["coverage"]
     out["coverage_rand"] = m["coverage_rand"]
     out["coverage_ok"] = out["coverage_rand"].between(lo, hi)

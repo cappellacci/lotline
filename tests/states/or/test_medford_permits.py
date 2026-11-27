@@ -10,7 +10,7 @@ import importlib
 import pandas as pd
 
 from lotline import registry
-from lotline.model import calibrate_adu as ca
+from lotline.calibrate.adu import calibrate_adu as ca
 from lotline.schemas import assert_conforms
 from lotline.validation import holdout
 

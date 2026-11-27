@@ -588,14 +588,14 @@ def test_each_state_gets_its_own_file_and_stale_files_are_removed(tmp_path):
     stale.parent.mkdir(parents=True)
     stale.write_text("old")
     page = build.build_app([FIXTURE], out_dir=tmp_path, data_summary=None)
-    assert sorted(p.name for p in (tmp_path / "states").iterdir()) == ["zz.js"]
+    assert sorted(p.name for p in (tmp_path / "states").iterdir()) == ["zz.js", "zz.model.js"]
     assert '"draws"' not in page.read_text(encoding="utf-8")
 
 
 def test_state_file_names_only_take_two_letter_codes():
     assert build.state_file("ZZ") == "states/zz.js"
     # the page rebuilds the same path from the checked code rather than reading it from the data
-    assert "`states/${state.toLowerCase()}.js`" in build.TEMPLATE.read_text(encoding="utf-8")
+    assert "`states/${state.toLowerCase()}${suffix}`" in build.TEMPLATE.read_text(encoding="utf-8")
     for bad in ("../x", "Z", "zz", "Z/"):
         with pytest.raises(ValueError):
             build.state_file(bad)
@@ -770,3 +770,15 @@ def test_newer_or_other_line_schemas_are_refused(found, monkeypatch):
     monkeypatch.setattr("lotline.schemas.SCHEMAS_VERSION", "1.25")
     with pytest.raises(ValueError, match="schemas"):
         build.check_schemas_version(found, Path("x.json"))
+
+
+def test_each_state_also_gets_a_model_file_without_its_draws(tmp_path):
+    """The Model page compares every state from summary tables, so it loads states/<st>.model.js: the bundle
+    less its draws (review, 2026-11-26). Everything else in the bundle is kept as-is."""
+    build.build_app([FIXTURE], out_dir=tmp_path, generated="2026-11-06T00:00:00Z", data_summary=None)
+    text = (tmp_path / build.model_file("ZZ")).read_text(encoding="utf-8")
+    m = re.fullmatch(r"LotlineModel\((.*)\);\n", text, re.S)
+    assert m, "model file is not a single LotlineModel(...) call"
+    fixture = json.loads(FIXTURE.read_text())
+    assert json.loads(m.group(1)) == {k: v for k, v in fixture.items() if k != "draws"}
+    assert build.model_file("ZZ") == "states/zz.model.js"

@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 
 from lotline.build import eligible
-from lotline.model import estimate_adu
+from lotline.calibrate.adu import estimate_adu
 
 
 def _fixture():

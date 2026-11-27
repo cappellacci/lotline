@@ -98,7 +98,7 @@ FIT_SET_KEYS = {
 def anchor_places(store):
     """The ADU anchor's fit places today: D-096/D-097's Form A + place types set, unknown years cut
     (`adu_fit_set.d096_places`)."""
-    from lotline.model import adu_fit_set as fs
+    from lotline.calibrate.adu import adu_fit_set as fs
 
     with offline.offline_build(store):
         return fs.d096_places(store)
@@ -151,7 +151,7 @@ def _range_line(name: str, r: dict) -> str:
 
 
 def fit_set_main(write: bool) -> None:
-    from lotline.model import calibrate_adu as cal
+    from lotline.calibrate.adu import calibrate_adu as cal
 
     r = cal.fit_set_range(anchor_places(DataStore()))
     print(

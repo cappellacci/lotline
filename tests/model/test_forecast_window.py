@@ -11,6 +11,7 @@ import pytest
 from lotline.config import load_params
 from lotline.model import baseline
 from lotline.model.scenarios import adu
+from lotline.validation import baseline_scores as scores
 
 PARAMS = load_params("baseline")
 
@@ -43,10 +44,10 @@ def test_benchmarks_skip_the_lead_years_by_hand():
     With lead 1 the window is 2021-2025: ŷ = 13 + 1.3 (t − 2017) -> 18.2, 19.5, 20.8, 22.1, 23.4.
     The last-3 mean, (14 + 13 + 16) / 3 = 14.33, is the same number, now on 2021-2025."""
     s = pd.Series({2015: 10, 2016: 12, 2017: 14, 2018: 13, 2019: 16})
-    trend = baseline.linear_trend(s, origin=2019, horizon=5, lead=1)
+    trend = scores.linear_trend(s, origin=2019, horizon=5, lead=1)
     assert list(trend.index) == [2021, 2022, 2023, 2024, 2025]
     assert trend.tolist() == pytest.approx([18.2, 19.5, 20.8, 22.1, 23.4])
-    mean = baseline.last_k_mean(s, origin=2019, k=3, horizon=5, lead=1)
+    mean = scores.last_k_mean(s, origin=2019, k=3, horizon=5, lead=1)
     assert list(mean.index) == [2021, 2022, 2023, 2024, 2025]
     assert mean.tolist() == pytest.approx([43 / 3] * 5)
 

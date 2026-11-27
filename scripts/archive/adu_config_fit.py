@@ -15,8 +15,8 @@ import argparse
 import json
 from pathlib import Path
 
+from lotline.calibrate.adu import adu_fit_set as fs
 from lotline.io import DataStore, offline
-from lotline.model import adu_fit_set as fs
 from lotline.model import adu_types as ty
 
 

@@ -5,8 +5,8 @@ import math
 import numpy as np
 import pytest
 
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.model import adu_screen as scr
-from lotline.model import calibrate_adu as cal
 
 
 def _one(y, k, w=(1.0,), geoid="g", state="MN"):

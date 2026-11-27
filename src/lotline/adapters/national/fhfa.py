@@ -11,6 +11,7 @@ geography-year. `HPI` is base 100 in the series' first year, so it isn't compara
 
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -56,7 +57,7 @@ PROVENANCE = {
     "limitations": [
         "Sub-state annual indexes are labeled 'developmental' by FHFA",
         "Thin places suppressed: TX county indexes for 179 of 254 counties; 1-9% of tract-years missing",
-        "FHFA overwrites files in place; earlier vintages survive only as manifest hashes",
+        "FHFA replaces its files in place; each refresh is saved under its pull date, earlier copies kept",
         "Native HPI is base 100 in each series' first year; compare places with the base-2000 index",
     ],
 }
@@ -140,6 +141,29 @@ def for_state(
     return df[code.str.startswith(fips)]
 
 
+LEGACY_VINTAGE = "current"  # the one folder used before 2026-11-26; still read when it is the only copy
+
+
+def raw_vintage(store: DataStore, name: str, refresh: bool) -> str:
+    """The raw folder for one FHFA file. FHFA replaces its files in place, so each refresh is saved under
+    the date it was pulled and never overwrites a copy an earlier result used. Without `refresh`, the newest
+    saved copy is read: the latest dated folder that holds the file, else the legacy `current` folder."""
+    from datetime import date
+
+    today = date.today().isoformat()
+    if refresh:
+        return today
+    base = store.raw(SOURCE, LEGACY_VINTAGE).parent
+    dated = sorted(
+        f.parent.name for f in base.glob(f"*/{name}") if re.fullmatch(r"\d{4}-\d{2}-\d{2}", f.parent.name)
+    )
+    if dated:
+        return dated[-1]
+    if (base / LEGACY_VINTAGE / name).exists():
+        return LEGACY_VINTAGE
+    return today
+
+
 def load(
     state: str,
     store: DataStore,
@@ -153,13 +177,12 @@ def load(
 
     cfg = load_state(state)
     fips = fips or cfg.fips
-    vintage = "current"  # FHFA overwrites the files in place; the manifest's sha256 + date identify each pull
     frames = []
     for level in levels:
         name = LEVELS[level][0]
         path = fetch(
             f"{BASE_URL}/{name}",
-            store.raw(SOURCE, vintage) / name,
+            store.raw(SOURCE, raw_vintage(store, name, refresh)) / name,
             store=store,
             source=SOURCE,
             license=LICENSE,
