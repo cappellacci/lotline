@@ -36,10 +36,10 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
+from lotline.calibrate.adu import adu_terms as at
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
 from lotline.model import adu_screen as scr
-from lotline.model import adu_terms as at
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
 
 FIT_FIRST, FIT_LAST, LEAD_YEAR = 2016, 2019, 2020
 WINDOW_YEARS = range(2021, 2026)

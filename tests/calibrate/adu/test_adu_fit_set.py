@@ -1,5 +1,6 @@
-"""The ADU anchor's fit-set builders (`lotline.model.adu_fit_set`) and calibration arithmetic
-(`lotline.model.adu_refit`), on small made-up inputs. Each case is the docstring's hand-worked example."""
+"""The ADU anchor's fit-set builders (`lotline.calibrate.adu.adu_fit_set`) and calibration arithmetic
+(`lotline.calibrate.adu.adu_refit`), on small made-up inputs. Each case is the docstring's hand-worked
+example."""
 
 from __future__ import annotations
 
@@ -9,9 +10,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import adu_fit_set as fs
-from lotline.model import adu_refit as rf
-from lotline.model import calibrate_adu as cal
+from lotline.calibrate.adu import adu_fit_set as fs
+from lotline.calibrate.adu import adu_refit as rf
+from lotline.calibrate.adu import calibrate_adu as cal
 
 
 def _pl(geoid="A", years=(2016, 2017, 2018), state="MN"):
@@ -184,7 +185,7 @@ def test_typed_for_state_effect_scales_core_places_only():
 
 
 def test_drift_sigmas_zero_when_every_place_sits_at_no_drift():
-    from lotline.model import adu_forecast as af
+    from lotline.calibrate.adu import adu_forecast as af
 
     sharp = -((af.LOGD_GRID / 0.01) ** 2)  # every place's window says log d = 0 exactly
     grids = {"a": ("MN", sharp), "b": ("NC", sharp)}

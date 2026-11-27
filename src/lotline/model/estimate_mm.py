@@ -39,7 +39,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from lotline.model.estimate_adu import nearest_roll
+from lotline.calibrate.adu.estimate_adu import nearest_roll
 
 ST_PAUL = "2758000"  # V5 blind test: never used
 CHARLOTTE = "3712000"  # holdout from 2023-06-01; its reform falls inside the window
@@ -233,8 +233,9 @@ def build_panel(
     Paul after D-098); a place whose holdout is still blind is refused.
     """
     from lotline.build import eligible as eligible_rule
+    from lotline.calibrate.adu import estimate_adu
     from lotline.config import load_params, load_state
-    from lotline.model import estimate_adu, hazard, money, rule_tags
+    from lotline.model import hazard, money, rule_tags
     from lotline.model.scenarios import adu
     from lotline.validation import holdout as hold
 
@@ -490,7 +491,7 @@ def build_design(
     Returns an `estimate_adu.Design` whose bin columns are named beta_0 / beta_2 / beta_4, so the D-023
     aggregation (`estimate_adu.aggregate`) weights them by counterfactual expected homes.
     """
-    from lotline.model.estimate_adu import Design, modifier_scale
+    from lotline.calibrate.adu.estimate_adu import Design, modifier_scale
 
     e = panel["year"].to_numpy(dtype=float) - panel["T"].to_numpy(dtype=float)
     post = np.nan_to_num((e >= 0).astype(float) * ~np.isnan(e))
@@ -530,7 +531,7 @@ def estimate(panel: pd.DataFrame, method: str = "ppml", **design_kw):
     year fixed effects, `estimate_adu.ppml` with its separation removal and guards), 'nb' (the pre-specified
     fallback: D-025's negative binomial with normal place random effects, `fit_nb`) or 're' (Poisson-gamma
     place random effects, `fit_re`; a robustness model). Returns an `estimate_adu.Estimate`."""
-    from lotline.model.estimate_adu import Estimate, ppml
+    from lotline.calibrate.adu.estimate_adu import Estimate, ppml
 
     p = panel[panel["y"].notna()].reset_index(drop=True)
     d = build_design(p, **design_kw)
@@ -608,7 +609,7 @@ def fit_nb(p: pd.DataFrame, d, modifiers=MAIN_MODIFIERS, leads=(), binary_dose=F
            use_adu=True, scale_from=None) -> NBFit:  # fmt: skip
     """D-025's estimator (`pooled_adu.build_pooled_design` and `fit_pooled`, unchanged) on the D-024 panel
     (`pooled_panel`); its guards raise `EstimationError`. `d` is the D-024 design of the same rows."""
-    from lotline.model import pooled_adu as pa
+    from lotline.calibrate.adu import pooled_adu as pa
 
     if scale_from is not None:
         raise ValueError("the D-025 design scales modifiers on its own panel")
@@ -743,7 +744,7 @@ def fit_re(y, X, offset, place, year, names, tol: float = 1e-9, max_iter: int = 
     year effects and intercept are dropped. log a is held at `LOG_A_BOUND` when the data show no place
     heterogeneity (Poisson counts), and left out of the step test there. Fails loudly (`EstimationError`) on
     non-convergence or a coefficient beyond ±20."""
-    from lotline.model.estimate_adu import COEF_BOUND, EstimationError, _independent_columns
+    from lotline.calibrate.adu.estimate_adu import COEF_BOUND, EstimationError, _independent_columns
 
     y = np.asarray(y, dtype=float)
     X = np.asarray(X, dtype=float).reshape(len(y), -1)
@@ -831,11 +832,17 @@ def fit_re(y, X, offset, place, year, names, tol: float = 1e-9, max_iter: int = 
 def bootstrap(est_, draws: int = 999, seed: int = 0) -> pd.DataFrame:
     """Wild cluster score bootstrap by place (Webb weights): `estimate_adu.score_bootstrap` for PPML (CR2
     scores), the same one-step draw b* = b̂ + I⁻¹ Σ_g w_g S_g with the random-effects scores otherwise."""
-    from lotline.model.estimate_adu import COEF_BOUND, WEBB, EstimationError, aggregate, score_bootstrap
+    from lotline.calibrate.adu.estimate_adu import (
+        COEF_BOUND,
+        WEBB,
+        EstimationError,
+        aggregate,
+        score_bootstrap,
+    )
 
     fit = est_.fit
     if isinstance(fit, NBFit):
-        from lotline.model import pooled_adu as pa
+        from lotline.calibrate.adu import pooled_adu as pa
 
         raw = pa.score_bootstrap(fit.pooled, draws=draws, seed=seed).rename(columns=NB_NAMES)
         rows = []
@@ -860,14 +867,14 @@ def bootstrap(est_, draws: int = 999, seed: int = 0) -> pd.DataFrame:
 
 def summary(est_, draws: int = 999, seed: int = 0, level: float = 0.90) -> tuple[pd.DataFrame, pd.DataFrame]:
     """(summary table with 90% basic bootstrap intervals, bootstrap draws) for one fit."""
-    from lotline.model.estimate_adu import summarize
+    from lotline.calibrate.adu.estimate_adu import summarize
 
     boot = bootstrap(est_, draws=draws, seed=seed)
     return summarize(est_, boot, level=level), boot
 
 
 def overall(est_) -> float:
-    from lotline.model.estimate_adu import aggregate
+    from lotline.calibrate.adu.estimate_adu import aggregate
 
     return aggregate(est_).get("att", np.nan)
 
@@ -909,7 +916,7 @@ def reassign(panel: pd.DataFrame, rng: np.random.Generator, pool: set | None = N
 
 def _ri_one(args):
     panel, seed, i, pool, method, kw = args
-    from lotline.model.estimate_adu import EstimationError
+    from lotline.calibrate.adu.estimate_adu import EstimationError
 
     try:
         return overall(
@@ -989,7 +996,7 @@ def _interval(est_, draws, seed, term="att"):
 
 def _safe(name, fn):
     """Run one check; a fit that fails becomes a failed check with the reason, never a crash."""
-    from lotline.model.estimate_adu import EstimationError
+    from lotline.calibrate.adu.estimate_adu import EstimationError
 
     try:
         return fn()
@@ -999,7 +1006,7 @@ def _safe(name, fn):
 
 def check_leads(panel, draws=999, seed=0, method="ppml", **kw) -> dict:
     """1. Leads k = −3…−1 jointly 0 at the 10% level (pass: bootstrap Wald p >= 0.10)."""
-    from lotline.model.estimate_adu import joint_wald
+    from lotline.calibrate.adu.estimate_adu import joint_wald
 
     def run():
         e = estimate(panel, method=method, leads=LEADS, **kw)
@@ -1097,7 +1104,12 @@ def transport_predict(est_, boot, target: pd.DataFrame, draws=4000, seed=0, wide
     with the fit's overdispersion κ. Returns place, name, year, observed, mean, p05, p10, p90, p95,
     outside_range, with a 'total' row per place.
     """
-    from lotline.model.estimate_adu import MAX_YEARLY_RATE, EstimationError, modifier_scale, overdispersion
+    from lotline.calibrate.adu.estimate_adu import (
+        MAX_YEARLY_RATE,
+        EstimationError,
+        modifier_scale,
+        overdispersion,
+    )
 
     rng = np.random.default_rng(seed)
     f, fp = est_.fit, est_.panel
@@ -1193,7 +1205,7 @@ def imputation_effects(panel: pd.DataFrame) -> dict[str, float]:
     δ) on untreated place-years only (never treated, or before adoption), impute each treated place-year's
     untreated mean μ0, and report log(Σ y / Σ μ0) per event-time bin and overall (same scale as β and att;
     the dose is not used). Treated places without untreated years with homes are left out."""
-    from lotline.model.estimate_adu import ppml
+    from lotline.calibrate.adu.estimate_adu import ppml
 
     p = panel[panel["y"].notna()].reset_index(drop=True)
     e = p["year"] - p["T"]

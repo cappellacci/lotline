@@ -7,10 +7,10 @@ import pandas as pd
 import pytest
 
 from lotline.build import eligible as eligible_rule
+from lotline.calibrate.adu.estimate_adu import nearest_roll
 from lotline.config import CONFIG_DIR
 from lotline.model import estimate_mm as mm
 from lotline.model import proforma
-from lotline.model.estimate_adu import nearest_roll
 
 COLUMNS = list(pd.read_csv(CONFIG_DIR / "reforms" / "mn.csv", nrows=0).columns)
 

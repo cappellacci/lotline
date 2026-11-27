@@ -294,7 +294,7 @@ footer {{ border-top: 1px solid var(--rule); padding-top: var(--space-4); font-s
 
 <footer>
   <div>Housing age: ACS 2011–15 B25034, share of units built before 1960, standardized on D-083's 57 places (center 0.2045, scale 0.1669). Owner share as in D-084. Six Minnesota townships use their county subdivision's rows, and Durham County unincorporated uses its county less its places. The rule rows are #419's head (ef37063f), merged into this branch, not yet <code>main</code>. Test D waits for #420.</div>
-  <div>Sources: <code>reports/adu-age-term/</code>, <code>src/lotline/model/adu_terms.py</code>, on branch <code>ws/adu-age-term</code> (PR #426). Method: D-087 in <code>docs/analysis_plan.md</code>. Run offline from cached data, 20,000 draws. St. Paul stays out. Nothing was unblinded, and nothing was written to config.</div>
+  <div>Sources: <code>reports/adu-age-term/</code>, <code>src/lotline/calibrate/adu/adu_terms.py</code>, on branch <code>ws/adu-age-term</code> (PR #426). Method: D-087 in <code>docs/analysis_plan.md</code>. Run offline from cached data, 20,000 draws. St. Paul stays out. Nothing was unblinded, and nothing was written to config.</div>
 </footer>
 </main>
 """

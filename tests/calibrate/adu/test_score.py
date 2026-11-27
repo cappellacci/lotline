@@ -1,13 +1,14 @@
-"""Held-out log score (model/score.py, D-049): hand-worked and numerical checks. Synthetic inputs only."""
+"""Held-out log score (calibrate/adu/score.py, D-049): hand-worked and numerical checks. Synthetic inputs
+only."""
 
 import math
 
 import numpy as np
 import pytest
 
-from lotline.model import calibrate_adu as cal
-from lotline.model import calibrate_shape as shp
-from lotline.model import score
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_shape as shp
+from lotline.calibrate.adu import score
 
 
 def _place(y, base, w=(1.0,), types=((4,),)):

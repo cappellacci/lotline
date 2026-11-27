@@ -34,9 +34,9 @@ import numpy as np
 import pandas as pd
 
 from lotline.model import adu_owner as ao
+from lotline.model import adu_rates as ar
 from lotline.model import adu_screen as scr
-from lotline.model import calibrate_adu as cal
-from lotline.model.calibrate_shape import nelder_mead
+from lotline.model.adu_rates import nelder_mead
 
 TYPES = ("core", "suburb", "town")
 REFERENCE = "suburb"
@@ -184,18 +184,18 @@ def indicators(type_: str, terms: Sequence[str] = TERMS) -> np.ndarray:
     return np.array([1.0 if type_ == t else 0.0 for t in terms])
 
 
-def with_types(pl: cal.PlaceData, d: np.ndarray) -> cal.PlaceData:
+def with_types(pl: ar.PlaceData, d: np.ndarray) -> ar.PlaceData:
     """The place carrying its type indicators (read by `type_d` and `joint_refit.GlobalsA`)."""
     return replace(pl, extra=dict(pl.extra or {}) | {D_KEY: tuple(float(v) for v in d)})
 
 
-def type_d(pl: cal.PlaceData, m: int = len(TERMS)) -> np.ndarray:
+def type_d(pl: ar.PlaceData, m: int = len(TERMS)) -> np.ndarray:
     """The place's indicators; zeros (the reference type) if it carries none."""
     d = (pl.extra or {}).get(D_KEY)
     return np.zeros(m) if d is None else np.asarray(d, dtype=float)
 
 
-def typed_scaled(pl: cal.PlaceData, beta_o: float, betas: np.ndarray) -> cal.PlaceData:
+def typed_scaled(pl: ar.PlaceData, beta_o: float, betas: np.ndarray) -> ar.PlaceData:
     """The place with exp(β_o z + Σ β_j d_j) folded into its exposure: Form P at fixed terms is Form A
     on these.
     By hand: base (100,), z 0, d (1, 0), β (log 2, 0) -> (200,)."""
@@ -279,7 +279,7 @@ def _lam_interval(p, zm, best: CellFit, core) -> tuple[float, float]:
 
     def gap(v):
         f = _maximize(p, zm, start=best, core=core, lam_fixed=v)
-        return 2 * (best.loglik - f.loglik) - cal.CHI2_90
+        return 2 * (best.loglik - f.loglik) - ar.CHI2_90
 
     def edge(far):
         lo, hi = best.lam, far
@@ -301,7 +301,7 @@ def _interval(p, zm, best: CellFit, i: int, core=None) -> tuple[float, float]:
 
     def gap(v):
         f = _maximize(p, zm, fixed={i: v}, start=best, core=core)
-        return 2 * (best.loglik - f.loglik) - cal.CHI2_90
+        return 2 * (best.loglik - f.loglik) - ar.CHI2_90
 
     def edge(far):
         lo, hi = best.b[i], far
@@ -339,10 +339,10 @@ class Fit3Types(ao.Fit3Term):
 
 
 def fit3_types(
-    places: Sequence[cal.PlaceData],
+    places: Sequence[ar.PlaceData],
     estimate_beta: bool,
     terms: Sequence[str] = TERMS,
-    grid=cal.GRID3,
+    grid=ar.GRID3,
     judgment=(0.5, 0.3),
     ranges=((0.2, 1.0), (0.1, 0.6)),
     log_theta_range=(-14.0, 0.0),
@@ -358,7 +358,7 @@ def fit3_types(
         dmat[:, j] for j in range(m) if est_t[j]
     ]
     zm = np.column_stack(cols) if cols else np.zeros((len(places), 0))
-    preps = {(mo, mx): scr.prepare(places, cal._cvals(mo, mx)) for mo in grid for mx in grid}
+    preps = {(mo, mx): scr.prepare(places, ar._cvals(mo, mx)) for mo in grid for mx in grid}
     surface = {key: _maximize(p, zm, core=core) for key, p in preps.items()}
     lls = {key: f.loglik for key, f in surface.items()}
     top = max(lls.values())
@@ -366,7 +366,7 @@ def fit3_types(
     def interval(axis: int):
         vals = sorted({key[axis] for key in lls})
         prof = {v: max(ll for key, ll in lls.items() if key[axis] == v) for v in vals}
-        inside = [v for v in vals if 2 * (top - prof[v]) <= cal.CHI2_90]
+        inside = [v for v in vals if 2 * (top - prof[v]) <= ar.CHI2_90]
         return max(prof, key=prof.get), (min(inside), max(inside))
 
     (mo_hat, mo_int), (mx_hat, mx_int) = interval(0), interval(1)
@@ -388,10 +388,10 @@ def fit3_types(
     ll_hat = max(prof(best.lt), best.loglik)
 
     def edge(lo, hi):
-        f_lo = 2 * (ll_hat - prof(lo)) - cal.CHI2_90
+        f_lo = 2 * (ll_hat - prof(lo)) - ar.CHI2_90
         for _ in range(40):
             mid = (lo + hi) / 2
-            f_mid = 2 * (ll_hat - prof(mid)) - cal.CHI2_90
+            f_mid = 2 * (ll_hat - prof(mid)) - ar.CHI2_90
             if (f_mid > 0) == (f_lo > 0):
                 lo, f_lo = mid, f_mid
             else:
@@ -445,7 +445,7 @@ def fit3_types(
     )
 
 
-def is_core(places: Sequence[cal.PlaceData]) -> np.ndarray:
+def is_core(places: Sequence[ar.PlaceData]) -> np.ndarray:
     """1 for a core city (its `core` indicator), else 0: D-094's spread groups. Read from the places' full
     `TERMS` indicators, whatever terms the form fits. By hand: d (1, 0) -> 1; (0, 1) -> 0; none -> 0."""
     return np.array([type_d(pl)[0] if len(type_d(pl)) else 0.0 for pl in places], dtype=float)
@@ -468,10 +468,10 @@ def type_draws(fit, n: int, seed: int) -> np.ndarray | None:
 # ---------------------------------------------------------------------------------------------------------
 
 
-def effects(places: Sequence[cal.PlaceData], fit) -> pd.DataFrame:
+def effects(places: Sequence[ar.PlaceData], fit) -> pd.DataFrame:
     """Per place: log posterior-mean effect log((1 + α Y) / (1 + α rate K̄)) at the fit's cell, rate =
     θ exp(β_o z), and its fit years."""
-    p = scr.prepare(places, cal._cvals(fit.m_owner, fit.m_other))
+    p = scr.prepare(places, ar._cvals(fit.m_owner, fit.m_other))
     z = np.array([ao.place_z(pl) for pl in places])
     rate = fit.theta * np.exp(fit.beta * z)
     a = (

@@ -22,9 +22,10 @@ whatever the building type (`NEWTYPE`) or work (`NEWCLASS`). Read with the work 
 - Other work (Move, Replacement): one ADU row (`unknown`).
 
 The split (`permit_id` + `#house` / `#adu`) makes a new house and its ADU on one permit visible to D-041's
-co-built rule (`model.calibrate_adu.cobuilt`: a new SFD permit on the same parcel within a year), which keys
-on parcel and year. Note that the rule as written only recognises SFD houses, so an ADU built on the same
-permit as a new townhouse or rowhouse is not flagged co-built (the TH row is written as TH, not relabelled).
+co-built rule (`calibrate.adu.calibrate_adu.cobuilt`: a new SFD permit on the same parcel within a year),
+which keys on parcel and year. Note that the rule as written only recognises SFD houses, so an ADU built on
+the same permit as a new townhouse or rowhouse is not flagged co-built (the TH row is written as TH, not
+relabelled).
 
 **Other permits.** `NEWTYPE` gives the type: Single Family Dwelling → SFD; Townhouse, Rowhouse → TH; Duplex →
 U2; Apartments/Condos → by `NEW_UNITS` (2 U2, 3-4 U3_4, 5+ MF5); floating homes and non-residential types →

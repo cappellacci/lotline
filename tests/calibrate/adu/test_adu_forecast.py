@@ -5,9 +5,9 @@ import math
 import numpy as np
 import pytest
 
-from lotline.model import adu_forecast as af
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
+from lotline.calibrate.adu import adu_forecast as af
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
 
 T_NONE, T_OWNER, T_HB = 0, 1, 4
 CV = cal._cvals(1.0, 1.0)

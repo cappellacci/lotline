@@ -12,8 +12,8 @@ import math
 
 import numpy as np
 
-from lotline.model import calibrate_adu as cal
-from lotline.model import calibrate_shape as shp
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_shape as shp
 
 GH_THETA = 20  # Gauss-Hermite nodes over log θ (pre-registered)
 

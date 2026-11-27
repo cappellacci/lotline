@@ -20,11 +20,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.calibrate.adu import adu_fit_set as fs
+from lotline.calibrate.adu import adu_refit as rf
+from lotline.calibrate.adu import calibrate_adu as cal
 from lotline.config import load_params
 from lotline.io import DataStore, offline
-from lotline.model import adu_fit_set as fs
-from lotline.model import adu_refit as rf
-from lotline.model import calibrate_adu as cal
 
 places = (
     fs.d096_places

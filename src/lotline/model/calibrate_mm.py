@@ -33,8 +33,8 @@ from dataclasses import dataclass, replace
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.adu.calibrate_adu import CHI2_90, LOG_ALPHA, Z_95, _golden_max, gh_log_nodes
 from lotline.model import rule_tags
-from lotline.model.calibrate_adu import CHI2_90, LOG_ALPHA, Z_95, _golden_max, gh_log_nodes
 from lotline.model.hazard import feasible_share, ramp
 
 HALF_GRID = tuple(np.round(np.arange(0.5, 6.0001, 0.5), 1))  # ramp half-way points profiled (D-038)

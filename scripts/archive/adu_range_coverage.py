@@ -34,11 +34,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
 from lotline.io import DataStore, offline
 from lotline.model import adu_owner as ao
 from lotline.model import adu_types as ty
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent

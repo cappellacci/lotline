@@ -35,11 +35,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from lotline.calibrate.adu import adu_forecast as af
+from lotline.calibrate.adu import adu_terms as at
+from lotline.calibrate.adu import joint_refit as jr
+from lotline.calibrate.adu import score as sc
 from lotline.io import DataStore, offline
-from lotline.model import adu_forecast as af
-from lotline.model import adu_terms as at
-from lotline.model import joint_refit as jr
-from lotline.model import score as sc
 
 HERE = Path(__file__).resolve().parent
 SCORED = ("MN", "NC", "TX", "OR")  # D-090: Ohio has no counts before 2024

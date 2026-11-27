@@ -1,4 +1,5 @@
-"""Residual audit (model/fit_audit.py, D-045): each function against a hand-worked example. Synthetic only."""
+"""Residual audit (validation/fit_audit.py, D-045): each function against a hand-worked example. Synthetic
+only."""
 
 import math
 
@@ -6,8 +7,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import calibrate_adu as cal
-from lotline.model import fit_audit as fa
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.validation import fit_audit as fa
 
 
 def _fit(theta=0.002, alpha=0.5, m_owner=0.5, m_other=0.3):

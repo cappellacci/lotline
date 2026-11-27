@@ -23,10 +23,10 @@ import numpy as np
 import pandas as pd
 
 from lotline.calibrate import runs
+from lotline.calibrate.adu import estimate_adu as est
+from lotline.calibrate.adu import pooled_adu as pa
 from lotline.config import load_params
 from lotline.io import DataStore
-from lotline.model import estimate_adu as est
-from lotline.model import pooled_adu as pa
 from lotline.model import rule_tags
 
 SOURCE = "metc_residential_permits"

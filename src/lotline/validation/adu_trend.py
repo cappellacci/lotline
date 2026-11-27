@@ -28,10 +28,10 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu.calibrate_shape import nelder_mead
 from lotline.model import adu_owner as ao
 from lotline.model import adu_screen as scr
-from lotline.model import calibrate_adu as cal
-from lotline.model.calibrate_shape import nelder_mead
 
 GAMMA = (-2.0, 2.0)  # γ's search bounds per year (exp(±2) a year is far outside anything plausible)
 BETA = scr.BETA
@@ -297,7 +297,7 @@ def _early_late(pl_early: cal.PlaceData, pl_late: cal.PlaceData, g):
     n, c = me.shape[0], ke.shape[0]
     big_me = np.zeros((n, c))
     lw = np.full((n, c), -np.inf)
-    from lotline.model import joint_refit as jr
+    from lotline.calibrate.adu import joint_refit as jr
 
     for j in range(c):
         if share[j] <= 0:
@@ -339,7 +339,7 @@ def forecast(pl_early: cal.PlaceData, pl_late: cal.PlaceData, g, seed: int) -> n
 def forecast_log_score(pl_early: cal.PlaceData, pl_late: cal.PlaceData, g) -> float:
     """log mean_j P(late counts | early counts, draw j): per draw, Σ_c P(c | early) P(late | early, c), with
     P(late | early, c) = P(early and late | c) / P(early | c) (place effect integrated)."""
-    from lotline.model import joint_refit as jr
+    from lotline.calibrate.adu import joint_refit as jr
 
     late, big_me, lw = _early_late(pl_early, pl_late, g)
     ye = np.asarray(pl_early.y, dtype=float)

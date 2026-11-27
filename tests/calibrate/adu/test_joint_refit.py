@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lotline.model import calibrate_adu as cal
-from lotline.model import joint_refit as jr
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import joint_refit as jr
 from lotline.model import undercount as uc
 from lotline.model.scenarios import adu
 

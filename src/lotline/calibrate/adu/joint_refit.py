@@ -26,8 +26,8 @@ from dataclasses import dataclass, replace
 import numpy as np
 import pandas as pd
 
-from lotline.model import calibrate_adu as cal
-from lotline.model import calibrate_shape as shp
+from lotline.calibrate.adu import calibrate_adu as cal
+from lotline.calibrate.adu import calibrate_shape as shp
 from lotline.model.scenarios import adu
 
 # ---------------------------------------------------------------------------------------------------------
