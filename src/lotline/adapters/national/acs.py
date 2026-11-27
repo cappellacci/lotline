@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lotline.io import DataStore, fetch
+from lotline.io import DataStore, fetch, offline
 from lotline.io.store import _dotenv_value
 from lotline.schemas import validate
 from lotline.validation import holdout
@@ -70,8 +70,13 @@ PROVENANCE = {
 }
 
 
+OFFLINE_KEY = "offline"  # an offline build sends no request, so it needs no real key
+
+
 def api_key() -> str:
     key = os.environ.get("CENSUS_API_KEY") or _dotenv_value("CENSUS_API_KEY")
+    if not key and offline.is_offline():
+        return OFFLINE_KEY
     if not key:
         raise CensusKeyError("CENSUS_API_KEY is not set (add it to .env; see README)")
     return key

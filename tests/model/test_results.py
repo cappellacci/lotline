@@ -448,9 +448,21 @@ def _fake_cli(monkeypatch, tmp_path, states, fail=()):
         return out
 
     fake = types.SimpleNamespace(
-        build_app=build_app, RESULTS_DIR=tmp_path / "reports/results", OUT_DIR=tmp_path / "reports/app"
+        build_app=lambda bundles, out_dir, data_summary=None: build_app(bundles, out_dir),
+        RESULTS_DIR=tmp_path / "reports/results",
+        OUT_DIR=tmp_path / "reports/app",
+        DATA_SUMMARY=tmp_path / "reports/data_dashboard/summary.json",
+        find_bundles=lambda results_dir=None: sorted((tmp_path / "reports/results").glob("*/bundle.json")),
     )
     monkeypatch.setitem(sys.modules, "lotline.app.build", fake)
+    monkeypatch.setattr(cli, "_require_national_tables", lambda state, store: None)
+
+    def no_dashboard(*a, **k):  # the data tab reads real tables; the page must still build without it
+        raise RuntimeError("no data in this test")
+
+    monkeypatch.setitem(
+        sys.modules, "lotline.dashboard.summarize", types.SimpleNamespace(summarize=no_dashboard)
+    )
     return cli, pages
 
 
