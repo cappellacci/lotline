@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from lotline.model.scenarios import Inputs, ScenarioRun, year_shares_of
+from lotline.model.scenarios.adu_params import net_new_homes
 
 NAME = "adu"
 ORDER = 10
@@ -42,7 +43,7 @@ def from_draws(places: pd.DataFrame, run_draws: Mapping) -> ScenarioRun:
     added = np.asarray(run_draws["added"], dtype=float).sum(axis=(1, 2))
     theta = np.divide(added, pencils, out=np.zeros(n), where=pencils > 0)
     sets = run_draws["params"]
-    net_new = np.array([p["adu_net_new_share"] * (1 - p["adu_formalization_share"]) for p in sets])
+    net_new = np.array([net_new_homes(1.0, p) for p in sets])
     return ScenarioRun(
         eligible=by_tier,
         theta=theta,

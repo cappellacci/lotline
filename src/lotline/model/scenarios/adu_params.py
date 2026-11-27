@@ -33,6 +33,13 @@ def _adu_value(key: str) -> float:
     return float(load_params("adu")[key].value)
 
 
+def net_new_homes(added, p: Mapping[str, float]):
+    """Homes from ADU permits added: added × adu_net_new_share × (1 − adu_formalization_share). The one place
+    this is computed: the central path and every draw use it, and the bundle's per-draw net-new share is
+    `net_new_homes(1.0, p)`."""
+    return added * p["adu_net_new_share"] * (1 - p["adu_formalization_share"])
+
+
 def central_params() -> dict[str, float]:
     return {k: s.value for k, s in specs().items()}
 
