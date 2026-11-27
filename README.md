@@ -3,6 +3,9 @@
 A transparent, open-source simulator of how state housing reforms (missing middle, ADUs, development fee cuts) change
 housing production over five years, compared with a no-change baseline.
 
+**Try it: [cappellacci.github.io/lotline](https://cappellacci.github.io/lotline/)** (no install; results for Minnesota,
+North Carolina, Ohio, Oregon, Texas and Wisconsin).
+
 > Status (November 2026): the baseline, the three reforms (ADUs, missing middle, fee cuts) and the interactive
 > page run for Minnesota, North Carolina, Ohio, Texas, Oregon and Wisconsin. Final documents are in review.
 
