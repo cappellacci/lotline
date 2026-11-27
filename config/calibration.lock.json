@@ -81,6 +81,16 @@
     "adu_owner:adu_owner_share_scale": 0.1544
    }
   },
+  "adu_rule_priors": {
+   "decision": "D-022, D-067, D-068",
+   "how": "code",
+   "status": "current",
+   "script": "lotline.model.scenarios.adu_rule_inputs.borrowed_pools",
+   "values": {
+    "adu_field_counts.csv": "0059f4b42229b81d3092cd479e4aa8f7ad1782e781ba106462e4138f54983ed9",
+    "adu_rule_priors.csv": "770ae5efe390f7085d4de684fe95043b32967e93265db6984efed5232d788778"
+   }
+  },
   "mm_year_spread": {
    "decision": "D-092 (run 9)",
    "how": "hand",
@@ -209,7 +219,7 @@
    "decision": "D-092 (run 10, C4)",
    "how": "hand",
    "status": "current",
-   "script": "scripts/dev/calibrate_mm_d092.py --phi 13.63 (calibrate/mm/calibrate_mm.fit, with_phi)",
+   "script": "scripts/dev/calibrate_mm_d092.py --phi <config \u03c6> (calibrate/mm/calibrate_mm.fit, with_phi)",
    "values": {
     "mm_hazard:mm_mature_hazard_ref": 0.0016571,
     "mm_hazard:mm_place_effect_variance": 6.1e-06,

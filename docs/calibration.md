@@ -19,7 +19,7 @@ uv run lotline calibrate --check   # registry, config and lock agree (no data ne
 its step being re-run and the lock rewritten (`lotline calibrate --write-lock`), the check fails, so a fitted
 number can't drift from its fit unnoticed.
 
-**Status of the steps (2026-11-26).** 18 of the 22 steps rerun from the fetched data with `lotline calibrate
+**Status of the steps (2026-11-27).** 19 of the 23 steps rerun from the fetched data with `lotline calibrate
 --run`. Four are recorded values with a named source instead of a runner:
 
 - `completion_factors`: a judgment informed by measured ratios (`scripts/dev/completion_factors.py`).
@@ -38,6 +38,9 @@ value with config; `--write` puts the new values into config and rewrites the lo
 - three reproduce config exactly: the baseline ADU share, the ADU reference values and the mortgage rate;
 - the eligible-parcel proxy (D-056) was refitted on 2026-11-26 with this command: k 0.971 and σ 0.106 (the
   2026-11-06 run gave 0.998 and 0.060, before more parcel rolls were added). Config now holds the new values.
+- `adu_rule_priors` (2026-11-27) saves what a state outside the five listed states borrows: the pooled field
+  counts and rule priors, as of 31 December of each origin year 2016-2025 (`config/params/adu_rule_priors.csv`,
+  `adu_field_counts.csv`). A new state's run reads these tables, not the other states' data.
 
 The ADU chain (phase 4), the missing-middle chain (phase 3) and the three older ADU fits (phase 5) are below.
 Development scripts that these steps replaced are in `scripts/archive/` (phase 6; see its README).
