@@ -130,6 +130,30 @@ def config_hash(config_dir: Path = CONFIG_DIR) -> str:
     return h.hexdigest()
 
 
+def input_hashes(state: str, store) -> dict[str, str]:
+    """sha256 of each processed table the state has (its parquet files, by name and bytes), by table name.
+
+    Recorded in the bundle (`input_tables`, `input_hash`) so a rerun that comes out different can be traced
+    to the data or to the code: the same hashes and config_hash with a different result means the code."""
+    root = Path(store.processed(state, "x")).parent  # processed/<st>/
+    out = {}
+    for folder in sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []:
+        h = hashlib.sha256()
+        files = sorted(folder.rglob("*.parquet"))
+        for f in files:
+            h.update(f.relative_to(folder).as_posix().encode())
+            h.update(b"\0")
+            h.update(f.read_bytes())
+        if files:
+            out[folder.name] = h.hexdigest()
+    return out
+
+
+def combined_hash(hashes: Mapping[str, str]) -> str:
+    """One sha256 over `name=hash` lines, sorted by name."""
+    return hashlib.sha256("".join(f"{k}={v}\n" for k, v in sorted(hashes.items())).encode()).hexdigest()
+
+
 UNKNOWN_COMMIT = "0" * 40  # all zeros: git's own "no commit" id
 _SHA = re.compile(r"^[0-9a-f]{7,40}$")
 
@@ -433,6 +457,7 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
             "observed); statewide results only."
         )
     tested = post_test(st, origin)
+    inputs_used = input_hashes(st, store)
     meta = pd.DataFrame(
         [
             {
@@ -456,6 +481,8 @@ def build_bundle(state: str, store, *, role: str | None = None, origin: int | No
                 "tree_clean": tree_state(),
                 "post_test": tested[0],
                 "post_test_note": tested[1],
+                "input_hash": combined_hash(inputs_used),
+                "input_tables": json.dumps(inputs_used, sort_keys=True),
             }
         ]
     )

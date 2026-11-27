@@ -2,7 +2,7 @@
 
 <!-- GENERATED from src/lotline/schemas.py by `lotline schemas --write`. Do not edit by hand. -->
 
-**Schemas version 1.25** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
+**Schemas version 1.26** (tag `schemas-v1`). Every adapter's output is validated against these tables; a state that brings its own data only has to produce them.
 
 Conventions: unknown is null (never 0 or false); money is nominal dollars of the row's year unless `dollar_year` says otherwise; jurisdiction keys are Census GEOIDs (state 2, county 5, place 7, county subdivision 10 digits); combined categories are never split by guesswork. *Required* means the column must be present; *nullable* means its values may be empty.
 
@@ -331,7 +331,7 @@ Written by `lotline results --state XX` to `reports/results/<st>/bundle.json`; n
 
 ## `results_meta`
 
-One row per bundle: what was run, from which commit and config, and how to label the state. `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`). `eligible_proxy` is true where the D-056 per-draw scale was applied (a state with no parcel denominator). `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so. `tree_clean` is true when tracked files matched `commit_sha` at run time, false when they did not, null when unknown (no git). `post_test` lists, comma-separated, this state's released holdout tests whose outcome window opens by `origin_year`: the run has seen outcomes those tests were scored on. `post_test_note` says so in plain words for the page. Both null when there is none (schemas 1.24).
+One row per bundle: what was run, from which commit and config, and how to label the state. `data_tier` is the tier holding the most eligible parcels (the per-tier split is in `results_draws`). `eligible_proxy` is true where the D-056 per-draw scale was applied (a state with no parcel denominator). `scenarios_pending` lists scenarios the engine cannot run yet (comma-separated), so the page can say so. `tree_clean` is true when tracked files matched `commit_sha` at run time, false when they did not, null when unknown (no git). `post_test` lists, comma-separated, this state's released holdout tests whose outcome window opens by `origin_year`: the run has seen outcomes those tests were scored on. `post_test_note` says so in plain words for the page. Both null when there is none (schemas 1.24). `input_tables` is a JSON object of each processed table the state has (name: sha256 of its parquet files) and `input_hash` one sha256 over them, so a rerun can tell a data change from a code change (schemas 1.26; null in older bundles).
 
 | Column | Type | Required | Nullable | Rule |
 |---|---|---|---|---|
@@ -355,6 +355,8 @@ One row per bundle: what was run, from which commit and config, and how to label
 | `tree_clean` | true/false | no | yes |  |
 | `post_test` | text | no | yes |  |
 | `post_test_note` | text | no | yes |  |
+| `input_hash` | text | no | yes | matches `^[0-9a-f]{64}$` |
+| `input_tables` | text | no | yes |  |
 
 ## `results_draws`
 
@@ -629,3 +631,4 @@ The scenarios in the bundle, one row each, in bundle order (schemas 1.25, #554),
 | 1.23 | results_meta.state_role: adds ingestion_test, a state shown for transparency that is not part of the model's core evidence (Wisconsin) |
 | 1.24 | results_meta: adds optional tree_clean (the run's code matched commit_sha; null if unknown) and post_test / post_test_note (released holdout tests whose outcomes the run's data include; #506) |
 | 1.25 | results_scenarios (the bundle's scenarios with their labels and extra tables, written as `meta.scenarios` in bundle.json; #554); results tables accept any scenario name the scenario registry declares (checked by `results.validate_bundle`), not only the built-in list |
+| 1.26 | results_meta: adds optional input_hash and input_tables (sha256 of each processed input table the state has), so a rerun can tell a data change from a code change (stability review, 2026-11-27) |

@@ -448,9 +448,21 @@ def _fake_cli(monkeypatch, tmp_path, states, fail=()):
         return out
 
     fake = types.SimpleNamespace(
-        build_app=build_app, RESULTS_DIR=tmp_path / "reports/results", OUT_DIR=tmp_path / "reports/app"
+        build_app=lambda bundles, out_dir, data_summary=None: build_app(bundles, out_dir),
+        RESULTS_DIR=tmp_path / "reports/results",
+        OUT_DIR=tmp_path / "reports/app",
+        DATA_SUMMARY=tmp_path / "reports/data_dashboard/summary.json",
+        find_bundles=lambda results_dir=None: sorted((tmp_path / "reports/results").glob("*/bundle.json")),
     )
     monkeypatch.setitem(sys.modules, "lotline.app.build", fake)
+    monkeypatch.setattr(cli, "_require_national_tables", lambda state, store: None)
+
+    def no_dashboard(*a, **k):  # the data tab reads real tables; the page must still build without it
+        raise RuntimeError("no data in this test")
+
+    monkeypatch.setitem(
+        sys.modules, "lotline.dashboard.summarize", types.SimpleNamespace(summarize=no_dashboard)
+    )
     return cli, pages
 
 
@@ -751,3 +763,34 @@ def test_commit_sha_without_git_installed(monkeypatch, tmp_path):
     monkeypatch.setenv("LOTLINE_COMMIT", "1234567")
     assert results.commit_sha(tmp_path) == "1234567"
     assert results.tree_state(tmp_path) is None
+
+
+# ---- input data hashes (schemas 1.26) ---------------------------------------------------------------------
+
+
+def test_input_hashes_name_each_table_and_change_with_its_data(tmp_path):
+    """Each processed table gets a sha256 of its parquet files; changing one file changes only that table's
+    hash and the combined hash, so a rerun can tell a data change from a code change (review, 2026-11-27)."""
+    from lotline.io import DataStore
+
+    store = DataStore(tmp_path)
+    for table, src, val in [("acs_geo_year", "acs", 1), ("permits", "mpls", 2), ("permits", "stp", 3)]:
+        out = store.processed("MN", table, src)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame({"v": [val]}).to_parquet(out, index=False)
+    (tmp_path / "processed/mn/empty_table").mkdir()  # a folder with no parquet is not an input
+    first = results.input_hashes("MN", store)
+    assert sorted(first) == ["acs_geo_year", "permits"]
+    assert all(len(h) == 64 for h in first.values())
+    assert results.input_hashes("MN", store) == first  # stable
+
+    pd.DataFrame({"v": [99]}).to_parquet(store.processed("MN", "permits", "stp"), index=False)
+    second = results.input_hashes("MN", store)
+    assert second["acs_geo_year"] == first["acs_geo_year"] and second["permits"] != first["permits"]
+    assert results.combined_hash(second) != results.combined_hash(first)
+    assert results.input_hashes("NC", store) == {}  # a state with no tables
+
+
+def test_combined_hash_is_order_free():
+    a = {"x": "1" * 64, "y": "2" * 64}
+    assert results.combined_hash(a) == results.combined_hash(dict(reversed(list(a.items()))))

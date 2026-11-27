@@ -3,9 +3,8 @@
 A transparent, open-source simulator of how state housing reforms (missing middle, ADUs, development fee cuts) change
 housing production over five years, compared with a no-change baseline.
 
-> Status (October 2026): building. Data adapters for Minnesota, North Carolina, Texas and Ohio and the
-> baseline forecast are in place; the scenario engines, interactive tool and final documents are in progress.
-> See `HANDOFF.md` and `docs/build/BUILD_PLAN.md`.
+> Status (November 2026): the baseline, the three reforms (ADUs, missing middle, fee cuts) and the interactive
+> page run for Minnesota, North Carolina, Ohio, Texas, Oregon and Wisconsin. Final documents are in review.
 
 ## Command contract
 
@@ -15,7 +14,7 @@ The three commands reviewers use to reproduce Lotline from a clean checkout. The
 | Step  | Command | Notes |
 | ----- | ------- | ----- |
 | Setup | `uv sync --frozen` | Installs the exact pinned dependencies from `uv.lock` into `.venv/` |
-| Run   | `uv run lotline --help` | Command-line tool for now; the interactive app arrives in Phase 5 and this row will name its command |
+| Run   | `uv run lotline run --state MN` | Fetches the state's data (needs `.env`, see [Data](#data)), runs every reform and builds the page at `reports/app/index.html`. A first Minnesota fetch is about 4.5 GB; later runs reuse the cache. `uv run lotline --help` lists every command |
 | Test  | `uv run pytest -q -n auto` | Runs every automated test in parallel (small synthetic fixtures, no downloads); about 12 minutes on a laptop. `uv run pytest -q -m "not slow" -n auto` is the 3-minute check that skips 40 long simulation-recovery fits |
 
 Commands that download data need a `.env`: copy `.env.example` to `.env` and fill in the values (see [Data](#data)).
@@ -162,6 +161,24 @@ uv run lotline calibrate --run --step mm_c4    # one step (repeatable); add --wr
   - `scripts/dev/` keeps only scripts still in use ([its README](scripts/dev/README.md) says why each stays).
   - The one-off analyses behind each decision are in `scripts/archive/` with an index
     ([README](scripts/archive/README.md)).
+
+## Reproduce the published numbers
+
+Each published page comes from a GitHub release (`app-<date>`) whose files are the state results bundles. Every
+bundle's `meta` records what produced it:
+
+- `commit_sha` and `tree_clean`: the code;
+- `config_hash`: every file under `config/`;
+- `input_tables` and `input_hash` (from schemas 1.26): a sha256 of each processed data table the state had;
+- `seed` and `n_draws`: the random draws.
+
+To rerun a state, check out that commit, run `uv sync --frozen`, then `uv run lotline run --state MN`. With the same commit,
+config and input hashes, the numbers come out the same (every random draw is seeded).
+
+**Why your data may differ.** Sources change: an online `lotline fetch` saves each download in a folder named for
+the day it ran, and city permit layers keep adding records. So a later fetch can give different input hashes and
+different numbers with the same code. Compare your bundle's `input_tables` with the published one to see which
+tables changed. If every hash matches but the numbers don't, the difference is in the code or config.
 
 ## Tests
 
