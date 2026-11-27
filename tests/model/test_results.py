@@ -440,14 +440,17 @@ def _fake_cli(monkeypatch, tmp_path, states, fail=()):
     monkeypatch.setattr(results, "tree_state", lambda: True)
     pages = []
 
-    def build_app(results_dir, out_dir):
-        pages.append(sorted(p.parent.name for p in Path(results_dir).glob("*/bundle.json")))
+    def build_app(bundles, out_dir):
+        pages.append(sorted(Path(b).parent.name for b in bundles))
         out = Path(out_dir) / "index.html"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text("<html></html>")
         return out
 
-    monkeypatch.setitem(sys.modules, "lotline.app.build", types.SimpleNamespace(build_app=build_app))
+    fake = types.SimpleNamespace(
+        build_app=build_app, RESULTS_DIR=tmp_path / "reports/results", OUT_DIR=tmp_path / "reports/app"
+    )
+    monkeypatch.setitem(sys.modules, "lotline.app.build", fake)
     return cli, pages
 
 
@@ -466,14 +469,22 @@ def test_results_all_keeps_going_past_a_failing_state(monkeypatch, tmp_path, cap
     assert "no bundle for AA" in capsys.readouterr().out
 
 
-def test_results_all_says_when_the_page_build_is_missing(monkeypatch, tmp_path, capsys):
-    import sys
+def test_results_all_leaves_a_failed_states_old_bundle_off_the_page(monkeypatch, tmp_path):
+    """An earlier run's bundle for a state that fails now must not be published as if current (review,
+    2026-11-27)."""
+    cli, pages = _fake_cli(monkeypatch, tmp_path, ["AA", "BB"])
+    assert cli.main(["results", "--all"]) == 0
+    cli, pages = _fake_cli(monkeypatch, tmp_path, ["AA", "BB"], fail=("AA",))
+    assert (tmp_path / "reports/results/aa/bundle.json").exists()  # the stale file is still on disk
+    assert cli.main(["results", "--all"]) == 1
+    assert pages == [["bb"]]
 
-    cli, _ = _fake_cli(monkeypatch, tmp_path, ["AA"])
-    monkeypatch.setitem(sys.modules, "lotline.app.build", None)  # import fails as if absent
-    assert cli.main(["results", "--all"]) == 2
-    assert "PR #313" in capsys.readouterr().out
-    assert cli.main(["results", "--all", "--state", "AA"]) == 2
+
+def test_results_all_builds_no_page_when_every_state_fails(monkeypatch, tmp_path, capsys):
+    cli, pages = _fake_cli(monkeypatch, tmp_path, ["AA"], fail=("AA",))
+    assert cli.main(["results", "--all"]) == 1
+    assert pages == []
+    assert "no page was built" in capsys.readouterr().out
 
 
 # ---- missing middle (D-063) ----

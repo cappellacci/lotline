@@ -317,11 +317,12 @@ def _schemas(args: argparse.Namespace) -> int:
 def _results(args: argparse.Namespace) -> int:
     from pathlib import Path
 
+    from lotline.app.build import OUT_DIR, RESULTS_DIR, build_app
     from lotline.config import all_states
     from lotline.io import DataStore
     from lotline.model import results
 
-    results_dir = Path("reports") / "results"
+    results_dir = RESULTS_DIR  # repo-relative, like the page build, so the command works from any folder
     if args.all and (args.state or args.role or args.out):
         print("--all writes every configured state with its default role and path; drop --state/--role/--out")
         return 2
@@ -354,21 +355,18 @@ def _results(args: argparse.Namespace) -> int:
     if not args.all:
         one(args.state.upper(), args.role, args.out)
         return 0
-    try:  # the page build is WS-APP's (scripts/build_app.py, PR #313)
-        from lotline.app.build import build_app
-    except ImportError:
-        print(
-            "lotline results --all needs WS-APP's page build (lotline.app.build, PR #313); not on this branch"
-        )
-        return 2
-    failed = []
+    failed, written = [], []
     for state in all_states():
         try:
-            one(state)
+            written.append(one(state))
         except Exception as exc:  # a state without built tables must not stop the others
             failed.append(state)
             print(f"{state}: no bundle ({type(exc).__name__}: {exc})")
-    page = build_app(results_dir=results_dir, out_dir=Path("reports") / "app")
+    if not written:
+        print("no state produced a bundle, so no page was built")
+        return 1
+    # Only this run's bundles: a failed state's bundle from an earlier run must not reach the page.
+    page = build_app(bundles=written, out_dir=OUT_DIR)
     print(f"built {page}" + (f"; no bundle for {', '.join(failed)}" if failed else ""))
     return 1 if failed else 0
 

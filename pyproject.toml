@@ -31,9 +31,10 @@ dev = [
     "ruff",
 ]
 
-# The uv that wrote uv.lock; CI's setup-uv reads this too, so lock-format changes in a later uv can't surprise a run.
+# Oldest uv that reads uv.lock. No upper bound, so a newer uv still installs (stability review 2026-11-27); CI pins
+# its uv in setup-uv (`version:`), so CI itself never moves.
 [tool.uv]
-required-version = ">=0.13.5,<0.14"
+required-version = ">=0.13.5"
 
 [build-system]
 requires = ["hatchling"]

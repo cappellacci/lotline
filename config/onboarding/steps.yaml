@@ -114,7 +114,6 @@ steps:
     modes: [manual, built_in]
     commands:
       - [uv, run, lotline, results, --state, XX]
-      - [uv, run, python, scripts/dev/fee_dev_run.py, --state, XX, --statewide, --out, reports/xx/fees-statewide.csv]
     check: results_bundle_written
     done_when: reports/results/xx/bundle.json exists
 

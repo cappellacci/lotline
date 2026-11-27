@@ -56,6 +56,9 @@ TEST_ID = "V9-OR-TRANSFER"
 # Oregon joins the calibration states (D-053).
 FIT_STATES = ("MN", "NC", "OH", "TX")
 ROLL_LAST_YEAR = 2017  # newest eligible-parcel roll the freeze may use
+# Rules counted as in force on the freeze date (the frozen commit's date), not today: from 2027-01-15, NC ADU
+# rows already marked in force would otherwise enter the field counts and change a rerun of the freeze.
+AS_OF = pd.Timestamp("2026-11-05")
 CLASS_CODE = {"handbook": 0, "partial": 1, "blank": 2}
 HISTORY_FILE = Path("config/validation/or_adu_history.csv")  # D-052, repo-relative
 
@@ -129,7 +132,7 @@ def adu_inputs(state: str, store, geoids: Sequence[str], years: Sequence[int] = 
     all_reforms = adu.load_reforms(state)
     reforms = all_reforms[(all_reforms["theme"] == "adu") & (all_reforms["status"] == "in_force")]
     every = pd.concat([adu.load_reforms(st).assign(state=st) for st in FIT_STATES], ignore_index=True)
-    fcounts = adu.field_restrict_counts(every, pd.Timestamp.today().normalize())
+    fcounts = adu.field_restrict_counts(every, AS_OF)
     fp = adu.field_probabilities(fcounts, state, int(load_params("adu")["adu_rule_min_coded"].value))
 
     n_p, n_y = len(geoids), len(years)
