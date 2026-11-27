@@ -473,13 +473,13 @@ sources: []</code></pre>
       <pre class="code"><code>uv run lotline fetch --state XX
 uv run lotline validate --state XX
 uv run lotline fetch --source jurisdictions</code></pre>
-      <p class="body-small">The first command downloads and builds every table the models read, and records each file it fetched. The second checks that the Census place-by-place permits add up to the state total within 1% and writes a short report to <span class="code">reports/xx/V0-national.md</span>. The third builds the place lists of the five study states, because a new state borrows their coded rules until it has its own.</p>
+      <p class="body-small">The first command downloads and builds every table the models read, and records each file it fetched. The second checks that the Census place-by-place permits add up to the state total within 1% and writes a short report to <span class="code">reports/xx/V0-national.md</span>. The third builds the place lists of the five study states: until your state codes its own missing-middle rules, it borrows theirs. ADU rules are borrowed from saved files and need nothing fetched.</p>
     </div></div>
     <div class="step"><p class="step-n" aria-hidden="true">4</p><div class="step-body"><h3 class="h3">Run the models <span class="step-time">a few minutes</span></h3>
       <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">This gives you level 0: a first set of results for all three reforms, with the widest ranges.</p>
       <pre class="code"><code>uv run lotline results --state XX
-uv run python scripts/build_app.py</code></pre>
-      <p class="body-small">The first command runs the ADU, missing-middle and fee models 1,000 times each and writes <span class="code">reports/results/xx/bundle.json</span>. The second rebuilds this app: open <span class="code">reports/app/index.html</span> and your state is on the map, labelled "National data only".</p>
+uv run lotline app</code></pre>
+      <p class="body-small">The first command runs the ADU, missing-middle and fee models 1,000 times each and writes <span class="code">reports/results/xx/bundle.json</span>. The second rebuilds this app: open <span class="code">reports/app/index.html</span> and your state is on the map, labelled "National data only". Steps 3 and 4 also run as one command, <span class="code">uv run lotline run --state XX</span>.</p>
     </div></div>
     <div class="step"><p class="step-n" aria-hidden="true">5</p><div class="step-body"><h3 class="h3">Code local rules and fees <span class="step-time">level 1</span></h3>
       <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">The model needs to know what each city allows today, or it can't tell what a state reform would add; this is the step that makes ADU results trustworthy.</p>
@@ -771,8 +771,8 @@ uv run lotline results --state XX --role transfer</code></pre>
 </main>
 <footer class="wrap" id="provenance">
   <h3 class="h3">Where these numbers come from</h3>
-  <p>Every number on this page was computed by the Lotline model and exported to a results file; the page only re-adds the model's runs when a slider moves. Regenerate every bundle and this page with one command:</p>
-  <pre class="code">uv run lotline results --all</pre>
+  <p>Every number on this page was computed by the Lotline model and exported to a results file; the page only re-adds the model's runs when a slider moves. Rebuild the data, every results file and this page with one command:</p>
+  <pre class="code">uv run lotline run</pre>
   <dl id="meta"></dl>
 </footer>
 
@@ -2483,8 +2483,8 @@ async function show(state) {
     if (ticket !== SHOWING) return;
     $("data-sources").innerHTML = "";
     // Visitors get a plain message; the rebuild hint is for someone running the page from their own build.
-    console.error(`results did not load (${err.message}); rebuild with: uv run python scripts/build_app.py`);
-    const local = location.protocol === "file:" ? ` Rebuild the page with <code>uv run python scripts/build_app.py</code> and open it from the folder it was written to.` : "";
+    console.error(`results did not load (${err.message}); rebuild with: uv run lotline app`);
+    const local = location.protocol === "file:" ? ` Rebuild the page with <code>uv run lotline app</code> and open it from the folder it was written to.` : "";
     for (const id of Object.keys(SECTIONS)) $(`${id}-body`).innerHTML = `<p class="pending">This state's results could not be loaded. Reload the page, or pick another state.${local}</p>`;
     return;
   }

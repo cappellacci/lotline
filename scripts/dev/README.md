@@ -1,8 +1,9 @@
 # Development scripts still in use
 
-What stays in `scripts/dev/` after calibration phase 6 (2026-11-26), and why. One-off and superseded scripts
-are in `scripts/archive/` (see its README). Fitted values are reproduced by `uv run lotline calibrate`, not by
-running these by hand, except the steps marked "hand step" below.
+We keep a script here only while something still uses it: a calibration hand step, a test, a doc, CI or another
+script. The table says which. One-off and superseded scripts moved to `scripts/archive/` on 2026-11-26 (see
+[its README](../archive/README.md)). `uv run lotline calibrate` reproduces the fitted values, so you don't need
+to run these by hand, except for the steps marked "hand step" below.
 
 | Script | Why it stays |
 |---|---|
@@ -44,7 +45,6 @@ running these by hand, except the steps marked "hand step" below.
 | `parser_phrase_check.py` | hand step adu_undercount_k |
 | `permit_fees_2026_11_09.py` | used by tests/states/tx/test_fee_rule.py |
 | `permit_fees_2026_11_09_rows.json` | imported by permit_fees_2026_11_09.py |
-| `results_dashboard.py` | used by src/lotline/app/template.html |
 | `tx_adu_coverage.py` | hand step adu_undercount_k |
 | `tx_austin_additions_fetch.py` | imported by tx_austin_adu_k.py |
 | `tx_austin_adu_k.py` | hand step adu_undercount_k |

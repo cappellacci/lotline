@@ -1,9 +1,9 @@
-# The steps to add a state to Lotline, as data (WS-SCALE task 13).
+# The steps to add a state to Lotline, as data.
 #
 # One source for both the guide (docs/adding_a_state.md: its step headings, short path and step table are
 # checked against this file by tests/core/test_onboarding.py) and the app, which reads it through
 # `lotline.onboarding` (steps, commands, check). Each step can be done three ways:
-#   manual:    a person follows the guide section named in `guide`;
+#   manual:    a person follows the step of the same number in the guide;
 #   built_in:  the app (or `lotline onboard`) runs `commands`, with XX replaced by the state code;
 #   agent:     the app's rule agents (a service the user switches on, docs/build/rule-agents/PRINCIPLES.md)
 #              propose a table in the existing CSV format, keyed by GEOID; the user reviews it and imports it
@@ -66,7 +66,7 @@ steps:
     agent:
       proposes: reforms
       import_to: config/reforms/xx.csv
-      owner: Local rules agent swarm design
+      owner: the rule agents (docs/adding_local_rules_with_agents.md)
       note: >-
         The agents return proposed reforms rows (ADU and missing middle), each value with a quote and page, plus a
         lookup list for sources they could not read. Review, then import.
@@ -85,7 +85,7 @@ steps:
     agent:
       proposes: fees
       import_to: config/fees/xx.csv
-      owner: Local rules agent swarm design
+      owner: the rule agents (docs/adding_local_rules_with_agents.md)
       note: >-
         The agents return proposed fees rows from each place's fee schedule, with citations, plus a lookup list.
         Review, then import.
@@ -184,12 +184,12 @@ steps:
     done_when: docs/build/xx-readiness.md exists
 
   - id: checks
-    title: Run the checks and open the pull request
+    title: Run the checks
     time: 15 minutes
     level: null
     short_path: false
-    inputs: [the branch]
-    outputs: [a pull request]
+    inputs: [your copy of the repository]
+    outputs: []
     modes: [manual, built_in]
     commands:
       - [uv, run, pytest, -q]
@@ -198,7 +198,7 @@ steps:
     done_when: tests and compliance_check.py pass
 
   - id: pool
-    title: Pool the state into the calibration (optional; Ben's call)
+    title: Pool the state into the calibration (optional)
     time: a method decision
     level: null
     short_path: false
@@ -207,4 +207,4 @@ steps:
     modes: [manual]
     commands: []
     check: null
-    done_when: Ben approves an analysis_plan.md entry
+    done_when: an analysis_plan.md entry records the decision before any run
