@@ -13,7 +13,6 @@ tests/model/test_adu_screen.py::test_fit_recovers_a_planted_effect_and_its_alpha
 tests/calibrate/adu/test_adu_terms.py::test_one_term_reproduces_fit3_term_form_a_prime
 tests/calibrate/adu/test_adu_terms.py::test_two_terms_recover_planted_betas_and_beat_one
 tests/calibrate/adu/test_adu_terms.py::test_unused_term_draws_are_zero
-tests/validation/test_adu_trend.py::test_fit3_trend_without_gamma_reproduces_fit3_term
 tests/model/test_adu_types.py::test_fit3_types_without_terms_reproduces_fit3_term
 tests/calibrate/adu/test_calibrate_adu.py::test_fit3_recovers_theta_and_owner_share
 tests/calibrate/adu/test_calibrate_adu.py::test_fit_detached_recovers_m_d

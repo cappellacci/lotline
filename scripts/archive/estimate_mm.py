@@ -29,8 +29,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import runs
 
-from lotline.calibrate import runs
 from lotline.calibrate.adu import estimate_adu
 from lotline.calibrate.mm import estimate_mm as mm
 from lotline.config import CONFIG_DIR, load_params

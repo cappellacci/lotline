@@ -183,10 +183,9 @@ def test_config_mirrors_type_rules():
 def test_config_town_prior_follows_core_term():
     """D-089: the town prior's s is |β̂_core| / z_90, from the configured core term."""
     from lotline.config import load_params
-    from lotline.validation import adu_profiles as pr
 
     p = load_params("adu_place_types")
-    s = pr.town_sd(p["adu_types_core_log_multiplier"].value)
+    s = abs(p["adu_types_core_log_multiplier"].value) / 1.6448536269514722  # z_90
     assert p["adu_types_town_prior_sd"].value == pytest.approx(s, abs=5e-4)
 
 

@@ -1,11 +1,11 @@
 """D-089: state profiles, evidence flags, the town prior and statewide totals (synthetic data only)."""
 
+import adu_profiles as pr
 import numpy as np
 import pandas as pd
 import pytest
 
 from lotline.model.scenarios import adu
-from lotline.validation import adu_profiles as pr
 
 
 def test_weighted_median_hand_worked():

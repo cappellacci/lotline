@@ -28,6 +28,7 @@ import sys
 import time
 from pathlib import Path
 
+import adu_profiles as pr
 import numpy as np
 import pandas as pd
 
@@ -36,7 +37,6 @@ from lotline.calibrate.adu import estimate_adu
 from lotline.io import DataStore, offline
 from lotline.model import baseline, hazard, money
 from lotline.model.scenarios import adu
-from lotline.validation import adu_profiles as pr
 from lotline.validation import holdout
 
 HERE = Path(__file__).resolve().parent

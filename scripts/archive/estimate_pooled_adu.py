@@ -21,8 +21,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import runs
 
-from lotline.calibrate import runs
 from lotline.calibrate.adu import estimate_adu as est
 from lotline.calibrate.adu import pooled_adu as pa
 from lotline.config import load_params
