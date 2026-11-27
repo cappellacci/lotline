@@ -296,13 +296,32 @@ def _register(args: argparse.Namespace) -> int:
 def _validate(args: argparse.Namespace) -> int:
     from lotline.config import all_states
     from lotline.io import DataStore
-    from lotline.validation import v0
+    from lotline.validation import ladder, v0
 
-    if args.step != "V0":
-        print(f"step {args.step} is not implemented yet")
+    if not args.step and args.state:
+        args.step = "V0"  # `lotline validate --state XX` runs the data check, as the guide says
+    if not args.step:
+        for step in ladder.STEPS:
+            print(f"{step.id:<13} {step.title}")
+            print(f"{'':<13} {ladder.status(step)}")
+        print("Plan: docs/research/lotline-validation-plan.md")
+        return 0
+    try:
+        step = ladder.get(args.step)
+    except KeyError:
+        print(f"unknown step {args.step}; steps: {', '.join(s.id for s in ladder.STEPS)}")
         return 2
+    if not step.runnable:
+        print(f"{step.id} is a frozen blind test, scored once by a maintainer: {ladder.status(step)}")
+        return 0
+    states = [args.state.upper()] if args.state else all_states()
+    if step.id == "V1":
+        from lotline.validation import backtest
+
+        backtest.main(["--state", *states])
+        return 0
     ok = True
-    for state in [args.state.upper()] if args.state else all_states():
+    for state in states:
         path, passed = v0.write_report(state, DataStore())
         ok &= passed
         print(f"{state} V0: {'PASS' if passed else 'gaps to explain'} -> {path}")
@@ -612,9 +631,15 @@ def build_parser() -> argparse.ArgumentParser:
     reg.add_argument("--vintage", help="vintage folder (default: the file's modification date)")
     reg.set_defaults(func=_register)
 
-    val = sub.add_parser("validate", help="check a state's data for gaps before running it (step V0)")
+    val = sub.add_parser(
+        "validate",
+        help="list the validation steps and blind tests, or run a check (V0 data gaps, V1 backtest)",
+    )
     val.add_argument("--state", help="two-letter state code (default: every configured state)")
-    val.add_argument("--step", default="V0", help="ladder step (V0 so far)")
+    val.add_argument(
+        "--step",
+        help="V0 (the default with --state) or V1 to run it; with neither flag, list every step",
+    )
     val.set_defaults(func=_validate)
 
     res = sub.add_parser(
