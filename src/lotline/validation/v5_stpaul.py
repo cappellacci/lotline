@@ -11,6 +11,9 @@ For year t and draw d (C4, as the fit, `mm_hazard.yaml`):
 drawn as Poisson(B g) + Poisson(A g) with one g ~ Gamma(mean 1, variance 1/φ) per draw and year, so the
 baseline and the added part can be reported apart and their sum is the negative binomial above.
 
+Deviation (2026-11-27): the fit's φ is a variance (size 1/φ), so this draw is narrower than the fit. It is
+kept as frozen, so the V5 prediction reproduces; the scenario forecast was corrected (analysis plan).
+
 - B: St. Paul's mean 2-4 unit buildings over 2021-2023, held flat (the growth index needs blind years).
 - E: eligible H1/H2 lots (rule 1.1) on the 2023 roll (`adapters.states.mn.stpaul_v5`).
 - gap: dose of the coded rule on 1 July 2024 minus 1 July 2023.

@@ -11,8 +11,9 @@ For each place i and scenario year t = 1 … 5, with the fitted model (`mm_hazar
   fitted value; D-062 showed that θ's interval with the ramp held already carries the five-year range.
 - **u_i:** the place's multiplier, Gamma(mean 1, variance α), from a stream keyed by (seed, geoid), as in the
   backtests (`calibrate_mm.predict_places`).
-- **g_it:** the year's lumpiness, Gamma(mean 1, variance 1/φ), one per place, year and draw, so each year's
-  count is negative binomial (variance mean + mean²/φ) as in D-092's fit (`mm_year_spread_phi`; builders put
+- **g_it:** the year's lumpiness, Gamma(mean 1, variance φ), one per place, year and draw, so each year's
+  count is negative binomial (size 1/φ, variance mean + φ mean²) as in D-092's fit (`mm_year_spread_phi`,
+  `calibrate.mm.likelihood._nb_core`; the forecast used variance 1/φ until 2026-11-27; builders put
   up 2-4 unit buildings in clusters, run 13). φ is held at its value; with no φ the count is Poisson.
 - **E_i:** missing-middle eligible parcels (rule 1.1, D-014) from the roll nearest the origin, made
   non-overlapping as the ADU scenario does (D-020).
@@ -205,7 +206,7 @@ def simulate(
         gap = np.clip(1.0 - d, 0.0, 1.0)
         mu = (th * u * float(p.eligible) * gap * float(p.f_ratio))[:, None] * shape[None, :]
         if phi is not None:
-            mu = mu * r.gamma(phi, 1.0 / phi, size=mu.shape)
+            mu = mu * r.gamma(1.0 / phi, phi, size=mu.shape)  # mean 1, variance φ, as the fit
         b = r.poisson(mu).astype(float)
         share = np.clip(scale * float(p.house_share), 0.0, 1.0)
         t = r.binomial(b.astype(np.int64), share[:, None]).astype(float)
