@@ -8,7 +8,7 @@ the checks, the robustness fits, randomization inference, leave one out, the out
 added homes. Calibration runs (D-038 to D-041) show instead: the uptake-rate fits, held-out state totals and
 their verdicts, observed against predicted by place, the test places, and the counts and market-term check.
 
-    uv run python scripts/dev/results_dashboard.py            # every run under reports/
+    uv run python scripts/archive/results_dashboard.py            # every run under reports/
 """
 
 from __future__ import annotations

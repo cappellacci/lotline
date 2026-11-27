@@ -155,3 +155,21 @@ Summaries are each script's own first docstring line; decision ids are those nam
 | `range_drivers.py` | What drives each result's range: first-order sensitivity shares from the runs in the results bundles (#54). | D-097 |
 | `results_run_summary.py` | Summarize a set of results bundles for a run's results page (not part of the app). |  |
 | `mn_denominators.py` | Minnesota eligible parcels from the rolls against the ACS fallback, side by side (round 3, task 4; was `lotline.adapters.states.mn.denominators`, archived 2026-11-27). | D-014, D-017 |
+
+## Library modules archived 2026-11-27
+
+These were library code (`src/lotline/validation/`, `src/lotline/calibrate/`) with no caller in the library.
+Ben decided on 2026-11-27 that they aren't needed to prove the results. Their tests came with them, to
+`scripts/archive/tests/`. The archived scripts that used them now import them as neighbours (`import
+adu_trend`). Run their tests from this folder: `cd scripts/archive && PYTHONPATH=. uv run --project ../..
+python -m pytest tests -c /dev/null`.
+
+| Module | What it does | Decisions |
+|---|---|---|
+| `adu_reform_check.py` | Does the engine's ADU reform ratio match what happened where coded rules changed? (was `validation/`) | D-095 |
+| `adu_trend.py` | Form T, the ADU model with a calendar-year trend, and test D (2016-2020 → 2021-2025). (was `validation/`) | D-085 |
+| `adu_profiles.py` | A profile of each state's places by type, and how much of each state lies outside the fit's evidence. (was `validation/`) | D-089 |
+| `sensitivity.py` | Which uncertain inputs drive a result's range: first-order sensitivity shares from runs already made. (was `validation/`) | |
+| `runs.py` | Engine runs as data, for the results dashboard. (was `calibrate/`) | D-024, D-025 |
+| `runs_dashboard.py` | The engine results dashboard: one self-contained HTML page (`runs_dashboard.html`) comparing runs. (was `calibrate/`) | |
+| `results_dashboard.py` | Writes that dashboard for the runs under `reports/`. (was `scripts/dev/`) | |

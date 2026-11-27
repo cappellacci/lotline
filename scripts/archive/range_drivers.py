@@ -25,9 +25,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import sensitivity as sens
 
 from lotline.model.scenarios import adu, fees, mm
-from lotline.validation import sensitivity as sens
 
 SCENARIOS = ["adu", "missing_middle", "fees", "fees_local_half"]
 # Inputs that are a function of another input's draw, so they would be counted twice: the core-city term's

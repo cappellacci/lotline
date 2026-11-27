@@ -1528,7 +1528,7 @@ const SECTIONS = {
         <p class="body-small" style="margin:0 0 var(--space-3)">This is the one check that works for a state with no building record of its own: it warns when the model is reaching beyond its evidence.</p>
         ${flagHtml(m, named)}${study}
         ${more(how, "How this is measured")}</div>`;
-    $("trust-facts").innerHTML = `<p class="body-small">The model runs behind every number: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/dev/results_dashboard.py</span>).</p>${facts}`;
+    $("trust-facts").innerHTML = `<p class="body-small">The model runs behind every number: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/archive/results_dashboard.py</span>).</p>${facts}`;
     return `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-2)">Which assumptions move the answer most, in ${esc(b.meta.state)}</h4>
         <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net new housing when each assumption alone moves to its own low (P10) or high (P90) in the model's runs; the line is the engine's midpoint. The same arithmetic as the sliders on the Results page.</p>
         <div class="tornado" id="tornado"></div></div>

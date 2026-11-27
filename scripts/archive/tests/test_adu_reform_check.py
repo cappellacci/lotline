@@ -2,11 +2,11 @@
 
 import math
 
+import adu_reform_check as rc
 import numpy as np
 import pytest
 
 from lotline.calibrate.adu import calibrate_adu as cal
-from lotline.validation import adu_reform_check as rc
 
 FULL, PARTIAL = 4, 2  # calibrate_adu type indices: c = 1 and m_x
 

@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
-
-from lotline.validation import sensitivity as sens
+import sensitivity as sens
 
 
 def test_first_order_by_hand():

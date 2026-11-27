@@ -1,4 +1,4 @@
-"""Engine runs as data, for the results dashboard (`calibrate/runs_dashboard.py`).
+"""Engine runs as data, for the results dashboard (`scripts/archive/runs_dashboard.py`).
 
 A run folder holds the CSVs a `--full` run writes (`scripts/dev/estimate_mm.py`, D-024;
 `scripts/archive/estimate_pooled_adu.py`, D-025) and a manifest, `run.yaml`: the model and its analysis-plan

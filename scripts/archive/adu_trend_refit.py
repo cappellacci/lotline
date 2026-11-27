@@ -32,6 +32,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
+import adu_trend as at
 import numpy as np
 import pandas as pd
 
@@ -41,7 +42,6 @@ from lotline.calibrate.adu import score as sc
 from lotline.config import load_params
 from lotline.io import DataStore, offline
 from lotline.model import adu_owner as ao
-from lotline.validation import adu_trend as at
 
 HERE = Path(__file__).resolve().parent
 FORMS = ("A", "A+T", "A′", "A′+T")
