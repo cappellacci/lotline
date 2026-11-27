@@ -68,7 +68,7 @@ def test_no_steps_is_an_error():
         geo.resolve([], KNOWN)
 
 
-@pytest.mark.parametrize("state", ["nc", "or", "tx"])
+@pytest.mark.parametrize("state", ["mn", "nc", "or", "tx"])
 def test_aliases_files_are_well_formed(state):
     """WS-SCALE: one aliases file per state; each (source, field, raw) maps to one GEOID of that state."""
     from lotline.config import CONFIG_DIR, load_state

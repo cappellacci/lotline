@@ -20,6 +20,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline import geo
 from lotline.config import load_state
 from lotline.io import DataStore, fetch
 from lotline.schemas import validate
@@ -190,6 +191,28 @@ def _name_key(name: pd.Series) -> pd.Series:
     return s.str.replace(r"\s+(city|village|town|borough)$", "", regex=True).str.strip()
 
 
+def id_aliases(state: str, config_dir=None) -> dict[str, str]:
+    """`bps_id -> GEOID` corrections from `config/crosswalks/<st>_aliases.csv` (source `bps`, field `bps_id`);
+    empty when the state lists none. For an ID whose latest file codes it under another
+    place's GEOID, so the backfill would move its whole history there (Minnetonka Beach, MN: 2767130 in the
+    latest file)."""
+    try:
+        return geo.aliases(state, "bps", "bps_id", config_dir=config_dir)
+    except (FileNotFoundError, KeyError):
+        return {}
+
+
+def apply_id_aliases(df: pd.DataFrame, aliases: dict[str, str]) -> pd.DataFrame:
+    """Every row of an aliased ID from 1992 on (when IDs link years) takes the alias GEOID, before
+    `backfill_geoids`, so the backfill and the re-key report both see the corrected filing."""
+    if not aliases:
+        return df
+    df = df.copy()
+    hit = (df["year"] >= ID_ERA_START) & df["bps_id"].isin(list(aliases))
+    df.loc[hit, "geoid"] = df.loc[hit, "bps_id"].map(aliases)
+    return df
+
+
 def backfill_geoids(df: pd.DataFrame) -> pd.DataFrame:
     """Fill missing GEOIDs from the latest year that has one.
 
@@ -293,7 +316,7 @@ def load(
             refresh=refresh,
         )
         frames.append(to_canonical(parse(path.read_text(encoding="latin-1"), year), state))
-    raw = pd.concat(frames, ignore_index=True)
+    raw = apply_id_aliases(pd.concat(frames, ignore_index=True), id_aliases(state))
     filed = raw["geoid"].copy()  # each row's GEOID as filed, before the backfill moves it to the latest one
     df = backfill_geoids(raw)
     df = holdout.apply(df, state, unblind=unblind, geoid_col="geoid", year_col="year")

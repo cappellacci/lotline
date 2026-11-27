@@ -154,3 +154,33 @@ def test_rekey_report_round_trips_through_the_interim_folder(tmp_path):
                             "last_year": 2012, "new_geoid": "2700003"}])  # fmt: skip
     bps.write_rekeys(report, "MN", store)
     assert bps.read_rekeys("MN", store)["old_geoid"].tolist() == ["2700002"]
+
+
+def test_an_id_alias_keeps_a_history_off_the_wrong_latest_geoid(tmp_path):
+    """Minnetonka Beach, MN: filed as 2743270 for years, then as 2767130 (another place) in the latest file.
+    Without the alias the backfill moves every year to 2767130; with it, every year from 1992 stays on
+    2743270, the re-key report no longer lists it, and an ID that isn't aliased still moves as before."""
+    df = pd.DataFrame(
+        {
+            "year": [1991, 2010, 2023, 2024, 2016, 2024],
+            "bps_id": ["27501400"] * 4 + ["27533200"] * 2,
+            "geoid": [None, "2743270", "2743270", "2767130", "2718862", "2718662"],
+            "name": ["Minnetonka Beach"] * 4 + ["Elko New Market"] * 2,
+            "county_geoid": ["27053"] * 6,
+        }
+    )
+    assert bps.backfill_geoids(df)["geoid"].tolist()[1:4] == ["2767130"] * 3  # the bug
+
+    crosswalks = tmp_path / "crosswalks"
+    crosswalks.mkdir()
+    (crosswalks / "mn_aliases.csv").write_text(
+        "source,field,raw,geoid,notes,source_url\nbps,bps_id,27501400,2743270,x,https://example.gov\n"
+    )
+    aliases = bps.id_aliases("MN", config_dir=tmp_path)
+    assert aliases == {"27501400": "2743270"}
+    fixed = bps.apply_id_aliases(df, aliases)
+    assert fixed["geoid"].isna().iloc[0]  # 1991 is before IDs link years: left to the name match
+    assert fixed["geoid"].tolist()[1:] == ["2743270"] * 3 + ["2718862", "2718662"]
+    assert bps.backfill_geoids(fixed)["geoid"].tolist()[1:] == ["2743270"] * 3 + ["2718662"] * 2
+    assert bps.rekeys(fixed)["bps_id"].tolist() == ["27533200"]
+    assert bps.id_aliases("ZZ", config_dir=tmp_path) == {}  # no file: no aliases
