@@ -6,7 +6,7 @@
 # Values: D-092's challenger C4 (run 10, reports/mm-d092/run10-refit-phi/), chosen by Ben on 2026-11-15 after the
 # §7 tests (run 11). Fitted by scripts/dev/calibrate_mm_d092.py on 93 places in MN, NC, OH, TX and OR (86 in
 # Oregon) whose rule raised the unit cap or the approval standard in 2013-2025, with the C0 baseline and lumpy
-# years (φ 13.6). D-055's values (D-054 fit, reports/mm-d054/) and D-038's are in this file's history. Outside
+# years (φ 13.6; θ, φ and the half-way point refitted 2026-11-26 on φ 13.03). D-055's values (D-054 fit, reports/mm-d054/) and D-038's are in this file's history. Outside
 # studies (docs/research/mm-uptake-evidence.md) are a plausibility check only.
 # Kept out of hazard.yaml (D-037 named that file) because scenarios/adu.py draws every hazard.yaml parameter
 # from one random stream: a new key there would shift the ADU draws and the V5 ADU numbers (D-038).
@@ -19,7 +19,7 @@ mm_mature_hazard_ref:
   high: 0.01898
   unit: new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1)
   source: "Estimated, D-092 run 10, challenger C4 (Ben, 2026-11-15): M's likelihood with lumpy years (negative binomial, φ; refitted 2026-11-26 on φ 13.03, Ben: was 0.0010387 at φ 13.63) and the C0 baseline, plus a lognormal prior from the always-allowed places' level θ_L (log-SD doubled for selection, D-092 §5); 93 places, 299 place-years, 90% profile-likelihood interval. §5's rule picks C4: it beats M (1.68 per 1,000) on held-out log score by 5 paired SE and passes the same §7 tests"
-  notes: "1.04 per 1,000 (0.13-19.4). With the half-way point at 4.0 years the five-year rate is 0.24 per 1,000 a year (D-055's was 0.10). §7 tests (run 11, reports/mm-d092/run11-tests-phi/): place coverage 0.78 (C4) and 0.84 (M) inside the 0.60-0.95 bar; roll check and leave-one-state-out pass; the no-reform floor misses only on Minnesota's total; new places (Houston only) and the placebo fail. Against no reform effect, M is only +5.0 (SE 3.4) held out: the counts can't clearly show the effect apart from project clustering (run 13). θ without Oregon 1.08. Replaces D-055's 0.12 per 1,000, whose ranges were too narrow (V9 Oregon: 34% of places above P90). Drawn lognormal: median at the estimate, log-SD (ln high - ln low) / 3.29 = 1.518."
+  notes: "1.66 per 1,000 (0.14-19.0) since the 2026-11-26 refit on φ 13.03 (run 10: 1.04, 0.13-19.4). With the half-way point at 4.5 years the five-year rate is 0.26 per 1,000 a year (run 10, half 4.0: 0.24; D-055's was 0.10). §7 tests (run 11, on the run-10 fit, not rerun at φ 13.03; reports/mm-d092/run11-tests-phi/): place coverage 0.78 (C4) and 0.84 (M) inside the 0.60-0.95 bar; roll check and leave-one-state-out pass; the no-reform floor misses only on Minnesota's total; new places (Houston only) and the placebo fail. Against no reform effect, M is only +5.0 (SE 3.4) held out: the counts can't clearly show the effect apart from project clustering (run 13). θ without Oregon 1.08 (run 10). Replaces D-055's 0.12 per 1,000, whose ranges were too narrow (V9 Oregon: 34% of places above P90). Drawn lognormal: median at the estimate, log-SD (ln high - ln low) / 3.29 = 1.501."
 
 mm_place_effect_variance:
   value: 6.1e-06
@@ -33,9 +33,9 @@ mm_year_spread_phi:
   value: 13.03
   low: 12.39
   high: 13.7
-  unit: negative binomial size of a place's yearly 2-4 unit building count (variance = mean + mean^2 / φ)
+  unit: overdispersion of a place's yearly 2-4 unit building count (negative binomial, size 1/φ, variance = mean + φ × mean^2)
   source: "Estimated, D-092 run 9 (deviation (b)), refitted 2026-11-26 with lotline calibrate (Ben): 1,379 pseudo-forecasts of 713 unused MN, NC, OH and TX places on today's tables (run 9: 941 of 483, φ 13.63), 2016 and 2021 origins, 90% profile-likelihood interval; used in C4's fit (run 10)"
-  notes: "Builders put up 2-4 unit buildings in clusters (run 13, Minneapolis corrected 2026-11-17: 39-44% of buildings are in projects of 3 or more), so a place's years are lumpy. By state: MN 7.4, NC 8.1, OH 8.1, TX 20 (the search's edge); by place type (run 12) not adopted. The scenario holds φ at its value (the interval is narrow) and draws each place-year's added buildings as Poisson(mean × g), g ~ Gamma(mean 1, variance 1/φ)."
+  notes: "Builders put up 2-4 unit buildings in clusters (run 13, Minneapolis corrected 2026-11-17: 39-44% of buildings are in projects of 3 or more), so a place's years are lumpy. By state: MN 7.4, NC 8.1, OH 8.1, TX 20 (the search's edge); by place type (run 12) not adopted. The scenario holds φ at its value (the interval is narrow) and draws each place-year's added buildings as Poisson(mean × g), g ~ Gamma(mean 1, variance φ), as the fit (the forecast used variance 1/φ until 2026-11-27, #581)."
 
 mm_units_per_project:
   value: 2.08
@@ -61,7 +61,7 @@ mm_ramp_slope_years:
   high: 1.5
   unit: years (logistic scale)
   source: "Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature hazard"
-  notes: "At half 4.0 and slope 0.75 (C4): year 1 (age 0.5) 0.009, year 2 0.034, year 3 0.12, year 4 0.34, year 5 0.66 of the mature hazard (ages at mid-year); mean 0.233. At D-055's half 0.5: 0.50, 0.79, 0.94, 0.98, 1.00."
+  notes: "At half 4.5 and slope 0.75 (C4, refitted 2026-11-26): year 1 (age 0.5) 0.005, year 2 0.018, year 3 0.065, year 4 0.21, year 5 0.50 of the mature hazard (ages at mid-year); mean 0.159. At run 10's half 4.0: 0.009, 0.034, 0.12, 0.34, 0.66; mean 0.233. At D-055's half 0.5: 0.50, 0.79, 0.94, 0.98, 1.00."
 
 mm_ramp_half_years_fast:
   value: 0.5
@@ -69,7 +69,7 @@ mm_ramp_half_years_fast:
   high: 1.0
   unit: years after adoption to reach half the mature hazard, fast-ramp sensitivity only
   source: "Estimated, D-100 run 1 (reports/mm-d100/run1/), R2's half-way point for places that adopted on their own (0.5, the grid floor; interval 0.5-4.0). High: 1.0, the low end of C4's range (D-100's cheaper alternative). Sensitivity pre-registered 2026-11-17 (Ben: 'Yes, add it')"
-  notes: "Not the main result: the Handbook rule is a state law, and state-required places (Oregon's HB 2001) ramped at C4's 4.0. Used only by the scenario's fast-ramp sensitivity, with C4's θ held (R2's θ with this ramp, 0.94 per 1,000, would be about 9% lower). Year shares at 0.5: 0.50, 0.79, 0.94, 0.98, 1.00 of the mature hazard; five-year sum 4.20 against C4's 1.16."
+  notes: "Not the main result: the Handbook rule is a state law, and state-required places (Oregon's HB 2001) ramped at C4's run-10 4.0. Used only by the scenario's fast-ramp sensitivity, with C4's θ held (run 10: R2's θ with this ramp, 0.94 per 1,000, was about 9% below C4's 1.04). Year shares at 0.5: 0.50, 0.79, 0.94, 0.98, 1.00 of the mature hazard; five-year sum 4.20 against C4's 0.80 at half 4.5 (1.16 at run 10's 4.0)."
 
 # ---- Feasibility transport ----
 

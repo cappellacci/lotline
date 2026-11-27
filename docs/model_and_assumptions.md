@@ -1222,7 +1222,7 @@ E081 refer to rows of `docs/research/lotline-evidence-register.csv`; C-codes ref
 |---|---|---|---|---|
 | `mm_mature_hazard_ref` | 0.0016571 | 0.0001361–0.01898 | new 2-4 unit buildings per eligible parcel per year, mature, full dose, where a rental duplex's value equals its cost before profit (PCR = 1) | Estimated, D-092 run 10, challenger C4 (Ben, 2026-11-15): M's likelihood with lumpy years (negative binomial,… |
 | `mm_place_effect_variance` | 6.1e-06 | 6.1e-06–1.92 | variance of a place's multiplier on the missing-middle hazard (gamma, mean 1) | Estimated, D-092 run 10, C4 (alpha, 90% profile-likelihood interval), Ben 2026-11-15 |
-| `mm_year_spread_phi` | 13.03 | 12.39–13.7 | negative binomial size of a place's yearly 2-4 unit building count (variance = mean + mean^2 / φ) | Estimated, D-092 run 9 (deviation (b)), refitted 2026-11-26 with lotline calibrate (Ben): 1,379 pseudo-foreca… |
+| `mm_year_spread_phi` | 13.03 | 12.39–13.7 | overdispersion of a place's yearly 2-4 unit building count (negative binomial, size 1/φ, variance = mean + φ × mean^2) | Estimated, D-092 run 9 (deviation (b)), refitted 2026-11-26 with lotline calibrate (Ben): 1,379 pseudo-foreca… |
 | `mm_units_per_project` | 2.08 | 2.04–2.75 | homes per new 2-4 unit building (gross, before any demolished house) | Census BPS, the 15 fit places 2016-2025: 10,210 homes in 4,912 buildings (D-038) |
 | `mm_ramp_half_years` | 4.5 | 1–6 | years after adoption to reach half the mature hazard | Estimated, D-092 run 10, C4 (profile likelihood on the grid 0.5-6.0), Ben 2026-11-15 |
 | `mm_ramp_slope_years` | 0.75 | 0.5–1.5 | years (logistic scale) | Judgment, held fixed in the D-038 fit (as adu_ramp_slope_years): about 2 years from 20% to 80% of the mature… |
