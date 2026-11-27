@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import fcntl
 import time
 from pathlib import Path
 
 import httpx
 
 from lotline import __version__
-from lotline.io import offline
+from lotline.io import filelock, offline
 from lotline.io.store import DataStore, ManifestEntry, sha256_file, utc_now
 
 USER_AGENT = f"lotline/{__version__} (+https://github.com/cappellacci/lotline; open-source housing research)"
@@ -181,7 +180,7 @@ def _wait_turn(store: DataStore, url: str) -> None:
     lock = store.root / ".ratelimit" / domain
     lock.parent.mkdir(parents=True, exist_ok=True)
     with lock.open("a+") as fh:
-        fcntl.flock(fh, fcntl.LOCK_EX)  # one process at a time decides when to send
+        filelock.lock(fh)  # one process at a time decides when to send
         fh.seek(0)
         last = float(fh.read().strip() or 0)
         wait = last + MIN_INTERVAL[domain] - time.time()
@@ -191,7 +190,7 @@ def _wait_turn(store: DataStore, url: str) -> None:
         fh.truncate()
         fh.write(f"{time.time():.3f}")
         fh.flush()
-        fcntl.flock(fh, fcntl.LOCK_UN)
+        filelock.unlock(fh)
 
 
 def _get_with_retries(

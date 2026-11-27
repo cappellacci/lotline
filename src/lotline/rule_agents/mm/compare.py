@@ -14,8 +14,8 @@ from collections.abc import Sequence
 import pandas as pd
 
 from lotline.model import rule_tags
+from lotline.rule_agents.common.dates import basis_from_notes
 from lotline.rule_agents.mm import THEME
-from lotline.rule_agents.mm.dates import basis_from_notes
 
 YEARS = tuple(range(2010, 2027))
 

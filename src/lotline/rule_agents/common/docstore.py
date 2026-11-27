@@ -28,7 +28,6 @@ A document flagged `may_contain_outcomes` (staff reports with permit counts, das
 
 from __future__ import annotations
 
-import fcntl
 import json
 import os
 import re
@@ -40,6 +39,7 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
+from lotline.io import filelock
 from lotline.rule_agents.common import text as T
 
 SHORT_BLOCKS = {"not_found", "unreachable"}  # remembered for a day, not a month
@@ -181,12 +181,12 @@ class DocStore:
     def _locked(self, path: Path) -> Iterator:
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a") as fh:
-            fcntl.flock(fh, fcntl.LOCK_EX)
+            filelock.lock(fh)
             try:
                 yield fh
             finally:
                 fh.flush()
-                fcntl.flock(fh, fcntl.LOCK_UN)
+                filelock.unlock(fh)
 
     def _append(self, path: Path, rows: Iterable[dict]) -> None:
         with self._locked(path) as fh:

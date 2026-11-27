@@ -23,6 +23,8 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78  # v7; The setup command (commands.setup in challenge.toml) runs here; the test suite runs once, in tests.yml
       # (both workflows are required checks), instead of a second 20-minute run here (nightly review, 2026-11-25).
+        with:
+          version: "0.13.5"  # CI uses the uv that wrote uv.lock; users may run any newer uv
       - name: Setup (commands.setup)
         run: uv sync --frozen
       - name: Static checks

@@ -226,6 +226,8 @@ def _no_unlisted_geoids(state, store):
 
     if store is None:
         return Status(False, "no data directory")
+    if not _has_table(store, state, "jurisdictions"):  # nothing built yet: not "done" (review, 2026-11-27)
+        return Status(False, "no jurisdictions table yet (fetch the national data first)")
     df = unlisted(state, store)
     orphans = config_orphans(state, store)
     bad = orphans[orphans["blocking"]]

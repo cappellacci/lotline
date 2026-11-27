@@ -14,8 +14,9 @@ import pytest
 from pydantic import ValidationError
 
 from lotline.model import rule_tags
+from lotline.rule_agents.common import access, dates
 from lotline.rule_agents.mm import __main__ as cli
-from lotline.rule_agents.mm import access, compare, dates, handoff, reconcile, rows
+from lotline.rule_agents.mm import compare, handoff, reconcile, rows
 from lotline.rule_agents.mm.fetch import allowed, snapshot_name
 from lotline.rule_agents.mm.findings import (
     Blocker,
@@ -568,7 +569,7 @@ def test_pdftext_blank_pages_read_as_scan(tmp_path):
     """A PDF whose pages have no text layer extracts 0 characters, which `classify` calls a scan."""
     from pypdf import PdfWriter
 
-    from lotline.rule_agents.mm import access, pdftext
+    from lotline.rule_agents.common import access, pdftext
 
     w = PdfWriter()
     w.add_blank_page(width=612, height=792)

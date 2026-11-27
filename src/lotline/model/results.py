@@ -124,7 +124,7 @@ def config_hash(config_dir: Path = CONFIG_DIR) -> str:
     """sha256 over every file under config/ (sorted relative paths and their bytes)."""
     h = hashlib.sha256()
     for path in sorted(p for p in config_dir.rglob("*") if p.is_file()):
-        h.update(str(path.relative_to(config_dir)).encode())
+        h.update(path.relative_to(config_dir).as_posix().encode())  # same on Windows
         h.update(b"\0")
         h.update(path.read_bytes())
     return h.hexdigest()

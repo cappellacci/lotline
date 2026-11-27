@@ -25,8 +25,8 @@ from datetime import date
 import pandas as pd
 
 from lotline import schemas
+from lotline.rule_agents.common.dates import tags_for
 from lotline.rule_agents.mm import THEME
-from lotline.rule_agents.mm.dates import tags_for
 from lotline.rule_agents.mm.findings import PlaceFinding, RuleFinding
 
 

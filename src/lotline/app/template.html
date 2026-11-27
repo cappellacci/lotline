@@ -377,7 +377,7 @@ table.checks td:last-child { min-width: 260px; }
     <div class="card home-card">
       <div class="home-text">
         <h1 class="display">Lotline</h1>
-        <p class="body">Lotline is a tool to help understand how much new housing specific housing reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p>
+        <p class="body">Lotline is a tool to help understand how much new housing specific state reforms would add. It learns from places in the country where these reforms have passed, takes each state's housing market and local factors into account, and estimates what a reform would add over five years, as a range.</p>
         <div class="home-actions">
           <button type="button" class="btn primary" id="pick-state">Pick a state <span aria-hidden="true">→</span></button>
           <a class="btn" href="#add">Add a state</a>
@@ -456,7 +456,7 @@ cp .env.example .env</code></pre>
       <p class="body-small">Open <span class="code">.env</span> and add your <span class="code">CENSUS_API_KEY</span>. Downloads go to <span class="code">LOTLINE_DATA_DIR</span> (by default <span class="code">~/lotline-data</span>), outside the code, so no data is ever mixed into it.</p>
     </div></div>
     <div class="step"><p class="step-n" aria-hidden="true">2</p><div class="step-body"><h3 class="h3">Write your state's settings file <span class="step-time">15 minutes</span></h3>
-      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">One short file is all the engine needs to know about a state; nothing else in the code changes.</p>
+      <p class="why-line" style="margin:var(--space-2) 0 var(--space-2)">One short file is all the model needs to know about a state; nothing else in the code changes.</p>
       <p class="body-small">Create <span class="code">config/states/xx.yaml</span> (your state's two-letter code in lower case). Copying <span class="code">config/states/oh.yaml</span> is the quickest start:</p>
       <pre class="code"><code>state: XX                  # two capital letters, matching the file name
 name: Statename
@@ -731,7 +731,7 @@ uv run lotline results --state XX --role transfer</code></pre>
 
       <h4 class="h3">5b. Adding a new state</h4>
       <p class="why-line" style="margin:var(--space-3) 0 var(--space-2)">Every state already has the national data the model needs, so a new state can run on day one and gets sharper with each local source it adds.</p>
-      <p class="body-small">The engine keeps the method apart from the data. A state is a settings file; its local files plug in through small adapters that turn them into the same tables every state uses, and the model's equations never change. National data (Census permits and housing counts, home prices, interest rates and building costs) is fetched automatically for every state.</p>
+      <p class="body-small">The model keeps the method apart from the data. A state is a settings file; its local files plug in through small adapters that turn them into the same tables every state uses, and the model's equations never change. National data (Census permits and housing counts, home prices, interest rates and building costs) is fetched automatically for every state.</p>
       <div class="scroll"><table class="levels"><thead><tr><th>Level</th><th>What the state adds</th><th>What we know about accuracy</th></tr></thead><tbody>
         <tr><td><b>0. National only</b></td><td>A settings file, plus the state's own ADU and middle-housing laws if it has any</td><td>ADU results are not reliable on their own: in the leave-a-state-out test, national data alone worked only in Minnesota</td></tr>
         <tr><td><b>1. Coded local rules</b> <span class="muted">(recommended minimum)</span></td><td>The ADU rules of its 20 largest places, the middle-housing rules it can find, and fees for at least 5 places</td><td>ADU results pass the same test in all 4 states that could be scored, with wide ranges</td></tr>
@@ -771,7 +771,7 @@ uv run lotline results --state XX --role transfer</code></pre>
 </main>
 <footer class="wrap" id="provenance">
   <h3 class="h3">Where these numbers come from</h3>
-  <p>Every number on this page was computed by the Lotline engine and exported to a results bundle; the page only re-adds the engine's draws when a slider moves. Regenerate every bundle and this page with one command:</p>
+  <p>Every number on this page was computed by the Lotline model and exported to a results file; the page only re-adds the model's runs when a slider moves. Regenerate every bundle and this page with one command:</p>
   <pre class="code">uv run lotline results --all</pre>
   <dl id="meta"></dl>
 </footer>
@@ -1140,7 +1140,7 @@ function recordHtml(b, d, compact = false) {
   return `${title}
     <p class="body-small" style="margin:var(--space-1) 0 0">${esc(name)}'s ${esc(spec.what)} each year${a ? ` from ${a.year} to ${obs[obs.length - 1].year}` : ""}, next to what ${esc(spec.reform)} would add each year from ${fut.length ? fut[0].year : "the window's start"}. ${esc(spec.pace)}</p>
     ${legend}${svg}
-    ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the engine's central assumptions; hover a year for its ranges. ${hasSplit ? "The grey forecast bars cover every place in the state, not only the places counted in the bars before them. Each is split into the places whose forecast starts from their own ADU permit counts and the places the model estimates from their market and rules, in proportion to each group's average over the model runs (averages add up; midpoints do not). The thin line beside each bar is the likely range with no change. " : ""}The sliders above do not move this chart.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Bars: ${d === "adu" ? "ADU permits in local permit records." : "Census Building Permits Survey, every city and town, as reported."}${cover} Places and years held back for blind tests are left out. ${gap !== null ? `The dashed line marks ${gap}: the data stop in ${gap - 1} and the forecast starts in ${gap + 1}, so ${gap} is not shown. ` : ""}Forecasts: at the model's central assumptions; hover a year for its ranges. ${hasSplit ? "The grey forecast bars cover every place in the state, not only the places counted in the bars before them. Each is split into the places whose forecast starts from their own ADU permit counts and the places the model estimates from their market and rules, in proportion to each group's average over the model runs (averages add up; midpoints do not). The thin line beside each bar is the likely range with no change. " : ""}The sliders above do not move this chart.</p>`, "Graph details")}`;
 }
 
 // How accurate is our model (Ben, 2026-11-19): one block at the end of each model's evidence card, holding only
@@ -1228,7 +1228,7 @@ function evidenceHtml(b, d, R) {
       <li><div><b>Turn permits into homes</b><p>Not every permit is finished (${fmtPct(med("completion_factor"))} are), and some ADUs house a relative or are rented short-term rather than adding a home (${fmtPct(med("net_new_share"))} add one).</p>${fbar(r.homes_in_place.p50, scenColor("adu"), 0.6)}</div><span class="v">${fmtN(r.homes_in_place.p50)} homes</span></li>
       <li><div><b>Count only what the state gains</b><p>Take out homes that would have been built elsewhere in the state anyway (${fmtPct(med("displacement_share"))}). This is the "net new housing" in the headline.</p>${fbar(r.homes_net_statewide.p50, scenColor("adu"))}</div><span class="v">${rng(r.homes_net_statewide)} homes</span></li>
     </ol>
-    ${scale}${more(`<p class="source">Bars: each stage's midpoint on a log scale, from 1 at the left edge to the first stage at full width. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}</section>`;
+    ${scale}${more(`<p class="source">Bars: each stage's midpoint on a log scale, from 1 at the left edge to the first stage at full width. Midpoints of the model's ${b.meta.n_draws.toLocaleString("en-US")} draws (steps 3–4); ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}</section>`;
   return s1 + s3 + s4 + accuracyHtml(b, "adu");
 }
 
@@ -1244,7 +1244,7 @@ function howKit(b, d, first) {
   // US-05: every bar is on the same log scale, from 1 at the left edge to the first stage at full width; say so on
   // the page, not only in the folded details, with how much width a tenfold change takes.
   const scale = `<p class="body-small muted" style="margin:var(--space-2) 0 0">Bar lengths use one log scale, so the small later steps stay visible: every ${Math.round(100 / lmax)}% of the full width is ten times more. Read the numbers, not the lengths.</p>`;
-  const foot = `${scale}${more(`<p class="source">Bars: each stage's midpoint on a log scale, from 1 at the left edge to the first stage at full width. Midpoints of the engine's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}`;
+  const foot = `${scale}${more(`<p class="source">Bars: each stage's midpoint on a log scale, from 1 at the left edge to the first stage at full width. Midpoints of the model's ${b.meta.n_draws.toLocaleString("en-US")} runs; ranges are P10 to P90. Over the five years ${esc(AGG.windowLabel(b) || "")}. Full method: The model tab.</p>`, "Graph details")}`;
   return { med, st, rng, fbar, per10k, foot, scale };
 }
 
@@ -1353,7 +1353,7 @@ function feeYearsChart(b, o, shown) {
   return `<p class="body-small" style="margin:var(--space-1) 0 0">Homes ${feeDefault() ? "the 50% fee cut" : "the fee change"} adds each year (${esc(OUTCOME_WORDS[o][0].toLowerCase())}). The impact builds over time because projects already in design are priced at the old fees.</p>
     <div class="legend body-small" style="display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);margin:var(--space-2) 0">${legend}</div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Homes the fee cut adds each year, by version" style="width:100%;min-width:480px;height:auto;font-family:var(--font-mono);font-size:11px;fill:var(--ink-muted)">${parts.join("")}</svg></div>
-    ${more(`<p class="source">Whiskers: P10 to P90, bar at the midpoint, at the engine's central assumptions; the sliders do not move this chart.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Whiskers: P10 to P90, bar at the midpoint, at the model's central assumptions; the sliders do not move this chart.</p>`, "Graph details")}`;
 }
 
 // What builders pay today: the coded local fees behind the "real local fees" version (data dashboard summary,
@@ -1429,7 +1429,7 @@ function feeTodayHtml(b, name) {
 const PLACE_TYPES = [["core", "Core cities"], ["suburb", "Suburbs"], ["town", "Towns"]];
 function placeTypeChart(b) {
   const rows = PLACE_TYPES.map(([k, w]) => [w, (b.adu_place_types || []).find((r) => r.place_type === k)]).filter(([, r]) => r);
-  if (!rows.length) return `<p class="pending">The split by place type is not in this state's results yet: the engine works it out but does not export it.</p>`;
+  if (!rows.length) return `<p class="pending">The split by place type is not in this state's results yet: the model works it out but does not export it.</p>`;
   const top = Math.max(...rows.map(([, r]) => r.base + r.added), 1) * 1.05;
   const W = 640, L = 110, RR = 130, rh = 34, H = rh * rows.length + 6, sx = (v) => L + (v / top) * (W - L - RR);
   const bars = rows.map(([w, r], i) => {
@@ -1444,7 +1444,7 @@ function placeTypeChart(b) {
       <span><span style="display:inline-block;width:12px;height:10px;background:var(--scenario-baseline);margin-right:6px"></span>Built anyway</span>
       <span><span style="display:inline-block;width:12px;height:10px;background:${scenColor("adu")};margin-right:6px"></span>Added by the reform</span></div>
     <div class="scroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ADUs a year by place type, built anyway and added by the reform" style="width:100%;min-width:420px;height:auto;font-family:var(--font-mono);font-size:12px">${bars}</svg></div>
-    ${more(`<p class="source">Gross ADU permits a year, averaged over ${AGG.windowLabel(b) || "the five forecast years"}: midpoints across the engine's draws (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`, "Graph details")}`;
+    ${more(`<p class="source">Gross ADU permits a year, averaged over ${AGG.windowLabel(b) || "the five forecast years"}: midpoints across the model's runs (hover a bar for its P10–P90). The label is the total with the reform and its rise over what would be built anyway.</p>`, "Graph details")}`;
 }
 
 
@@ -1456,11 +1456,11 @@ const SECTIONS = {
     UI.model = HERO.includes(UI.model) && scen.includes(runOf(UI.model)) ? UI.model : HERO.find((k) => scen.includes(runOf(k))) || null;
     UI.detail = UI.model ? runOf(UI.model) : scen[0];
     const yrs = AGG.windowLabel(b);  // from the bundle's totals (D-061: 2027–2031 for origin 2025)
-    if (!scen.length) return `<p class="pending">The engine has not run any scenario for this state yet.</p>`;
+    if (!scen.length) return `<p class="pending">The model has not run any reform for this state yet.</p>`;
     const toggle = Object.entries(OUTCOME_WORDS).map(([k, [w]]) =>
       `<button type="button" data-outcome="${k}" aria-pressed="${k === UI.outcome}">${esc(w)}</button>`).join("");
     const pend = pendingIn(b);
-    const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The engine has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
+    const pendNote = pend.length ? `<p class="row-pending"><b>Not yet run:</b> ${pend.map((s) => esc(scenLabel(s))).join("; ")}. The model has not run ${pend.length > 1 ? "these" : "this"} for this state yet, so no range is shown.</p>` : "";
     const seg = HERO.filter((k) => scen.includes(runOf(k))).map((k) =>
       `<button type="button" data-model="${esc(k)}" aria-pressed="${k === UI.model}">${esc(shortOf(k))}</button>`).join("");
     const fee2 = scen.includes("fees_local_half");
@@ -1476,13 +1476,14 @@ const SECTIONS = {
         <p class="body note" id="hero-note"></p>
         ${b.meta.state_role === "ingestion_test" ? `<p class="pending" id="role-note"><b>A data-ingestion test, not part of the model's core evidence.</b> ${esc(nameOfState(b.meta.state))} was brought in with national data only, to check that a new state can be added end to end, and its forecast was frozen before its permits were looked at. That pre-registered test missed: the forecast came in about a third below the homes actually permitted in 2021–2025. The miss led us to change how the baseline smooths small places, a fix every state now uses. Its numbers are shown for transparency.</p>` : ""}
         <div class="card"><div class="rc" id="rc">${rcRows}<div></div><div class="axis" id="rc-axis"></div></div>
+          <p class="body-small muted" id="rc-caption">Each gridline is 10 times the one before. The headline is not the three midpoints added up: the reforms are added together in each run of the model, and the headline is the middle of those totals.</p>
           <div class="controls"><span>Count homes</span><span class="toggle" role="group" aria-label="Count homes">${toggle}</span>
             <span class="muted" id="outcome-note"></span></div>
           ${pendNote}
           ${more(`<p class="source"><b>How to read the bars.</b> We ran the model ${esc(Number(b.meta.n_draws).toLocaleString("en-US"))} times, each time with a different plausible value for everything we are unsure about, such as how many owners build and what building costs. The number and the tick show the middle result: half the runs came out higher and half lower. The bar covers the middle 80% of runs: 1 run in 10 came out below its left end and 1 in 10 above its right end; the numbers in brackets are those two ends. A longer bar means we are less sure. The scale is logarithmic: each gridline is ten times the one before, so a bar that looks short can still span a wide range.</p><p class="source">Bars: 10th to 90th percentile (P10–P90) of the runs; tick: the median (P50). Source: Lotline results bundle, run ${esc(b.meta.run_at)}, commit ${esc(b.meta.commit_sha.slice(0, 10))}.</p>`, "Graph details")}
           <details class="more" id="knobs-card"><summary>Try different assumptions</summary>
-            <p class="body-small" style="margin:0">Sliders move the headline, the range for each reform above and what the reforms add in the housing-need card. The charts further down stay at the engine's estimate. <button type="button" class="linkish" id="reset-all">Reset all to the engine</button></p>
-            <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the engine's own range for it: the centre is the engine's estimate and the ends are its P10 and P90 in the draws, the middle 80% of runs used for every range on this page (Ben, 2026-11-25: the single lowest and highest run made one slider move missing middle about 100-fold). Every draw moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
+            <p class="body-small" style="margin:0">Sliders move the headline, the range for each reform above and what the reforms add in the housing-need card. The charts further down stay at the model's estimate. <button type="button" class="linkish" id="reset-all">Reset all to the model's estimate</button></p>
+            <p class="body-small muted"><b>Provisional:</b> how the sliders move an assumption may change after review. Each slider moves one assumption through the model's own range for it: the centre is the model's estimate and the ends cut off the lowest and highest tenth of runs, the same middle 80% used for every range on this page. Every run moves together, so the other assumptions keep their uncertainty. Moving a slider changes nothing but this page.</p>
             <div id="knobs"></div></details></div>
       </div>
       <div class="seg" role="group" aria-label="Which reform's evidence to show">${seg}</div>
@@ -1527,9 +1528,9 @@ const SECTIONS = {
         <p class="body-small" style="margin:0 0 var(--space-3)">This is the one check that works for a state with no building record of its own: it warns when the model is reaching beyond its evidence.</p>
         ${flagHtml(m, named)}${study}
         ${more(how, "How this is measured")}</div>`;
-    $("trust-facts").innerHTML = `<p class="body-small">The engine's draws behind every number: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/archive/results_dashboard.py</span>).</p>${facts}`;
+    $("trust-facts").innerHTML = `<p class="body-small">The model runs behind every number: ${b.meta.n_draws.toLocaleString("en-US")} per scenario, seed ${esc(b.meta.seed)}, engine ${esc(b.meta.engine_version)}, schemas ${esc(b.meta.schemas_version)}. Effect terms, calibration fits and per-run checks are in the engine results dashboard (<span class="code">uv run python scripts/archive/results_dashboard.py</span>).</p>${facts}`;
     return `<div class="card"><h4 class="h3" style="margin:0 0 var(--space-2)">Which assumptions move the answer most, in ${esc(b.meta.state)}</h4>
-        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net new housing when each assumption alone moves to its own low (P10) or high (P90) in the engine's draws; the line is the engine's midpoint. The same arithmetic as the sliders on the Results page.</p>
+        <p class="body-small muted">The midpoint of ${esc(scenLabel(UI.detail || scen[0] || ""))} net new housing when each assumption alone moves to its own low (P10) or high (P90) in the model's runs; the line is the engine's midpoint. The same arithmetic as the sliders on the Results page.</p>
         <div class="tornado" id="tornado"></div></div>
 `;
   },
@@ -1555,11 +1556,11 @@ function knobsHtml(b) {
       ${`<input type="range" id="k-${esc(k.column)}" min="10" max="90" step="5" value="50" data-pin="${esc(k.column)}" aria-describedby="v-${esc(k.column)}">
       <div class="ends"><span>${esc(k.low_word)}</span><button type="button" class="linkish" data-reset="${esc(k.column)}">Reset</button><span>${esc(k.high_word)}</span></div>`}
       <details><summary>Source and range</summary>${(k.source_note || {})[s] ? `<p>${esc(k.source_note[s])}</p>` : ""}
-        ${params ? `<details><summary>Technical detail: the settings behind it</summary><ul>${params}</ul></details>` : "<ul><li>Set by the engine run for this scenario.</li></ul>"}
-        <p>In the engine's draws: P10 ${fmtFactor(AGG.percentile(vals, 10), k.format)}, P50 ${fmtFactor(AGG.percentile(vals, 50), k.format)}, P90 ${fmtFactor(AGG.percentile(vals, 90), k.format)}.</p></details>
+        ${params ? `<details><summary>Technical detail: the settings behind it</summary><ul>${params}</ul></details>` : "<ul><li>Set by the model run for this reform.</li></ul>"}
+        <p>Across the model's runs: P10 ${fmtFactor(AGG.percentile(vals, 10), k.format)}, P50 ${fmtFactor(AGG.percentile(vals, 50), k.format)}, P90 ${fmtFactor(AGG.percentile(vals, 90), k.format)}.</p></details>
     </div>`;
   }).join("");
-  return html || `<p class="body-small muted">The engine holds every assumption for this reform at one value, so there is nothing to move here.</p>`;
+  return html || `<p class="body-small muted">The model holds every assumption for this reform at one value, so there is nothing to move here.</p>`;
 }
 
 // "[State] can add [X] homes": X is the three reforms together (Ben, 2026-11-17), summed draw by draw so the range
@@ -1874,7 +1875,7 @@ function updateResults() {
     const vals = drawsFor(b, d).map((x) => Number(x[k.column]));
     const q = UI.pins[k.column];
     el.textContent = q === undefined || q === 50 ? `Engine estimate: ${fmtFactor(AGG.percentile(vals, 50), k.format)} (likely ${fmtFactor(AGG.percentile(vals, 10), k.format)} to ${fmtFactor(AGG.percentile(vals, 90), k.format)})`
-      : `Set ${q < 50 ? "lower" : "higher"}: ${fmtFactor(AGG.percentile(vals, q), k.format)} at the midpoint, ${timesWords(AGG.shiftScale(drawsFor(b, d), k.column, q))} the engine's estimate`;
+      : `Set ${q < 50 ? "lower" : "higher"}: ${fmtFactor(AGG.percentile(vals, q), k.format)} at the midpoint, ${timesWords(AGG.shiftScale(drawsFor(b, d), k.column, q))} the model's estimate`;
     const input = document.querySelector(`[data-pin="${CSS.escape(k.column)}"]`);
     if (input && q === undefined) input.value = 50;
   }
@@ -2480,7 +2481,10 @@ async function show(state) {
   } catch (err) {
     if (ticket !== SHOWING) return;
     $("data-sources").innerHTML = "";
-    for (const id of Object.keys(SECTIONS)) $(`${id}-body`).innerHTML = `<p class="pending">This state's results could not be loaded (${esc(err.message)}). Rebuild the page with <code>uv run python scripts/build_app.py</code> and open it from the folder it was written to.</p>`;
+    // Visitors get a plain message; the rebuild hint is for someone running the page from their own build.
+    console.error(`results did not load (${err.message}); rebuild with: uv run python scripts/build_app.py`);
+    const local = location.protocol === "file:" ? ` Rebuild the page with <code>uv run python scripts/build_app.py</code> and open it from the folder it was written to.` : "";
+    for (const id of Object.keys(SECTIONS)) $(`${id}-body`).innerHTML = `<p class="pending">This state's results could not be loaded. Reload the page, or pick another state.${local}</p>`;
     return;
   }
   if (ticket !== SHOWING) return;

@@ -36,8 +36,9 @@ def test_short_path_is_level_zero_only():
 
 def test_commands_fill_in_the_state():
     cmds = onboarding.commands("first_run", "wi")
-    assert cmds[0] == ["uv", "run", "lotline", "results", "--state", "WI"]
-    assert "reports/wi/fees-statewide.csv" in cmds[1]
+    assert cmds == [
+        ["uv", "run", "lotline", "results", "--state", "WI"]
+    ]  # fees are in the bundle: no dev script
     assert onboarding.commands("rules", "WI") == []  # manual or agent only
 
 
@@ -111,3 +112,11 @@ def test_bad_steps_are_rejected(tmp_path):
     )
     with pytest.raises(ValueError, match="built_in"):
         onboarding.steps(bad)
+
+
+def test_unlisted_check_is_not_done_before_any_data(tmp_path):
+    """With an empty data folder the step must read "todo", not "done" (review, 2026-11-27)."""
+    from lotline.io import DataStore
+
+    status = onboarding.CHECKS["no_unlisted_geoids"]("WI", DataStore(tmp_path))
+    assert not status.done and "jurisdictions" in status.detail
