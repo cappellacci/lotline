@@ -131,6 +131,8 @@ def test_verdict_by_hand():
     assert v5.verdict(79, 80, 100, 170) == "missed (over)"
     assert v5.verdict(171, 80, 100, 170) == "missed (under)"
     assert v5.verdict(30, 10, 14, 40) == "inside only"  # 30 / 14 > 2
+    assert v5.verdict(0, 0, 0, 3) == "useful"  # both 0: nothing predicted, nothing built
+    assert v5.verdict(2, 0, 0, 3) == "inside only"
 
 
 def test_score_pass_rule_and_percentile():

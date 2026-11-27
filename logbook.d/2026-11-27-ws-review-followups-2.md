@@ -1,0 +1,12 @@
+### LB-NNN · 2026-11-27 · Deliverables: review follow-ups (Oregon and Wisconsin data, range drivers, D-040 zeros)
+- **Question:** what was left over from the code review and docs pass before the documents are final?
+- **What I did:**
+  - Added Oregon and Wisconsin sections and gap bullets to `docs/data_availability.md`, which covered four of the six published states.
+  - Reran the range-drivers report on the bundles of release `app-2026-11-27` (commit a42ba317). Nothing was rerun in the model; the script reads the bundles' draws.
+  - Wrote down D-040's verdict when the P50 and the observed total are both 0 (useful), and made `fit_audit.noise_floor` follow it, as `v5.verdict` and the missing-middle calibration already did.
+  - Corrected the small-cell paragraph: the app publishes no place-level results, so the 20-parcel minimum is met by design.
+- **Outputs:** `docs/data_availability.md`; `reports/range-drivers/drivers.csv` and README (the old `results.html` is removed); `docs/analysis_plan.md` (Clarification, 2026-11-27); `src/lotline/validation/fit_audit.py`; tests in `tests/core/test_v5.py` and `tests/validation/test_fit_audit.py`.
+- **Findings:** the rerun shares match the numbers already quoted in `docs/policy_scenario_comparison.md` (missing middle 93%, fees 93%, ADU 40% and 32% in Minnesota). The smallest group of places the app publishes has 4 places (Oregon).
+- **Decisions:** the D-040 clarification (Ben, 2026-11-27).
+- **AI:** Claude Code made the edits. A subagent drafted the Oregon and Wisconsin sections from `config/states/or.yaml` and `wi.yaml`, the Oregon adapters, `docs/build/or-readiness.md`, `reports/or/`, `reports/wi/` and D-104/D-105; Claude checked them and corrected two claims. Checked with the related tests, ruff, `compliance_check.py` (0 FAIL) and `params_table.py --check`.
+- **Open / next:** none.

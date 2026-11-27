@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """What drives each result's range: first-order sensitivity shares from the runs in the results bundles (#54).
 
-    uv run python scripts/archive/range_drivers.py --results reports/results --out reports/range-drivers
+    PYTHONPATH=scripts/archive uv run python scripts/archive/range_drivers.py --results reports/results --out reports/range-drivers
 
 For each state and scenario, the result is the five-year additional homes, net statewide, of each of the
 bundle's runs (`results_draws`: lots × θ × pencil-out × completion × net-new × (1 − displacement), which
 reproduces the bundle's totals exactly). The inputs are each run's own parameter draws, regenerated from the
 scenario's configured seed (the same calls `adu.run`, `mm.run` and `fees.simulate` make), plus the
-aggregate draws the bundle records (completion, net-new, displacement). `validation.sensitivity.first_order`
+aggregate draws the bundle records (completion, net-new, displacement). `sensitivity.first_order`
 gives each input's share of the spread of log(homes + 1): log, because the ranges are multiplicative
 (P90 ÷ P10).
 

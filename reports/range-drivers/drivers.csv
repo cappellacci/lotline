@@ -1,140 +1,140 @@
 state,scenario,input,label,share,p90_over_p10,draws
-MN,adu,adu_sqft,adu_sqft,0.012,4.51,1000
-MN,adu,single_family_sqft,Size of a new house,0.005,4.51,1000
-MN,adu,townhouse_sqft,townhouse_sqft,0.0028,4.51,1000
-MN,adu,plex_unit_sqft,plex_unit_sqft,0.0093,4.51,1000
-MN,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0024,4.51,1000
-MN,adu,code_step_premium,code_step_premium,0.0,4.51,1000
-MN,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0,4.51,1000
-MN,adu,soft_cost_share,soft_cost_share,0.0,4.51,1000
-MN,adu,construction_loan_rate,construction_loan_rate,0.0,4.51,1000
-MN,adu,average_draw_share,average_draw_share,0.0,4.51,1000
-MN,adu,construction_years_irc,construction_years_irc,0.0,4.51,1000
-MN,adu,construction_years_ibc,construction_years_ibc,0.0,4.51,1000
-MN,adu,fee_paid_at_permit,fee_paid_at_permit,0.0,4.51,1000
-MN,adu,sale_cost_share,sale_cost_share,0.0095,4.51,1000
-MN,adu,rental_vacancy_rate,rental_vacancy_rate,0.0029,4.51,1000
-MN,adu,operating_expense_share,Operating costs as a share of rent,0.0135,4.51,1000
-MN,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0056,4.51,1000
-MN,adu,developer_margin,developer_margin,0.0,4.51,1000
-MN,adu,adu_margin,adu_margin,0.0,4.51,1000
-MN,adu,existing_use_margin,existing_use_margin,0.0,4.51,1000
-MN,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.3784,4.51,1000
-MN,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0035,4.51,1000
-MN,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0253,4.51,1000
-MN,adu,adu_equity_elasticity,adu_equity_elasticity,0.0,4.51,1000
-MN,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0161,4.51,1000
-MN,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0,4.51,1000
-MN,adu,adu_place_effect_variance,How much places differ from each other (α),0.0045,4.51,1000
-MN,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.2875,4.51,1000
-MN,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0713,4.51,1000
-MN,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0347,4.51,1000
-MN,adu,completion_factor,Share of permitted homes that get finished,0.0,4.51,1000
-MN,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0595,4.51,1000
-MN,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0563,4.51,1000
-MN,missing_middle,theta,Missing-middle uptake rate (fitted),0.9593,40.4,1000
-MN,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0011,40.4,1000
-MN,missing_middle,units,Homes per 2-4 unit building,0.0,40.4,1000
-MN,missing_middle,teardown_scale,How often a new building replaces a house,0.0031,40.4,1000
-MN,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,40.4,1000
-MN,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0148,40.4,1000
-MN,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0063,40.4,1000
-MN,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0154,40.4,1000
-MN,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0489,11.94,1000
-MN,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.7376,11.94,1000
-MN,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,11.94,1000
-MN,fees,fee_ramp_slope_years,fee_ramp_slope_years,0.0,11.94,1000
-MN,fees,adu_sqft,adu_sqft,0.0045,11.94,1000
-MN,fees,single_family_sqft,Size of a new house,0.0297,11.94,1000
-MN,fees,townhouse_sqft,townhouse_sqft,0.0077,11.94,1000
-MN,fees,plex_unit_sqft,plex_unit_sqft,0.0023,11.94,1000
-MN,fees,hard_cost_per_sqft_usd,Construction cost per square foot,0.0304,11.94,1000
-MN,fees,code_step_premium,code_step_premium,0.0015,11.94,1000
-MN,fees,adu_hard_cost_premium,adu_hard_cost_premium,0.0,11.94,1000
-MN,fees,soft_cost_share,soft_cost_share,0.0008,11.94,1000
-MN,fees,construction_loan_rate,construction_loan_rate,0.0012,11.94,1000
-MN,fees,average_draw_share,average_draw_share,0.0066,11.94,1000
-MN,fees,construction_years_irc,construction_years_irc,0.0117,11.94,1000
-MN,fees,construction_years_ibc,construction_years_ibc,0.0117,11.94,1000
-MN,fees,fee_paid_at_permit,fee_paid_at_permit,0.0041,11.94,1000
-MN,fees,sale_cost_share,sale_cost_share,0.0049,11.94,1000
-MN,fees,rental_vacancy_rate,rental_vacancy_rate,0.0,11.94,1000
-MN,fees,operating_expense_share,Operating costs as a share of rent,0.0134,11.94,1000
-MN,fees,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,11.94,1000
-MN,fees,developer_margin,developer_margin,0.0,11.94,1000
-MN,fees,adu_margin,adu_margin,0.0,11.94,1000
-MN,fees,existing_use_margin,existing_use_margin,0.0015,11.94,1000
-MN,fees,completion_factor,Share of permitted homes that get finished,0.0096,11.94,1000
-MN,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0028,11.94,1000
-MN,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.069,11.94,1000
-MN,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0673,10.9,1000
-MN,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.5811,10.9,1000
-MN,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,10.9,1000
-MN,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0,10.9,1000
-MN,fees_local_half,adu_sqft,adu_sqft,0.0084,10.9,1000
-MN,fees_local_half,single_family_sqft,Size of a new house,0.0438,10.9,1000
-MN,fees_local_half,townhouse_sqft,townhouse_sqft,0.008,10.9,1000
-MN,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0012,10.9,1000
-MN,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0593,10.9,1000
-MN,fees_local_half,code_step_premium,code_step_premium,0.0,10.9,1000
-MN,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,10.9,1000
-MN,fees_local_half,soft_cost_share,soft_cost_share,0.0028,10.9,1000
-MN,fees_local_half,construction_loan_rate,construction_loan_rate,0.0,10.9,1000
-MN,fees_local_half,average_draw_share,average_draw_share,0.0002,10.9,1000
-MN,fees_local_half,construction_years_irc,construction_years_irc,0.0054,10.9,1000
-MN,fees_local_half,construction_years_ibc,construction_years_ibc,0.0091,10.9,1000
-MN,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0072,10.9,1000
-MN,fees_local_half,sale_cost_share,sale_cost_share,0.0007,10.9,1000
-MN,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0048,10.9,1000
-MN,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0097,10.9,1000
-MN,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,10.9,1000
-MN,fees_local_half,developer_margin,developer_margin,0.0,10.9,1000
-MN,fees_local_half,adu_margin,adu_margin,0.0041,10.9,1000
-MN,fees_local_half,existing_use_margin,existing_use_margin,0.0006,10.9,1000
-MN,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0021,10.9,1000
-MN,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0048,10.9,1000
-MN,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.1794,10.9,1000
-NC,adu,adu_sqft,adu_sqft,0.0,5.8,1000
-NC,adu,single_family_sqft,Size of a new house,0.0015,5.8,1000
-NC,adu,townhouse_sqft,townhouse_sqft,0.0023,5.8,1000
-NC,adu,plex_unit_sqft,plex_unit_sqft,0.0124,5.8,1000
-NC,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0008,5.8,1000
-NC,adu,code_step_premium,code_step_premium,0.0,5.8,1000
-NC,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0,5.8,1000
-NC,adu,soft_cost_share,soft_cost_share,0.0,5.8,1000
-NC,adu,construction_loan_rate,construction_loan_rate,0.0,5.8,1000
-NC,adu,average_draw_share,average_draw_share,0.0,5.8,1000
-NC,adu,construction_years_irc,construction_years_irc,0.0004,5.8,1000
-NC,adu,construction_years_ibc,construction_years_ibc,0.0,5.8,1000
-NC,adu,fee_paid_at_permit,fee_paid_at_permit,0.0018,5.8,1000
-NC,adu,sale_cost_share,sale_cost_share,0.01,5.8,1000
-NC,adu,rental_vacancy_rate,rental_vacancy_rate,0.0002,5.8,1000
-NC,adu,operating_expense_share,Operating costs as a share of rent,0.0101,5.8,1000
-NC,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0062,5.8,1000
-NC,adu,developer_margin,developer_margin,0.0,5.8,1000
-NC,adu,adu_margin,adu_margin,0.0017,5.8,1000
-NC,adu,existing_use_margin,existing_use_margin,0.0,5.8,1000
-NC,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.4743,5.8,1000
-NC,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0,5.8,1000
-NC,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0141,5.8,1000
-NC,adu,adu_equity_elasticity,adu_equity_elasticity,0.0,5.8,1000
-NC,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0062,5.8,1000
-NC,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0004,5.8,1000
-NC,adu,adu_place_effect_variance,How much places differ from each other (α),0.0038,5.8,1000
-NC,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.4241,5.8,1000
-NC,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0327,5.8,1000
-NC,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0259,5.8,1000
-NC,adu,completion_factor,Share of permitted homes that get finished,0.0003,5.8,1000
-NC,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0471,5.8,1000
-NC,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,5.8,1000
-NC,missing_middle,theta,Missing-middle uptake rate (fitted),0.9612,41.35,1000
-NC,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0008,41.35,1000
-NC,missing_middle,units,Homes per 2-4 unit building,0.0,41.35,1000
-NC,missing_middle,teardown_scale,How often a new building replaces a house,0.0029,41.35,1000
-NC,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,41.35,1000
-NC,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0212,41.35,1000
-NC,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0066,41.35,1000
-NC,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0073,41.35,1000
+MN,adu,adu_sqft,adu_sqft,0.0035,4.12,1000
+MN,adu,single_family_sqft,Size of a new house,0.0107,4.12,1000
+MN,adu,townhouse_sqft,townhouse_sqft,0.0,4.12,1000
+MN,adu,plex_unit_sqft,plex_unit_sqft,0.0145,4.12,1000
+MN,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0113,4.12,1000
+MN,adu,code_step_premium,code_step_premium,0.0,4.12,1000
+MN,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0,4.12,1000
+MN,adu,soft_cost_share,soft_cost_share,0.0,4.12,1000
+MN,adu,construction_loan_rate,construction_loan_rate,0.0002,4.12,1000
+MN,adu,average_draw_share,average_draw_share,0.0004,4.12,1000
+MN,adu,construction_years_irc,construction_years_irc,0.0,4.12,1000
+MN,adu,construction_years_ibc,construction_years_ibc,0.0,4.12,1000
+MN,adu,fee_paid_at_permit,fee_paid_at_permit,0.003,4.12,1000
+MN,adu,sale_cost_share,sale_cost_share,0.0082,4.12,1000
+MN,adu,rental_vacancy_rate,rental_vacancy_rate,0.0036,4.12,1000
+MN,adu,operating_expense_share,Operating costs as a share of rent,0.0127,4.12,1000
+MN,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0089,4.12,1000
+MN,adu,developer_margin,developer_margin,0.0034,4.12,1000
+MN,adu,adu_margin,adu_margin,0.0026,4.12,1000
+MN,adu,existing_use_margin,existing_use_margin,0.0,4.12,1000
+MN,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.4001,4.12,1000
+MN,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0001,4.12,1000
+MN,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0146,4.12,1000
+MN,adu,adu_equity_elasticity,adu_equity_elasticity,0.0,4.12,1000
+MN,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0205,4.12,1000
+MN,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0001,4.12,1000
+MN,adu,adu_place_effect_variance,How much places differ from each other (α),0.0067,4.12,1000
+MN,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.323,4.12,1000
+MN,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0565,4.12,1000
+MN,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0365,4.12,1000
+MN,adu,completion_factor,Share of permitted homes that get finished,0.0,4.12,1000
+MN,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0493,4.12,1000
+MN,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0096,4.12,1000
+MN,missing_middle,theta,Missing-middle uptake rate (fitted),0.9338,43.49,1000
+MN,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0,43.49,1000
+MN,missing_middle,units,Homes per 2-4 unit building,0.0,43.49,1000
+MN,missing_middle,teardown_scale,How often a new building replaces a house,0.0061,43.49,1000
+MN,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,43.49,1000
+MN,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0,43.49,1000
+MN,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0072,43.49,1000
+MN,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0528,43.49,1000
+MN,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0445,14.32,1000
+MN,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9259,14.32,1000
+MN,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,14.32,1000
+MN,fees,fee_ramp_slope_years,fee_ramp_slope_years,0.002,14.32,1000
+MN,fees,adu_sqft,adu_sqft,0.007,14.32,1000
+MN,fees,single_family_sqft,Size of a new house,0.0116,14.32,1000
+MN,fees,townhouse_sqft,townhouse_sqft,0.0024,14.32,1000
+MN,fees,plex_unit_sqft,plex_unit_sqft,0.0047,14.32,1000
+MN,fees,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,14.32,1000
+MN,fees,code_step_premium,code_step_premium,0.0,14.32,1000
+MN,fees,adu_hard_cost_premium,adu_hard_cost_premium,0.0,14.32,1000
+MN,fees,soft_cost_share,soft_cost_share,0.0001,14.32,1000
+MN,fees,construction_loan_rate,construction_loan_rate,0.001,14.32,1000
+MN,fees,average_draw_share,average_draw_share,0.0047,14.32,1000
+MN,fees,construction_years_irc,construction_years_irc,0.0059,14.32,1000
+MN,fees,construction_years_ibc,construction_years_ibc,0.0091,14.32,1000
+MN,fees,fee_paid_at_permit,fee_paid_at_permit,0.0086,14.32,1000
+MN,fees,sale_cost_share,sale_cost_share,0.0018,14.32,1000
+MN,fees,rental_vacancy_rate,rental_vacancy_rate,0.0075,14.32,1000
+MN,fees,operating_expense_share,Operating costs as a share of rent,0.0138,14.32,1000
+MN,fees,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,14.32,1000
+MN,fees,developer_margin,developer_margin,0.0,14.32,1000
+MN,fees,adu_margin,adu_margin,0.0031,14.32,1000
+MN,fees,existing_use_margin,existing_use_margin,0.0,14.32,1000
+MN,fees,completion_factor,Share of permitted homes that get finished,0.0,14.32,1000
+MN,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0033,14.32,1000
+MN,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,14.32,1000
+MN,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0497,15.56,1000
+MN,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9241,15.56,1000
+MN,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,15.56,1000
+MN,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0009,15.56,1000
+MN,fees_local_half,adu_sqft,adu_sqft,0.0101,15.56,1000
+MN,fees_local_half,single_family_sqft,Size of a new house,0.0083,15.56,1000
+MN,fees_local_half,townhouse_sqft,townhouse_sqft,0.0024,15.56,1000
+MN,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0031,15.56,1000
+MN,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,15.56,1000
+MN,fees_local_half,code_step_premium,code_step_premium,0.0,15.56,1000
+MN,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,15.56,1000
+MN,fees_local_half,soft_cost_share,soft_cost_share,0.0006,15.56,1000
+MN,fees_local_half,construction_loan_rate,construction_loan_rate,0.0028,15.56,1000
+MN,fees_local_half,average_draw_share,average_draw_share,0.0,15.56,1000
+MN,fees_local_half,construction_years_irc,construction_years_irc,0.0073,15.56,1000
+MN,fees_local_half,construction_years_ibc,construction_years_ibc,0.0083,15.56,1000
+MN,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0101,15.56,1000
+MN,fees_local_half,sale_cost_share,sale_cost_share,0.0021,15.56,1000
+MN,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0059,15.56,1000
+MN,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0149,15.56,1000
+MN,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,15.56,1000
+MN,fees_local_half,developer_margin,developer_margin,0.0,15.56,1000
+MN,fees_local_half,adu_margin,adu_margin,0.0055,15.56,1000
+MN,fees_local_half,existing_use_margin,existing_use_margin,0.0,15.56,1000
+MN,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0075,15.56,1000
+MN,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0036,15.56,1000
+MN,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,15.56,1000
+NC,adu,adu_sqft,adu_sqft,0.0,5.88,1000
+NC,adu,single_family_sqft,Size of a new house,0.0022,5.88,1000
+NC,adu,townhouse_sqft,townhouse_sqft,0.0025,5.88,1000
+NC,adu,plex_unit_sqft,plex_unit_sqft,0.0126,5.88,1000
+NC,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0004,5.88,1000
+NC,adu,code_step_premium,code_step_premium,0.0,5.88,1000
+NC,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0,5.88,1000
+NC,adu,soft_cost_share,soft_cost_share,0.0,5.88,1000
+NC,adu,construction_loan_rate,construction_loan_rate,0.0,5.88,1000
+NC,adu,average_draw_share,average_draw_share,0.0,5.88,1000
+NC,adu,construction_years_irc,construction_years_irc,0.0,5.88,1000
+NC,adu,construction_years_ibc,construction_years_ibc,0.0,5.88,1000
+NC,adu,fee_paid_at_permit,fee_paid_at_permit,0.0025,5.88,1000
+NC,adu,sale_cost_share,sale_cost_share,0.0117,5.88,1000
+NC,adu,rental_vacancy_rate,rental_vacancy_rate,0.0,5.88,1000
+NC,adu,operating_expense_share,Operating costs as a share of rent,0.0106,5.88,1000
+NC,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0045,5.88,1000
+NC,adu,developer_margin,developer_margin,0.0,5.88,1000
+NC,adu,adu_margin,adu_margin,0.0008,5.88,1000
+NC,adu,existing_use_margin,existing_use_margin,0.0,5.88,1000
+NC,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.4737,5.88,1000
+NC,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0,5.88,1000
+NC,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0134,5.88,1000
+NC,adu,adu_equity_elasticity,adu_equity_elasticity,0.0,5.88,1000
+NC,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0061,5.88,1000
+NC,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0007,5.88,1000
+NC,adu,adu_place_effect_variance,How much places differ from each other (α),0.0038,5.88,1000
+NC,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.4258,5.88,1000
+NC,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0325,5.88,1000
+NC,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0258,5.88,1000
+NC,adu,completion_factor,Share of permitted homes that get finished,0.0,5.88,1000
+NC,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0482,5.88,1000
+NC,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,5.88,1000
+NC,missing_middle,theta,Missing-middle uptake rate (fitted),0.9223,40.08,1000
+NC,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0019,40.08,1000
+NC,missing_middle,units,Homes per 2-4 unit building,0.0,40.08,1000
+NC,missing_middle,teardown_scale,How often a new building replaces a house,0.0032,40.08,1000
+NC,missing_middle,completion_factor,Share of permitted homes that get finished,0.0014,40.08,1000
+NC,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0024,40.08,1000
+NC,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0046,40.08,1000
+NC,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0642,40.08,1000
 NC,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0444,14.36,1000
 NC,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9254,14.36,1000
 NC,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,14.36,1000
@@ -162,74 +162,74 @@ NC,fees,existing_use_margin,existing_use_margin,0.0,14.36,1000
 NC,fees,completion_factor,Share of permitted homes that get finished,0.0,14.36,1000
 NC,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0033,14.36,1000
 NC,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,14.36,1000
-NC,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.049,16.0,1000
-NC,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9231,16.0,1000
-NC,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,16.0,1000
-NC,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0008,16.0,1000
-NC,fees_local_half,adu_sqft,adu_sqft,0.0103,16.0,1000
-NC,fees_local_half,single_family_sqft,Size of a new house,0.0085,16.0,1000
-NC,fees_local_half,townhouse_sqft,townhouse_sqft,0.0025,16.0,1000
-NC,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0032,16.0,1000
-NC,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,16.0,1000
-NC,fees_local_half,code_step_premium,code_step_premium,0.0,16.0,1000
-NC,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,16.0,1000
-NC,fees_local_half,soft_cost_share,soft_cost_share,0.0011,16.0,1000
-NC,fees_local_half,construction_loan_rate,construction_loan_rate,0.003,16.0,1000
-NC,fees_local_half,average_draw_share,average_draw_share,0.0,16.0,1000
-NC,fees_local_half,construction_years_irc,construction_years_irc,0.0072,16.0,1000
-NC,fees_local_half,construction_years_ibc,construction_years_ibc,0.0086,16.0,1000
-NC,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0101,16.0,1000
-NC,fees_local_half,sale_cost_share,sale_cost_share,0.0018,16.0,1000
-NC,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0061,16.0,1000
-NC,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.015,16.0,1000
-NC,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,16.0,1000
-NC,fees_local_half,developer_margin,developer_margin,0.0,16.0,1000
-NC,fees_local_half,adu_margin,adu_margin,0.0058,16.0,1000
-NC,fees_local_half,existing_use_margin,existing_use_margin,0.0,16.0,1000
-NC,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,16.0,1000
-NC,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0036,16.0,1000
-NC,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,16.0,1000
-OH,adu,adu_sqft,adu_sqft,0.0149,5.42,1000
-OH,adu,single_family_sqft,Size of a new house,0.0,5.42,1000
-OH,adu,townhouse_sqft,townhouse_sqft,0.0018,5.42,1000
-OH,adu,plex_unit_sqft,plex_unit_sqft,0.0065,5.42,1000
-OH,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0144,5.42,1000
-OH,adu,code_step_premium,code_step_premium,0.0141,5.42,1000
-OH,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0095,5.42,1000
-OH,adu,soft_cost_share,soft_cost_share,0.0,5.42,1000
-OH,adu,construction_loan_rate,construction_loan_rate,0.0,5.42,1000
-OH,adu,average_draw_share,average_draw_share,0.0,5.42,1000
-OH,adu,construction_years_irc,construction_years_irc,0.0,5.42,1000
-OH,adu,construction_years_ibc,construction_years_ibc,0.0,5.42,1000
-OH,adu,fee_paid_at_permit,fee_paid_at_permit,0.0088,5.42,1000
-OH,adu,sale_cost_share,sale_cost_share,0.0072,5.42,1000
-OH,adu,rental_vacancy_rate,rental_vacancy_rate,0.0004,5.42,1000
-OH,adu,operating_expense_share,Operating costs as a share of rent,0.0163,5.42,1000
-OH,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0208,5.42,1000
-OH,adu,developer_margin,developer_margin,0.004,5.42,1000
-OH,adu,adu_margin,adu_margin,0.0034,5.42,1000
-OH,adu,existing_use_margin,existing_use_margin,0.0,5.42,1000
-OH,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.175,5.42,1000
-OH,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0008,5.42,1000
-OH,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0908,5.42,1000
-OH,adu,adu_equity_elasticity,adu_equity_elasticity,0.0084,5.42,1000
-OH,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0159,5.42,1000
-OH,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0005,5.42,1000
-OH,adu,adu_place_effect_variance,How much places differ from each other (α),0.0041,5.42,1000
-OH,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.1152,5.42,1000
-OH,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0488,5.42,1000
-OH,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0399,5.42,1000
-OH,adu,completion_factor,Share of permitted homes that get finished,0.0,5.42,1000
-OH,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0451,5.42,1000
-OH,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.3334,5.42,1000
-OH,missing_middle,theta,Missing-middle uptake rate (fitted),0.959,41.56,1000
-OH,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.001,41.56,1000
-OH,missing_middle,units,Homes per 2-4 unit building,0.0,41.56,1000
-OH,missing_middle,teardown_scale,How often a new building replaces a house,0.0026,41.56,1000
-OH,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,41.56,1000
-OH,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0041,41.56,1000
-OH,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0069,41.56,1000
-OH,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0264,41.56,1000
+NC,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0493,16.17,1000
+NC,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9226,16.17,1000
+NC,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,16.17,1000
+NC,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0009,16.17,1000
+NC,fees_local_half,adu_sqft,adu_sqft,0.0102,16.17,1000
+NC,fees_local_half,single_family_sqft,Size of a new house,0.0083,16.17,1000
+NC,fees_local_half,townhouse_sqft,townhouse_sqft,0.0025,16.17,1000
+NC,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0033,16.17,1000
+NC,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,16.17,1000
+NC,fees_local_half,code_step_premium,code_step_premium,0.0,16.17,1000
+NC,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,16.17,1000
+NC,fees_local_half,soft_cost_share,soft_cost_share,0.0009,16.17,1000
+NC,fees_local_half,construction_loan_rate,construction_loan_rate,0.0027,16.17,1000
+NC,fees_local_half,average_draw_share,average_draw_share,0.0,16.17,1000
+NC,fees_local_half,construction_years_irc,construction_years_irc,0.0074,16.17,1000
+NC,fees_local_half,construction_years_ibc,construction_years_ibc,0.0084,16.17,1000
+NC,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.01,16.17,1000
+NC,fees_local_half,sale_cost_share,sale_cost_share,0.0019,16.17,1000
+NC,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0062,16.17,1000
+NC,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0148,16.17,1000
+NC,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,16.17,1000
+NC,fees_local_half,developer_margin,developer_margin,0.0,16.17,1000
+NC,fees_local_half,adu_margin,adu_margin,0.0056,16.17,1000
+NC,fees_local_half,existing_use_margin,existing_use_margin,0.0,16.17,1000
+NC,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,16.17,1000
+NC,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0036,16.17,1000
+NC,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,16.17,1000
+OH,adu,adu_sqft,adu_sqft,0.0148,5.37,1000
+OH,adu,single_family_sqft,Size of a new house,0.0,5.37,1000
+OH,adu,townhouse_sqft,townhouse_sqft,0.0016,5.37,1000
+OH,adu,plex_unit_sqft,plex_unit_sqft,0.0065,5.37,1000
+OH,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0145,5.37,1000
+OH,adu,code_step_premium,code_step_premium,0.0138,5.37,1000
+OH,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0099,5.37,1000
+OH,adu,soft_cost_share,soft_cost_share,0.0,5.37,1000
+OH,adu,construction_loan_rate,construction_loan_rate,0.0,5.37,1000
+OH,adu,average_draw_share,average_draw_share,0.0,5.37,1000
+OH,adu,construction_years_irc,construction_years_irc,0.0,5.37,1000
+OH,adu,construction_years_ibc,construction_years_ibc,0.0,5.37,1000
+OH,adu,fee_paid_at_permit,fee_paid_at_permit,0.0087,5.37,1000
+OH,adu,sale_cost_share,sale_cost_share,0.0071,5.37,1000
+OH,adu,rental_vacancy_rate,rental_vacancy_rate,0.0005,5.37,1000
+OH,adu,operating_expense_share,Operating costs as a share of rent,0.0165,5.37,1000
+OH,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0205,5.37,1000
+OH,adu,developer_margin,developer_margin,0.004,5.37,1000
+OH,adu,adu_margin,adu_margin,0.0033,5.37,1000
+OH,adu,existing_use_margin,existing_use_margin,0.0,5.37,1000
+OH,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.1742,5.37,1000
+OH,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0006,5.37,1000
+OH,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0907,5.37,1000
+OH,adu,adu_equity_elasticity,adu_equity_elasticity,0.0084,5.37,1000
+OH,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0162,5.37,1000
+OH,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0005,5.37,1000
+OH,adu,adu_place_effect_variance,How much places differ from each other (α),0.004,5.37,1000
+OH,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.1139,5.37,1000
+OH,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.049,5.37,1000
+OH,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0399,5.37,1000
+OH,adu,completion_factor,Share of permitted homes that get finished,0.0,5.37,1000
+OH,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0449,5.37,1000
+OH,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.3359,5.37,1000
+OH,missing_middle,theta,Missing-middle uptake rate (fitted),0.9323,42.23,1000
+OH,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0,42.23,1000
+OH,missing_middle,units,Homes per 2-4 unit building,0.0,42.23,1000
+OH,missing_middle,teardown_scale,How often a new building replaces a house,0.0063,42.23,1000
+OH,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,42.23,1000
+OH,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0038,42.23,1000
+OH,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0076,42.23,1000
+OH,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0499,42.23,1000
 OH,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0446,14.31,1000
 OH,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9253,14.31,1000
 OH,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,14.31,1000
@@ -254,43 +254,43 @@ OH,fees,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,14.31,10
 OH,fees,developer_margin,developer_margin,0.0,14.31,1000
 OH,fees,adu_margin,adu_margin,0.0032,14.31,1000
 OH,fees,existing_use_margin,existing_use_margin,0.0,14.31,1000
-OH,fees,completion_factor,Share of permitted homes that get finished,0.0111,14.31,1000
+OH,fees,completion_factor,Share of permitted homes that get finished,0.0096,14.31,1000
 OH,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0033,14.31,1000
 OH,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,14.31,1000
-OH,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0495,15.75,1000
-OH,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9241,15.75,1000
-OH,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,15.75,1000
-OH,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0008,15.75,1000
-OH,fees_local_half,adu_sqft,adu_sqft,0.0104,15.75,1000
-OH,fees_local_half,single_family_sqft,Size of a new house,0.0089,15.75,1000
-OH,fees_local_half,townhouse_sqft,townhouse_sqft,0.0026,15.75,1000
-OH,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0031,15.75,1000
-OH,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,15.75,1000
-OH,fees_local_half,code_step_premium,code_step_premium,0.0,15.75,1000
-OH,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,15.75,1000
-OH,fees_local_half,soft_cost_share,soft_cost_share,0.001,15.75,1000
-OH,fees_local_half,construction_loan_rate,construction_loan_rate,0.0028,15.75,1000
-OH,fees_local_half,average_draw_share,average_draw_share,0.0,15.75,1000
-OH,fees_local_half,construction_years_irc,construction_years_irc,0.0074,15.75,1000
-OH,fees_local_half,construction_years_ibc,construction_years_ibc,0.0084,15.75,1000
-OH,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.01,15.75,1000
-OH,fees_local_half,sale_cost_share,sale_cost_share,0.0018,15.75,1000
-OH,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0061,15.75,1000
-OH,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0149,15.75,1000
-OH,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,15.75,1000
-OH,fees_local_half,developer_margin,developer_margin,0.0,15.75,1000
-OH,fees_local_half,adu_margin,adu_margin,0.0054,15.75,1000
-OH,fees_local_half,existing_use_margin,existing_use_margin,0.0,15.75,1000
-OH,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,15.75,1000
-OH,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0037,15.75,1000
-OH,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,15.75,1000
+OH,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0496,15.19,1000
+OH,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9239,15.19,1000
+OH,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,15.19,1000
+OH,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0008,15.19,1000
+OH,fees_local_half,adu_sqft,adu_sqft,0.0102,15.19,1000
+OH,fees_local_half,single_family_sqft,Size of a new house,0.0087,15.19,1000
+OH,fees_local_half,townhouse_sqft,townhouse_sqft,0.0023,15.19,1000
+OH,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0031,15.19,1000
+OH,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,15.19,1000
+OH,fees_local_half,code_step_premium,code_step_premium,0.0,15.19,1000
+OH,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,15.19,1000
+OH,fees_local_half,soft_cost_share,soft_cost_share,0.0006,15.19,1000
+OH,fees_local_half,construction_loan_rate,construction_loan_rate,0.0027,15.19,1000
+OH,fees_local_half,average_draw_share,average_draw_share,0.0,15.19,1000
+OH,fees_local_half,construction_years_irc,construction_years_irc,0.0074,15.19,1000
+OH,fees_local_half,construction_years_ibc,construction_years_ibc,0.0081,15.19,1000
+OH,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0104,15.19,1000
+OH,fees_local_half,sale_cost_share,sale_cost_share,0.0019,15.19,1000
+OH,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0059,15.19,1000
+OH,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0148,15.19,1000
+OH,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,15.19,1000
+OH,fees_local_half,developer_margin,developer_margin,0.0,15.19,1000
+OH,fees_local_half,adu_margin,adu_margin,0.0054,15.19,1000
+OH,fees_local_half,existing_use_margin,existing_use_margin,0.0,15.19,1000
+OH,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,15.19,1000
+OH,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0037,15.19,1000
+OH,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,15.19,1000
 OR,adu,adu_sqft,adu_sqft,0.0,6.97,1000
 OR,adu,single_family_sqft,Size of a new house,0.0012,6.97,1000
 OR,adu,townhouse_sqft,townhouse_sqft,0.0,6.97,1000
 OR,adu,plex_unit_sqft,plex_unit_sqft,0.0115,6.97,1000
 OR,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,6.97,1000
 OR,adu,code_step_premium,code_step_premium,0.0,6.97,1000
-OR,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0059,6.97,1000
+OR,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0058,6.97,1000
 OR,adu,soft_cost_share,soft_cost_share,0.0,6.97,1000
 OR,adu,construction_loan_rate,construction_loan_rate,0.0,6.97,1000
 OR,adu,average_draw_share,average_draw_share,0.0,6.97,1000
@@ -304,81 +304,81 @@ OR,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0072,6.97,1
 OR,adu,developer_margin,developer_margin,0.0,6.97,1000
 OR,adu,adu_margin,adu_margin,0.0006,6.97,1000
 OR,adu,existing_use_margin,existing_use_margin,0.0,6.97,1000
-OR,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.335,6.97,1000
+OR,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.3349,6.97,1000
 OR,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0045,6.97,1000
 OR,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0077,6.97,1000
 OR,adu,adu_equity_elasticity,adu_equity_elasticity,0.0,6.97,1000
 OR,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0029,6.97,1000
 OR,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0,6.97,1000
 OR,adu,adu_place_effect_variance,How much places differ from each other (α),0.0029,6.97,1000
-OR,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.2956,6.97,1000
+OR,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.2955,6.97,1000
 OR,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0054,6.97,1000
 OR,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.013,6.97,1000
 OR,adu,completion_factor,Share of permitted homes that get finished,0.0,6.97,1000
 OR,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0024,6.97,1000
-OR,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.2791,6.97,1000
-OR,missing_middle,theta,Missing-middle uptake rate (fitted),0.9563,39.92,1000
-OR,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0,39.92,1000
-OR,missing_middle,units,Homes per 2-4 unit building,0.0,39.92,1000
-OR,missing_middle,teardown_scale,How often a new building replaces a house,0.0054,39.92,1000
-OR,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,39.92,1000
-OR,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0133,39.92,1000
-OR,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0067,39.92,1000
-OR,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0183,39.92,1000
-OR,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0429,7.58,1000
-OR,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.5283,7.58,1000
-OR,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,7.58,1000
-OR,fees,fee_ramp_slope_years,fee_ramp_slope_years,0.0,7.58,1000
-OR,fees,adu_sqft,adu_sqft,0.0011,7.58,1000
-OR,fees,single_family_sqft,Size of a new house,0.0424,7.58,1000
-OR,fees,townhouse_sqft,townhouse_sqft,0.0058,7.58,1000
-OR,fees,plex_unit_sqft,plex_unit_sqft,0.0038,7.58,1000
-OR,fees,hard_cost_per_sqft_usd,Construction cost per square foot,0.0772,7.58,1000
-OR,fees,code_step_premium,code_step_premium,0.0029,7.58,1000
-OR,fees,adu_hard_cost_premium,adu_hard_cost_premium,0.0,7.58,1000
-OR,fees,soft_cost_share,soft_cost_share,0.0021,7.58,1000
-OR,fees,construction_loan_rate,construction_loan_rate,0.0,7.58,1000
-OR,fees,average_draw_share,average_draw_share,0.0005,7.58,1000
-OR,fees,construction_years_irc,construction_years_irc,0.0066,7.58,1000
-OR,fees,construction_years_ibc,construction_years_ibc,0.0154,7.58,1000
-OR,fees,fee_paid_at_permit,fee_paid_at_permit,0.0,7.58,1000
-OR,fees,sale_cost_share,sale_cost_share,0.0029,7.58,1000
-OR,fees,rental_vacancy_rate,rental_vacancy_rate,0.0,7.58,1000
-OR,fees,operating_expense_share,Operating costs as a share of rent,0.01,7.58,1000
-OR,fees,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,7.58,1000
-OR,fees,developer_margin,developer_margin,0.0,7.58,1000
-OR,fees,adu_margin,adu_margin,0.0002,7.58,1000
-OR,fees,existing_use_margin,existing_use_margin,0.0,7.58,1000
-OR,fees,completion_factor,Share of permitted homes that get finished,0.0073,7.58,1000
-OR,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0194,7.58,1000
-OR,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.2309,7.58,1000
-OR,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0673,6.63,1000
-OR,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.4234,6.63,1000
-OR,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,6.63,1000
-OR,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0,6.63,1000
-OR,fees_local_half,adu_sqft,adu_sqft,0.0142,6.63,1000
-OR,fees_local_half,single_family_sqft,Size of a new house,0.0333,6.63,1000
-OR,fees_local_half,townhouse_sqft,townhouse_sqft,0.0112,6.63,1000
-OR,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0045,6.63,1000
-OR,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0603,6.63,1000
-OR,fees_local_half,code_step_premium,code_step_premium,0.0099,6.63,1000
-OR,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,6.63,1000
-OR,fees_local_half,soft_cost_share,soft_cost_share,0.007,6.63,1000
-OR,fees_local_half,construction_loan_rate,construction_loan_rate,0.0,6.63,1000
-OR,fees_local_half,average_draw_share,average_draw_share,0.0,6.63,1000
-OR,fees_local_half,construction_years_irc,construction_years_irc,0.0101,6.63,1000
-OR,fees_local_half,construction_years_ibc,construction_years_ibc,0.0048,6.63,1000
-OR,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0063,6.63,1000
-OR,fees_local_half,sale_cost_share,sale_cost_share,0.0,6.63,1000
-OR,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0,6.63,1000
-OR,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0088,6.63,1000
-OR,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,6.63,1000
-OR,fees_local_half,developer_margin,developer_margin,0.0,6.63,1000
-OR,fees_local_half,adu_margin,adu_margin,0.004,6.63,1000
-OR,fees_local_half,existing_use_margin,existing_use_margin,0.0,6.63,1000
-OR,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,6.63,1000
-OR,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0107,6.63,1000
-OR,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.3241,6.63,1000
+OR,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.2793,6.97,1000
+OR,missing_middle,theta,Missing-middle uptake rate (fitted),0.8942,48.61,1000
+OR,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0,48.61,1000
+OR,missing_middle,units,Homes per 2-4 unit building,0.0,48.61,1000
+OR,missing_middle,teardown_scale,How often a new building replaces a house,0.0072,48.61,1000
+OR,missing_middle,completion_factor,Share of permitted homes that get finished,0.0014,48.61,1000
+OR,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0091,48.61,1000
+OR,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0058,48.61,1000
+OR,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0824,48.61,1000
+OR,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0446,14.21,1000
+OR,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9262,14.21,1000
+OR,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,14.21,1000
+OR,fees,fee_ramp_slope_years,fee_ramp_slope_years,0.002,14.21,1000
+OR,fees,adu_sqft,adu_sqft,0.007,14.21,1000
+OR,fees,single_family_sqft,Size of a new house,0.0118,14.21,1000
+OR,fees,townhouse_sqft,townhouse_sqft,0.0024,14.21,1000
+OR,fees,plex_unit_sqft,plex_unit_sqft,0.0047,14.21,1000
+OR,fees,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,14.21,1000
+OR,fees,code_step_premium,code_step_premium,0.0,14.21,1000
+OR,fees,adu_hard_cost_premium,adu_hard_cost_premium,0.0,14.21,1000
+OR,fees,soft_cost_share,soft_cost_share,0.0001,14.21,1000
+OR,fees,construction_loan_rate,construction_loan_rate,0.0009,14.21,1000
+OR,fees,average_draw_share,average_draw_share,0.0046,14.21,1000
+OR,fees,construction_years_irc,construction_years_irc,0.0059,14.21,1000
+OR,fees,construction_years_ibc,construction_years_ibc,0.009,14.21,1000
+OR,fees,fee_paid_at_permit,fee_paid_at_permit,0.0087,14.21,1000
+OR,fees,sale_cost_share,sale_cost_share,0.0017,14.21,1000
+OR,fees,rental_vacancy_rate,rental_vacancy_rate,0.0075,14.21,1000
+OR,fees,operating_expense_share,Operating costs as a share of rent,0.0138,14.21,1000
+OR,fees,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,14.21,1000
+OR,fees,developer_margin,developer_margin,0.0,14.21,1000
+OR,fees,adu_margin,adu_margin,0.0031,14.21,1000
+OR,fees,existing_use_margin,existing_use_margin,0.0,14.21,1000
+OR,fees,completion_factor,Share of permitted homes that get finished,0.0,14.21,1000
+OR,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0033,14.21,1000
+OR,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,14.21,1000
+OR,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0496,15.24,1000
+OR,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9249,15.24,1000
+OR,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,15.24,1000
+OR,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0008,15.24,1000
+OR,fees_local_half,adu_sqft,adu_sqft,0.0103,15.24,1000
+OR,fees_local_half,single_family_sqft,Size of a new house,0.0088,15.24,1000
+OR,fees_local_half,townhouse_sqft,townhouse_sqft,0.0024,15.24,1000
+OR,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0031,15.24,1000
+OR,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,15.24,1000
+OR,fees_local_half,code_step_premium,code_step_premium,0.0,15.24,1000
+OR,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,15.24,1000
+OR,fees_local_half,soft_cost_share,soft_cost_share,0.0004,15.24,1000
+OR,fees_local_half,construction_loan_rate,construction_loan_rate,0.0028,15.24,1000
+OR,fees_local_half,average_draw_share,average_draw_share,0.0,15.24,1000
+OR,fees_local_half,construction_years_irc,construction_years_irc,0.0073,15.24,1000
+OR,fees_local_half,construction_years_ibc,construction_years_ibc,0.0081,15.24,1000
+OR,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0103,15.24,1000
+OR,fees_local_half,sale_cost_share,sale_cost_share,0.0021,15.24,1000
+OR,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0058,15.24,1000
+OR,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.015,15.24,1000
+OR,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,15.24,1000
+OR,fees_local_half,developer_margin,developer_margin,0.0,15.24,1000
+OR,fees_local_half,adu_margin,adu_margin,0.0051,15.24,1000
+OR,fees_local_half,existing_use_margin,existing_use_margin,0.0,15.24,1000
+OR,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0087,15.24,1000
+OR,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0035,15.24,1000
+OR,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,15.24,1000
 TX,adu,adu_sqft,adu_sqft,0.0,4.47,1000
 TX,adu,single_family_sqft,Size of a new house,0.0,4.47,1000
 TX,adu,townhouse_sqft,townhouse_sqft,0.0017,4.47,1000
@@ -399,33 +399,33 @@ TX,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,4.47,1000
 TX,adu,developer_margin,developer_margin,0.0,4.47,1000
 TX,adu,adu_margin,adu_margin,0.0,4.47,1000
 TX,adu,existing_use_margin,existing_use_margin,0.0,4.47,1000
-TX,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.2864,4.47,1000
+TX,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.2863,4.47,1000
 TX,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0,4.47,1000
 TX,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0,4.47,1000
 TX,adu,adu_equity_elasticity,adu_equity_elasticity,0.0,4.47,1000
 TX,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0138,4.47,1000
 TX,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0,4.47,1000
 TX,adu,adu_place_effect_variance,How much places differ from each other (α),0.0178,4.47,1000
-TX,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.1736,4.47,1000
+TX,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.1735,4.47,1000
 TX,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0572,4.47,1000
-TX,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0354,4.47,1000
+TX,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0353,4.47,1000
 TX,adu,completion_factor,Share of permitted homes that get finished,0.0,4.47,1000
 TX,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0563,4.47,1000
-TX,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.2927,4.47,1000
-TX,missing_middle,theta,Missing-middle uptake rate (fitted),0.9607,40.94,1000
-TX,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0008,40.94,1000
-TX,missing_middle,units,Homes per 2-4 unit building,0.0,40.94,1000
-TX,missing_middle,teardown_scale,How often a new building replaces a house,0.0034,40.94,1000
-TX,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,40.94,1000
-TX,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0,40.94,1000
-TX,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.007,40.94,1000
-TX,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0281,40.94,1000
+TX,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.293,4.47,1000
+TX,missing_middle,theta,Missing-middle uptake rate (fitted),0.9187,46.16,1000
+TX,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0021,46.16,1000
+TX,missing_middle,units,Homes per 2-4 unit building,0.0,46.16,1000
+TX,missing_middle,teardown_scale,How often a new building replaces a house,0.0042,46.16,1000
+TX,missing_middle,completion_factor,Share of permitted homes that get finished,0.0032,46.16,1000
+TX,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0006,46.16,1000
+TX,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0058,46.16,1000
+TX,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0654,46.16,1000
 TX,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0445,14.4,1000
 TX,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9253,14.4,1000
 TX,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,14.4,1000
 TX,fees,fee_ramp_slope_years,fee_ramp_slope_years,0.002,14.4,1000
 TX,fees,adu_sqft,adu_sqft,0.007,14.4,1000
-TX,fees,single_family_sqft,Size of a new house,0.0118,14.4,1000
+TX,fees,single_family_sqft,Size of a new house,0.0117,14.4,1000
 TX,fees,townhouse_sqft,townhouse_sqft,0.0024,14.4,1000
 TX,fees,plex_unit_sqft,plex_unit_sqft,0.0048,14.4,1000
 TX,fees,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,14.4,1000
@@ -447,74 +447,74 @@ TX,fees,existing_use_margin,existing_use_margin,0.0,14.4,1000
 TX,fees,completion_factor,Share of permitted homes that get finished,0.0,14.4,1000
 TX,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0033,14.4,1000
 TX,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,14.4,1000
-TX,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0494,16.07,1000
-TX,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9212,16.07,1000
-TX,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,16.07,1000
-TX,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0009,16.07,1000
-TX,fees_local_half,adu_sqft,adu_sqft,0.0101,16.07,1000
-TX,fees_local_half,single_family_sqft,Size of a new house,0.0081,16.07,1000
-TX,fees_local_half,townhouse_sqft,townhouse_sqft,0.0025,16.07,1000
-TX,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0037,16.07,1000
-TX,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,16.07,1000
-TX,fees_local_half,code_step_premium,code_step_premium,0.0,16.07,1000
-TX,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,16.07,1000
-TX,fees_local_half,soft_cost_share,soft_cost_share,0.0008,16.07,1000
-TX,fees_local_half,construction_loan_rate,construction_loan_rate,0.0029,16.07,1000
-TX,fees_local_half,average_draw_share,average_draw_share,0.0,16.07,1000
-TX,fees_local_half,construction_years_irc,construction_years_irc,0.0068,16.07,1000
-TX,fees_local_half,construction_years_ibc,construction_years_ibc,0.0079,16.07,1000
-TX,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.01,16.07,1000
-TX,fees_local_half,sale_cost_share,sale_cost_share,0.0019,16.07,1000
-TX,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0062,16.07,1000
-TX,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0147,16.07,1000
-TX,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,16.07,1000
-TX,fees_local_half,developer_margin,developer_margin,0.0,16.07,1000
-TX,fees_local_half,adu_margin,adu_margin,0.0057,16.07,1000
-TX,fees_local_half,existing_use_margin,existing_use_margin,0.0,16.07,1000
-TX,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0042,16.07,1000
-TX,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0035,16.07,1000
-TX,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,16.07,1000
-WI,adu,adu_sqft,adu_sqft,0.0053,17.65,1000
-WI,adu,single_family_sqft,Size of a new house,0.0,17.65,1000
-WI,adu,townhouse_sqft,townhouse_sqft,0.0,17.65,1000
-WI,adu,plex_unit_sqft,plex_unit_sqft,0.0,17.65,1000
-WI,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0072,17.65,1000
-WI,adu,code_step_premium,code_step_premium,0.0058,17.65,1000
-WI,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0003,17.65,1000
-WI,adu,soft_cost_share,soft_cost_share,0.0,17.65,1000
-WI,adu,construction_loan_rate,construction_loan_rate,0.0102,17.65,1000
-WI,adu,average_draw_share,average_draw_share,0.0042,17.65,1000
-WI,adu,construction_years_irc,construction_years_irc,0.0035,17.65,1000
-WI,adu,construction_years_ibc,construction_years_ibc,0.0044,17.65,1000
-WI,adu,fee_paid_at_permit,fee_paid_at_permit,0.0129,17.65,1000
-WI,adu,sale_cost_share,sale_cost_share,0.0113,17.65,1000
-WI,adu,rental_vacancy_rate,rental_vacancy_rate,0.0107,17.65,1000
-WI,adu,operating_expense_share,Operating costs as a share of rent,0.0153,17.65,1000
-WI,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0014,17.65,1000
-WI,adu,developer_margin,developer_margin,0.0061,17.65,1000
-WI,adu,adu_margin,adu_margin,0.0,17.65,1000
-WI,adu,existing_use_margin,existing_use_margin,0.0,17.65,1000
-WI,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.0628,17.65,1000
-WI,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0,17.65,1000
-WI,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.031,17.65,1000
-WI,adu,adu_equity_elasticity,adu_equity_elasticity,0.008,17.65,1000
-WI,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.001,17.65,1000
-WI,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0078,17.65,1000
-WI,adu,adu_place_effect_variance,How much places differ from each other (α),0.0121,17.65,1000
-WI,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.0502,17.65,1000
-WI,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0136,17.65,1000
-WI,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0184,17.65,1000
-WI,adu,completion_factor,Share of permitted homes that get finished,0.0032,17.65,1000
-WI,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0136,17.65,1000
-WI,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.6797,17.65,1000
-WI,missing_middle,theta,Missing-middle uptake rate (fitted),0.9593,39.56,1000
-WI,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0011,39.56,1000
-WI,missing_middle,units,Homes per 2-4 unit building,0.0,39.56,1000
-WI,missing_middle,teardown_scale,How often a new building replaces a house,0.0044,39.56,1000
-WI,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,39.56,1000
-WI,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0147,39.56,1000
-WI,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0071,39.56,1000
-WI,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0134,39.56,1000
+TX,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0498,16.46,1000
+TX,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9218,16.46,1000
+TX,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,16.46,1000
+TX,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0008,16.46,1000
+TX,fees_local_half,adu_sqft,adu_sqft,0.0105,16.46,1000
+TX,fees_local_half,single_family_sqft,Size of a new house,0.0083,16.46,1000
+TX,fees_local_half,townhouse_sqft,townhouse_sqft,0.0023,16.46,1000
+TX,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0036,16.46,1000
+TX,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,16.46,1000
+TX,fees_local_half,code_step_premium,code_step_premium,0.0,16.46,1000
+TX,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,16.46,1000
+TX,fees_local_half,soft_cost_share,soft_cost_share,0.0011,16.46,1000
+TX,fees_local_half,construction_loan_rate,construction_loan_rate,0.0025,16.46,1000
+TX,fees_local_half,average_draw_share,average_draw_share,0.0,16.46,1000
+TX,fees_local_half,construction_years_irc,construction_years_irc,0.0074,16.46,1000
+TX,fees_local_half,construction_years_ibc,construction_years_ibc,0.0082,16.46,1000
+TX,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0107,16.46,1000
+TX,fees_local_half,sale_cost_share,sale_cost_share,0.0021,16.46,1000
+TX,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0058,16.46,1000
+TX,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0152,16.46,1000
+TX,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,16.46,1000
+TX,fees_local_half,developer_margin,developer_margin,0.0,16.46,1000
+TX,fees_local_half,adu_margin,adu_margin,0.0062,16.46,1000
+TX,fees_local_half,existing_use_margin,existing_use_margin,0.0,16.46,1000
+TX,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,16.46,1000
+TX,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0037,16.46,1000
+TX,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,16.46,1000
+WI,adu,adu_sqft,adu_sqft,0.0072,7.86,1000
+WI,adu,single_family_sqft,Size of a new house,0.0,7.86,1000
+WI,adu,townhouse_sqft,townhouse_sqft,0.0005,7.86,1000
+WI,adu,plex_unit_sqft,plex_unit_sqft,0.0023,7.86,1000
+WI,adu,hard_cost_per_sqft_usd,Construction cost per square foot,0.0105,7.86,1000
+WI,adu,code_step_premium,code_step_premium,0.008,7.86,1000
+WI,adu,adu_hard_cost_premium,adu_hard_cost_premium,0.0,7.86,1000
+WI,adu,soft_cost_share,soft_cost_share,0.0,7.86,1000
+WI,adu,construction_loan_rate,construction_loan_rate,0.0006,7.86,1000
+WI,adu,average_draw_share,average_draw_share,0.0074,7.86,1000
+WI,adu,construction_years_irc,construction_years_irc,0.0008,7.86,1000
+WI,adu,construction_years_ibc,construction_years_ibc,0.0,7.86,1000
+WI,adu,fee_paid_at_permit,fee_paid_at_permit,0.026,7.86,1000
+WI,adu,sale_cost_share,sale_cost_share,0.0027,7.86,1000
+WI,adu,rental_vacancy_rate,rental_vacancy_rate,0.0107,7.86,1000
+WI,adu,operating_expense_share,Operating costs as a share of rent,0.0206,7.86,1000
+WI,adu,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0034,7.86,1000
+WI,adu,developer_margin,developer_margin,0.0108,7.86,1000
+WI,adu,adu_margin,adu_margin,0.0,7.86,1000
+WI,adu,existing_use_margin,existing_use_margin,0.0,7.86,1000
+WI,adu,adu_mature_hazard_ref,ADU uptake rate (how fast owners add ADUs once allowed; fitted),0.1297,7.86,1000
+WI,adu,adu_rent_to_median_ratio,adu_rent_to_median_ratio,0.0075,7.86,1000
+WI,adu,adu_feasibility_dispersion,How much lots differ in what an ADU costs and earns,0.0372,7.86,1000
+WI,adu,adu_equity_elasticity,adu_equity_elasticity,0.0018,7.86,1000
+WI,adu,adu_rate_semi_elasticity,adu_rate_semi_elasticity,0.0,7.86,1000
+WI,adu,adu_extrapolation_widening,adu_extrapolation_widening,0.0038,7.86,1000
+WI,adu,adu_place_effect_variance,How much places differ from each other (α),0.0079,7.86,1000
+WI,adu,adu_partial_rule_share,"How much a partial ADU rule counts (partial-rule share m_x, with its refit)",0.1008,7.86,1000
+WI,adu,adu_net_new_share,"Share of ADUs that are new homes, not replacements",0.0558,7.86,1000
+WI,adu,adu_formalization_share,Share of ADU permits that legalize an existing unit,0.0249,7.86,1000
+WI,adu,completion_factor,Share of permitted homes that get finished,0.0,7.86,1000
+WI,adu,displacement_share,Share that would have been built elsewhere in the state anyway,0.0276,7.86,1000
+WI,adu,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.4916,7.86,1000
+WI,missing_middle,theta,Missing-middle uptake rate (fitted),0.9125,49.17,1000
+WI,missing_middle,alpha,"How much places differ from each other (α, missing middle)",0.0,49.17,1000
+WI,missing_middle,units,Homes per 2-4 unit building,0.0,49.17,1000
+WI,missing_middle,teardown_scale,How often a new building replaces a house,0.0047,49.17,1000
+WI,missing_middle,completion_factor,Share of permitted homes that get finished,0.0,49.17,1000
+WI,missing_middle,net_new_share,"Share of homes that are new, not replacing one",0.0079,49.17,1000
+WI,missing_middle,displacement_share,Share that would have been built elsewhere in the state anyway,0.0052,49.17,1000
+WI,missing_middle,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0698,49.17,1000
 WI,fees,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0446,14.28,1000
 WI,fees,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9255,14.28,1000
 WI,fees,fee_ramp_half_years,fee_ramp_half_years,0.0,14.28,1000
@@ -542,30 +542,30 @@ WI,fees,existing_use_margin,existing_use_margin,0.0,14.28,1000
 WI,fees,completion_factor,Share of permitted homes that get finished,0.0114,14.28,1000
 WI,fees,displacement_share,Share that would have been built elsewhere in the state anyway,0.0033,14.28,1000
 WI,fees,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,14.28,1000
-WI,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0496,15.5,1000
-WI,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9241,15.5,1000
-WI,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,15.5,1000
-WI,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0008,15.5,1000
-WI,fees_local_half,adu_sqft,adu_sqft,0.0102,15.5,1000
-WI,fees_local_half,single_family_sqft,Size of a new house,0.0087,15.5,1000
-WI,fees_local_half,townhouse_sqft,townhouse_sqft,0.0023,15.5,1000
-WI,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0031,15.5,1000
-WI,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,15.5,1000
-WI,fees_local_half,code_step_premium,code_step_premium,0.0,15.5,1000
-WI,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,15.5,1000
-WI,fees_local_half,soft_cost_share,soft_cost_share,0.0006,15.5,1000
-WI,fees_local_half,construction_loan_rate,construction_loan_rate,0.0027,15.5,1000
-WI,fees_local_half,average_draw_share,average_draw_share,0.0,15.5,1000
-WI,fees_local_half,construction_years_irc,construction_years_irc,0.0074,15.5,1000
-WI,fees_local_half,construction_years_ibc,construction_years_ibc,0.0082,15.5,1000
-WI,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0102,15.5,1000
-WI,fees_local_half,sale_cost_share,sale_cost_share,0.0017,15.5,1000
-WI,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0062,15.5,1000
-WI,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0147,15.5,1000
-WI,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,15.5,1000
-WI,fees_local_half,developer_margin,developer_margin,0.0,15.5,1000
-WI,fees_local_half,adu_margin,adu_margin,0.0057,15.5,1000
-WI,fees_local_half,existing_use_margin,existing_use_margin,0.0,15.5,1000
-WI,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,15.5,1000
-WI,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0037,15.5,1000
-WI,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,15.5,1000
+WI,fees_local_half,land_capture_share,Share of a fee cut that goes to landowners instead of builders,0.0496,15.82,1000
+WI,fees_local_half,fee_permit_elasticity,How strongly building responds to a fee cut (elasticity),0.9239,15.82,1000
+WI,fees_local_half,fee_ramp_half_years,fee_ramp_half_years,0.0,15.82,1000
+WI,fees_local_half,fee_ramp_slope_years,fee_ramp_slope_years,0.0007,15.82,1000
+WI,fees_local_half,adu_sqft,adu_sqft,0.0102,15.82,1000
+WI,fees_local_half,single_family_sqft,Size of a new house,0.0086,15.82,1000
+WI,fees_local_half,townhouse_sqft,townhouse_sqft,0.0024,15.82,1000
+WI,fees_local_half,plex_unit_sqft,plex_unit_sqft,0.0033,15.82,1000
+WI,fees_local_half,hard_cost_per_sqft_usd,Construction cost per square foot,0.0,15.82,1000
+WI,fees_local_half,code_step_premium,code_step_premium,0.0,15.82,1000
+WI,fees_local_half,adu_hard_cost_premium,adu_hard_cost_premium,0.0,15.82,1000
+WI,fees_local_half,soft_cost_share,soft_cost_share,0.0009,15.82,1000
+WI,fees_local_half,construction_loan_rate,construction_loan_rate,0.0027,15.82,1000
+WI,fees_local_half,average_draw_share,average_draw_share,0.0,15.82,1000
+WI,fees_local_half,construction_years_irc,construction_years_irc,0.0074,15.82,1000
+WI,fees_local_half,construction_years_ibc,construction_years_ibc,0.008,15.82,1000
+WI,fees_local_half,fee_paid_at_permit,fee_paid_at_permit,0.0103,15.82,1000
+WI,fees_local_half,sale_cost_share,sale_cost_share,0.002,15.82,1000
+WI,fees_local_half,rental_vacancy_rate,rental_vacancy_rate,0.0061,15.82,1000
+WI,fees_local_half,operating_expense_share,Operating costs as a share of rent,0.0147,15.82,1000
+WI,fees_local_half,cap_rate,Cap rate (what investors pay for a dollar of rent),0.0,15.82,1000
+WI,fees_local_half,developer_margin,developer_margin,0.0,15.82,1000
+WI,fees_local_half,adu_margin,adu_margin,0.0057,15.82,1000
+WI,fees_local_half,existing_use_margin,existing_use_margin,0.0,15.82,1000
+WI,fees_local_half,completion_factor,Share of permitted homes that get finished,0.0,15.82,1000
+WI,fees_local_half,displacement_share,Share that would have been built elsewhere in the state anyway,0.0036,15.82,1000
+WI,fees_local_half,other,"Not explained by any one input (place-to-place luck, rule draws, the unseen-state multiplier)",0.0,15.82,1000

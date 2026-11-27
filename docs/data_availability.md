@@ -11,7 +11,7 @@ Resources) ask of the data document:
 
 **Status date:** the shared section and the row counts of the fee and rule tables were checked on 2026-11-27.
 The rest of each state section was last refreshed on 2026-11-02 (Minnesota), 2026-11-01 (North Carolina),
-2026-10-30 (Texas) and 2026-10-19 (Ohio). Every "used"
+2026-10-30 (Texas), 2026-10-19 (Ohio) and 2026-11-27 (Oregon and Wisconsin). Every "used"
 entry names the module that reads the data, so it can be checked in `src/lotline/`. "In review" means an open pull request adds it; it is not on `main` yet.
 What "available" means comes from our own scouting: `docs/research/lotline-data-availability.md` (R1–R10),
 `docs/research/lotline-data-catalog.csv`, `docs/research/lotline-data-catalog-mn.csv` and
@@ -29,8 +29,8 @@ What "available" means comes from our own scouting: `docs/research/lotline-data-
 ## Shared by every state
 
 We use national sources wherever we can, because they let the model run in any state. They feed every state
-the same way. The four state sections below cover Minnesota, North Carolina, Ohio and Texas. Oregon and
-Wisconsin use the same national sources.
+the same way. The six state sections below cover Minnesota, North Carolina, Ohio, Texas, Oregon and
+Wisconsin. Wisconsin uses these national sources and nothing else.
 
 | Data need | Available | Used | Why not / limits |
 |---|---|---|---|
@@ -109,6 +109,46 @@ Wisconsin use the same national sources.
 | Fees (R8) | City and utility fee schedules and impact-fee ordinances | `config/fees/tx.csv` (148 rows, 11 jurisdictions, among them Austin permit, impact, meter, tap and parkland fees; SAWS by elevation area and basin; Fort Worth by collection date; Houston collected rates 2021 and 2026; Dallas tap and inspection charges; Corpus Christi lot fees) | SAWS and Fort Worth fees vary by area or plat date, so no single per-home amount is formed yet; places without a per-home total use the Handbook $50,000 (D-034). Dallas: no impact fee found, not officially confirmed |
 | Reform dates (R9) | City ordinances and code PDFs (our two research workbooks and hand lookups, 2026-10-27 to 30); the zoneomics.com mirror; 2019 and 2025 state laws | `config/reforms/tx.csv` (109 rows) | ADU rules for 38 places (22 allow ADUs somewhere, 16 "none"); missing-middle rules for 39 (5 dated changes in the window: Austin, Houston, League City, Lewisville, Lubbock). 80 rows await a second coder (`docs/research/ordinances/tx-second-coder-2026-10-30.csv`); open: Pasadena, Laredo (partial) |
 
+## Oregon
+
+*Refreshed 2026-11-27. Oregon was the V9 transfer test: predicted blind from the other four states, then
+released on 2026-11-05 and pooled into the calibration (`config/states/or.yaml`, `docs/build/or-readiness.md`,
+`docs/build/workstreams/WS-OR.md`).*
+
+| Data need | Available | Used | Why not / limits |
+|---|---|---|---|
+| Permits by building size (R4) | BPS (168 jurisdictions: 136 cities and 32 county remainders; counties permit unincorporated land); record-level permits for Portland (permits creating new units, 1995 on), Bend (1934 on), Salem through the Mid-Willamette Valley COG (1998 on) and Medford (2020 on); Salem's own layer; Jackson County permits; Eugene permit reports | `bps`, `portland_permits`, `bend_permits`, `mwvcog_permits`, `medford_permits` | Portland's MapServer refuses our network, so the adapter reads the city's ArcGIS Hub CSV extract. The COG file has year and quarter only, and covers Keizer and unincorporated Marion only in part, so the adapter keeps Salem alone. Salem's own layer bars copying and holds one rolling year: no. Jackson County has no jurisdiction field: scouted, not built. Eugene: bot check and "all rights reserved": no. 105 cities had no BPS row in 2010–2017 (Klamath Falls, The Dalles and Gladstone among them; 4.1% of the population) and are outside the model |
+| ADU / building type flag (R5) | Portland `IS_ADU`; Bend building use `ADU` (from 2013); the COG's ADU type (from 2018); Medford's ADU permit subtypes; an OHCS layer with ADUs by city for 68 cities (no year) | `portland_permits`, `bend_permits`, `mwvcog_permits`, `medford_permits` (all field flags, not text) | Bend before 2013 and Salem before 2018 are unknown, not zero. Bend's `HB2001ADU` field marks the HB 2001 pathway (duplexes too), so it is kept as the raw reform flag, not the ADU flag. The undercount k in Portland is 1.06 (90%: 1.05–1.07), checked against Metro's RLIS housing inventory (`reports/or/adu-coverage-and-undercount.md`). The four cities hold 22.5% of Oregon's ADU-eligible lots |
+| Completions and demolitions (R6) | Bend final-inspection date and demolitions; Medford final date and demolitions; the COG's demolition types; Portland's separate demolitions and milestones layers | `bend_permits`, `medford_permits`, `mwvcog_permits` | Portland's permit layer has no final date, and its demolitions layer is not read |
+| Parcels with land use (R1) | Metro RLIS Taxlots (Multnomah, Washington and Clackamas; 648,079 features on 2026-11-06; attribution-only license); statewide ORMAP (geometry only); other county assessor layers | `rlis_parcels` (land use from the Department of Revenue property class, `config/crosswalks/or_rlis_land_use.csv`) | 27 Metro jurisdictions count from parcels (468,769 ADU-eligible lots); the other 141 stay on the ACS fallback (D-017). No county layer outside Metro is loaded |
+| Year built (R1) | RLIS `YEARBUILT`; ACS B25034 | `rlis_parcels`, `acs` | Parcel year built in Metro only |
+| Lot size (R1) | RLIS assessor acres, else polygon area | `rlis_parcels` | |
+| Parcel history (R2) | RLIS current roll only (no dated tax-lot archives; the change layer lists geometry edits since 2021) | `rlis_parcels` (current roll) | No earlier roll exists to anchor history in Metro |
+| Zoning (R3) | Metro RLIS regional zoning (17,585 polygons, today's zoning); DLCD/ODOT statewide zoning (generalized classes, 2023, custom terms) | `rlis_parcels` (`zoning_raw` by label point) | `sf_only_zoned` stays null: since HB 2001, a single-family zone in a Metro city is not single-family-only in law. So unknown zoning still counts as single-family-only. The statewide layer is not loaded |
+| Sale prices and rents (R7) | RLIS last sale price and date and real market values (Metro); ACS; FHFA | `rlis_parcels` (`last_sale_price`, `value_basis = market`), `acs`, `fhfa` | The only open sale prices the model reads, in Metro only. Sale dates are mostly month-only |
+| Fees (R8) | City SDC schedules (Portland, Bend, Salem, Eugene and its water utility, EWEB); League of Oregon Cities 2025 SDC survey; OHCS 2022 SDC study | `config/fees/or.csv` (115 rows, 4 jurisdictions: Portland, Bend, Salem, Eugene; 2025 and 2026 schedules); Portland's SDC waiver and exemption as `fees` rows in `config/reforms/or.csv` | 26 of Eugene's 32 rows have no per-home amount (stormwater and the ADU transportation reduction are unchecked), so Eugene uses the Handbook $50,000, as do places without a per-home total (D-034) |
+| Reform dates (R9) | State laws: SB 1051 (ADUs, 2018), HB 2001 (middle housing, 2021–22 by city size), SB 458 (land divisions, 2022), 2023 c.223 (duplexes, 2,500–10,000 people, 2025), HB 2138 (2027); city and county ordinances; DLCD compliance tracking | `config/reforms/or.csv` (556 rows for 136 jurisdictions: 277 ADU, 275 missing middle, 3 fees, 1 parking) | 518 rows are state-law rows written by `scripts/dev/or_state_reform_rows.py`, one per covered city or county, read from the statutes and second coded. D-068: a place with no ADU row is outside the law (44 small cities, 6 rural county remainders) and takes the prior of states without a coded state ADU law. 38 local rows for 20 places; 4 of them are DATE UNCONFIRMED. Statutes were read from Internet Archive copies, because oregonlegislature.gov refused our network |
+
+## Wisconsin ("national data only" state)
+
+*Refreshed 2026-11-27. Wisconsin was the V8 unseen-state test (D-104): onboarded from `config/states/wi.yaml`
+and the national sources only, with no adapter and no change to `src/`. It was scored on 2026-11-19 and fails
+the pass rule (D-105, `reports/wi/V8-score.md`), then released from the blind.*
+
+| Data need | Available | Used | Why not / limits |
+|---|---|---|---|
+| Permits by building size (R4) | BPS, places and towns (towns issue permits, so BPS reports them as county subdivisions, as in MN and OH) | `bps` | No record-level permits loaded. Place files add up to the Census state totals within 1% in every year 2010–2019 (`reports/wi/V0-national.md`) |
+| ADU / building type flag (R5) | None loaded | no | No permits with an ADU flag, so no observed ADU floor |
+| Completions and demolitions (R6) | None loaded | no | |
+| Parcels with land use (R1) | No parcel source loaded | no | Eligible lots are ACS one-unit homes scaled by D-056 (tier 3, quality `low`) |
+| Year built (R1) | ACS B25034 | `acs` | Area estimates only |
+| Lot size (R1) | None loaded | no | |
+| Parcel history (R2) | None loaded | no | |
+| Zoning (R3) | None loaded | no | Unknown zoning counts as single-family-only |
+| Sale prices and rents (R7) | ACS; FHFA | `acs`, `fhfa` | No sale prices |
+| Fees (R8) | No Wisconsin fee table | no (no `config/fees/wi.csv`) | Every place uses the Handbook $50,000 (D-034) |
+| Reform dates (R9) | No Wisconsin rule table | no (no `config/reforms/wi.csv`) | Every place borrows rules from the coded places of the five other states, by size band (2020 population; bands split at 10,000 and 50,000). ADU priors come from the saved tables `config/params/adu_rule_priors.csv` and `adu_field_counts.csv` (`model/scenarios/adu_rule_inputs.py`, `saved_priors`; D-022); missing-middle rules from the same coded places (`model/scenarios/mm.py`, `borrowed_pool`). Wisconsin is outside every fit, so its ADU rate takes the unseen-state multiplier (D-044) |
+
 ## Biggest gaps, by state
 
 - **Minnesota:** 539 of 1,053 jurisdictions count from parcels (86% of the population); 28 counties have not
@@ -125,6 +165,14 @@ Wisconsin use the same national sources.
   land use and several send land-type rather than use codes, so 526 of 1,006 jurisdictions, Houston among them,
   stay on the ACS denominator; no sale prices (state law); record-level permits for four cities, with repeated
   apartment totals in two (D-036); 80 rule rows await a second coder.
+- **Oregon:** parcels only in Metro (27 of 168 jurisdictions, one current roll), so the other 141 stay on the
+  ACS denominator; ADU-flagged permits for four cities holding 22.5% of ADU-eligible lots, with Eugene's permit
+  data closed by its terms; 105 cities have no BPS row; Eugene's fees are incomplete. State
+  laws set most rule dates, so rules are well covered.
+- **Wisconsin:** national data only by design: no parcels, no record-level permits, no rule or fee table. Rules
+  are borrowed from the other five states by place size and fees are the Handbook $50,000. The V8 test failed
+  (D-105): observed 2021–2025 permits were 1.49 times the forecast median, mostly from 5+ unit buildings
+  (2.43 times).
 - **All states:** no open zoning statewide (National Zoning Atlas license), national construction costs only,
   and the benchmark fee fixed at the Handbook's $50,000 (the second fee scenario uses the local fees we coded).
 
@@ -164,8 +212,10 @@ place-by-year totals only.
 
 **Small cells.** We set a publishing minimum so that a result can't point at a single property:
 `min_eligible_parcels_publish` = 20 eligible parcels (range 10–50) in `config/params/aggregate.yaml` (D-015). A
-place below it is to be folded into its county or region and never shown alone. No code reads the parameter
-yet, so the aggregation step and the app must apply it before any place-level result is published. A small place can
+place below it is to be folded into its county or region and never shown alone. The app and the results bundles
+publish no place-level results at all: only state totals and groups of places by type (core city, suburb and
+so on). Development reports that list places, such as `scripts/dev/adu_dev_run.py`, leave out places under the
+minimum. A small place can
 still have very few permits in a year. Those counts come from public BPS and city records, so a published
 count adds nothing a reader couldn't already look up, but the minimum keeps a single home from standing out
 as its own result.
