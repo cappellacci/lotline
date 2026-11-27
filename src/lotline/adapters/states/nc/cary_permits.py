@@ -70,7 +70,7 @@ from pathlib import Path
 import pandas as pd
 
 from lotline import geo
-from lotline.adapters import crosswalks
+from lotline.adapters import common, crosswalks
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.parse.permit_text import parse_description
@@ -236,10 +236,7 @@ def pin10(s: pd.Series) -> pd.Series:
 
 
 def _fits(t: str, n: object) -> bool:
-    if t not in FITS or n is None or pd.isna(n):
-        return False
-    lo, hi = FITS[t]
-    return lo <= n <= hi
+    return common.units_fit(FITS, t, n)
 
 
 def classify(row: pd.Series, types: dict[str, dict[str, str]]) -> dict:

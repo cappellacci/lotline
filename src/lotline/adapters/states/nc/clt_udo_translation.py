@@ -75,7 +75,7 @@ PROVENANCE = {
         "parcel_id = 37119 + taxpid; a repeated taxpid keeps the largest polygon's attributes, areas summed",
         "lot_sqft = Shape__Area (NC State Plane, US feet: square feet)",
         "zoning_raw = OldZoneDes (pre-UDO district); land_use_std = UNKNOWN (no land use in the layer)",
-        "jurisdiction_geoid = place of the label point (TIGERweb ACS 2025), else 37119",
+        "jurisdiction_geoid = place of the label point (TIGER/Line 2025), else 37119",
         "vintage_date = dataLastEditDate (2023-05-31), vintage 2023; holdout filter with snapshot=True",
     ],
     "limitations": [

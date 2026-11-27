@@ -149,3 +149,39 @@ def test_shortfall_view_says_when_building_anyway_covers_the_need(tmp_path):
     sf.update(built=sf["need"] + 1000, gap=-1000.0)
     html = _render(tmp_path, doc)["html"]
     assert "homes the market builds anyway" in html and "would cover the need" in html
+
+
+# ---- the headline, by behaviour (tests review, 2026-11-27, finding 1) ------------------------------------
+
+
+def _hero(tmp_path: Path, doc: dict, fee: str = "") -> dict:
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    src = tmp_path / "zz.json"
+    src.write_text(json.dumps(doc))
+    build.build_app([src], out_dir=tmp_path / "app", data_summary=None)
+    cmd = [NODE, str(HARNESS), str(tmp_path / "app"), "ZZ", "hero", fee]
+    return json.loads(subprocess.run(cmd, capture_output=True, text=True, check=True).stdout)
+
+
+def test_the_headline_is_the_midpoint_of_the_reforms_summed_run_by_run(tmp_path):
+    """ "ZZ can add X homes": X = P50 of the three reforms' net homes summed draw by draw (not the sum of the
+    three midpoints); the note's range is that sum's P10 to P90. A wrong percentile or a swapped end fails."""
+    doc = _bundle()
+    got = _hero(tmp_path, doc)
+    assert got["outcome"] == "homes_net_statewide" and got["fee"] == "fees_local_half"
+    shown = ("adu", "missing_middle", "fees_local_half")  # the default fee view
+    net = {s: _net([d for d in doc["draws"] if d["scenario"] == s]) for s in shown}
+    together = sum(net.values())
+    p10, p50, p90 = np.percentile(together, [10, 50, 90])
+    assert f'<span class="x">{_fmt(p50)}</span> homes over the next 5 years' in got["line"]
+    assert f"between {_fmt(p10)} and {_fmt(p90)} net new homes" in got["note"]
+    assert "three housing reforms" in got["note"]
+
+
+def test_the_headline_follows_the_fee_view(tmp_path):
+    """With the Handbook benchmark switched on, the fee reform in the sum is `fees`, not `fees_local_half`."""
+    doc = _bundle()
+    got = _hero(tmp_path, doc, fee="fees")
+    shown = ("adu", "missing_middle", "fees")
+    together = sum(_net([d for d in doc["draws"] if d["scenario"] == s]) for s in shown)
+    assert f'<span class="x">{_fmt(np.percentile(together, 50))}</span>' in got["line"]

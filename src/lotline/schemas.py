@@ -25,7 +25,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-SCHEMAS_VERSION = "1.25"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
+SCHEMAS_VERSION = "1.26"  # schemas-v1 line (additive changes only, except 1.17); history in docs/schemas.md
 
 # Building types. Combined codes exist because some sources (Met Council, BPS) can't split further:
 # never guess a finer category, mark type_confidence instead.
@@ -545,6 +545,9 @@ class ResultsMeta(_Strict):
     when unknown (no git). `post_test` lists, comma-separated, this state's released holdout tests whose
     outcome window opens by `origin_year`: the run has seen outcomes those tests were scored on.
     `post_test_note` says so in plain words for the page. Both null when there is none (schemas 1.24).
+    `input_tables` is a JSON object of each processed table the state has (name: sha256 of its parquet files)
+    and `input_hash` one sha256 over them, so a rerun can tell a data change from a code change (schemas
+    1.26; null in older bundles).
     """
 
     state: Series[str] = pa.Field(**_STATE)
@@ -567,6 +570,8 @@ class ResultsMeta(_Strict):
     tree_clean: Optional[Series[pd.BooleanDtype]] = pa.Field(nullable=True)
     post_test: Optional[Series[str]] = pa.Field(nullable=True)
     post_test_note: Optional[Series[str]] = pa.Field(nullable=True)
+    input_hash: Optional[Series[str]] = pa.Field(nullable=True, str_matches=r"^[0-9a-f]{64}$")
+    input_tables: Optional[Series[str]] = pa.Field(nullable=True)
 
 
 class ResultsDraws(_Strict):
@@ -1039,6 +1044,11 @@ HISTORY = [
         "results_scenarios (the bundle's scenarios with their labels and extra tables, written as "
         "`meta.scenarios` in bundle.json; #554); results tables accept any scenario name the scenario "
         "registry declares (checked by `results.validate_bundle`), not only the built-in list",
+    ),
+    (
+        "1.26",
+        "results_meta: adds optional input_hash and input_tables (sha256 of each processed input table the "
+        "state has), so a rerun can tell a data change from a code change (stability review, 2026-11-27)",
     ),
 ]
 

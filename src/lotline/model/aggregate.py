@@ -42,9 +42,13 @@ def need(state: str, params: Mapping[str, Parameter] | None = None) -> dict[str,
 
 
 def headline_kind(state: str, params: Mapping[str, Parameter] | None = None) -> str:
-    """Household growth where the state's projection is positive, else the shortage."""
+    """Household growth where the state's whole projection range is positive, else the shortage.
+
+    The same rule as the need table, which skips a kind whose low end is not positive (D-057): with
+    `value > 0` alone, a range crossing zero picked growth here but left it out of the table, so the table
+    had no headline row (tests review, 2026-11-27, finding 11)."""
     have = need(state, params)
-    if GROWTH in have and have[GROWTH].value > 0:
+    if GROWTH in have and have[GROWTH].low > 0:
         return GROWTH
     if SHORTAGE in have:
         return SHORTAGE

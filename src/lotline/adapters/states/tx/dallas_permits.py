@@ -56,7 +56,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from lotline.adapters import crosswalks
+from lotline.adapters import common, crosswalks
+from lotline.adapters.common import multi_type
 from lotline.config import CONFIG_DIR
 from lotline.io import DataStore
 from lotline.io.arcgis import epoch_ms_to_timestamp
@@ -147,17 +148,7 @@ def _clean(s: pd.Series) -> pd.Series:
 
 
 def _fits(t: str, n: object) -> bool:
-    if t not in FITS or n is None or pd.isna(n):
-        return False
-    lo, hi = FITS[t]
-    return lo <= n <= hi
-
-
-def multi_type(n: object) -> str | None:
-    """Building type from a unit count of 2 or more (Census size classes), else None."""
-    if n is None or pd.isna(n) or n < 2:
-        return None
-    return "U2" if n == 2 else "U3_4" if n <= 4 else "MF5"
+    return common.units_fit(FITS, t, n)
 
 
 def classify(row: pd.Series, xw: dict[str, dict[str, str]]) -> dict:

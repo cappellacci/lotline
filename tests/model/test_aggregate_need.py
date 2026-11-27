@@ -91,3 +91,11 @@ def test_config_reading_rules():
         assert aggregate.headline_kind(st) == "household_growth_5y"
     tx = p["household_growth_5y_tx"]
     assert tx.low < tx.value < tx.high  # Texas's migration scenarios
+
+
+def test_a_growth_range_crossing_zero_falls_back_to_shortage():
+    """The headline kind follows the need table's rule (low end positive): a growth range of -200 to 3,000
+    used to pick growth here while the table skipped it, leaving no headline row (review, 2026-11-27)."""
+    params = PARAMS | {"household_growth_5y_dd": _p(1000, -200, 3000), "shortage_stock_dd": _p(500, 400, 600)}
+    assert aggregate.headline_kind("DD", params) == "shortage_stock"
+    assert aggregate.headline_kind("AA", params) == "household_growth_5y"  # whole range positive: unchanged

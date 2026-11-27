@@ -27,7 +27,7 @@ statewide layer with standard field names. The values inside some fields are sti
 `NC1Map_Parcels_Transform_Dates` (one polygon per county), and `vintage` its year.
 
 **Jurisdiction.** Each parcel point is placed with `lotline.geo.place_or_township`: the incorporated place
-(TIGERweb ACS 2025) the point falls in, else the county's remainder row (5-digit GEOID; NC townships do not
+(TIGER/Line 2025) the point falls in, else the county's remainder row (5-digit GEOID; NC townships do not
 issue permits). The place GEOID is kept even when the place is not in the NC `jurisdictions` table (the
 Census permit universe): BPS files Charlotte and the other Mecklenburg towns under Mecklenburg County, so
 mapping them to the county would hide Charlotte from the holdout filter. `assign_jurisdictions` returns how
@@ -135,7 +135,7 @@ PROVENANCE = {
         "value_basis 'assessed'; last_sale_date = saledate (before 1900 or after the roll date → unknown)",
         "zoning_raw from the county's zoning field where it sends one (Durham: parusecode)",
         "vintage_date = the county's transform date from NC1Map_Parcels_Transform_Dates; vintage = its year",
-        "jurisdiction_geoid = incorporated place by lotline.geo.place_or_township (TIGERweb ACS 2025), kept "
+        "jurisdiction_geoid = incorporated place by lotline.geo.place_or_township (TIGER/Line 2025), kept "
         "even when the place is not a BPS permit issuer; else the county remainder (5-digit GEOID)",
         "Places with under half of their 2020 housing units in the loaded counties are left out (they fall "
         "back to ACS): e.g. Chapel Hill, Burlington, Clayton, Angier",

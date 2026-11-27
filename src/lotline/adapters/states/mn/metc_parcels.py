@@ -164,7 +164,7 @@ PROVENANCE = {
         "county's latest EXP_DATE in that roll (the 2025 roll is a mid-2025 export)",
         "parcel_id = county GEOID (CO_CODE) + COUNTY_PIN (letters and digits only); a PIN repeated within a "
         "county and roll keeps its first row",
-        "jurisdiction_geoid by lotline.geo.place_or_township on the point (TIGERweb ACS 2025), kept if in "
+        "jurisdiction_geoid by lotline.geo.place_or_township on the point (TIGER/Line 2025), kept if in "
         "the MN jurisdictions table; else the jurisdiction CTU_NAME names; else the county's remainder row",
         "Held-out rows removed right after jurisdictions are assigned, before attributes are read "
         "(V5-MN-STPAUL, snapshot rule: St. Paul only from rolls exported before 2024-01-01), on both the "

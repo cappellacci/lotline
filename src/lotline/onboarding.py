@@ -202,8 +202,13 @@ def _fees_coded(state, store):
     return Status(n >= 5, f"{n} places have fees (the guide asks for at least 5)")
 
 
+def missing_national_tables(state: str, store) -> list[str]:
+    """The national tables a state still lacks in `store`; `lotline results` needs them all."""
+    return [t for t in NATIONAL_TABLES if not _has_table(store, state, t)]
+
+
 def _national_tables_built(state, store):
-    missing = [t for t in NATIONAL_TABLES if not _has_table(store, state, t)]
+    missing = missing_national_tables(state, store)
     return Status(not missing, f"missing: {', '.join(missing)}" if missing else "all national tables built")
 
 

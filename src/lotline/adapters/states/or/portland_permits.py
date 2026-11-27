@@ -49,6 +49,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from lotline.adapters.common import size_class
 from lotline.io import DataStore
 from lotline.io.http import fetch
 from lotline.schemas import validate
@@ -121,12 +122,6 @@ PROVENANCE = {
 def _date(values: pd.Series) -> pd.Series:
     t = pd.to_datetime(values, errors="coerce", utc=True, format="mixed")
     return t.dt.tz_localize(None).dt.normalize().astype("datetime64[ns]")
-
-
-def size_class(units) -> str:
-    if pd.isna(units) or units < 2:
-        return "UNKNOWN"
-    return "U2" if units == 2 else "U3_4" if units <= 4 else "MF5"
 
 
 def building_type(newtype, units) -> tuple[str, str]:

@@ -318,7 +318,7 @@ PROVENANCE = {
         "dates takes the latest one for all its parcels (8 jurisdictions on 2026-10-26, e.g. Twinsburg)",
         "Each parcel's label point (centroid, WGS84) is requested from the server (geometry='centroid') and "
         "stored as lon/lat",
-        "jurisdiction_geoid by lotline.geo.place_or_township (TIGERweb ACS 2025 incorporated places, else "
+        "jurisdiction_geoid by lotline.geo.place_or_township (TIGER/Line 2025 incorporated places, else "
         "county subdivisions), kept only if in the OH jurisdictions table; else the parcel's county "
         "subdivision if in the table; else the county's remainder row (5-digit GEOID)",
         "Holdout filter applied with snapshot=True (Ohio has no holdouts)",

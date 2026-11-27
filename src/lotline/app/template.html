@@ -2461,6 +2461,7 @@ function footer(b) {
     ["State", `${m.state} (${DATA.roles[m.state_role] || m.state_role}; data tier ${m.data_tier})`],
     ["Commit", m.commit_sha], ["Run at", m.run_at], ["Engine version", m.engine_version],
     ["Schemas version", m.schemas_version], ["Config hash", m.config_hash],
+    ...(m.input_hash ? [["Input data hash", m.input_hash]] : []),  // schemas 1.26; older bundles have none
     ["Draws", `${m.n_draws} per scenario, seed ${m.seed}`], ["Page built", DATA.generated],
   ];
   // schemas 1.24 (A21, #506): shown only when the bundle carries them, so older bundles read as before

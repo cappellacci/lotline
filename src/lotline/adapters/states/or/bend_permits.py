@@ -37,6 +37,7 @@ from collections.abc import Iterable
 
 import pandas as pd
 
+from lotline.adapters.common import size_class
 from lotline.io import DataStore
 from lotline.io.arcgis import download_layer, epoch_ms_to_timestamp
 from lotline.schemas import validate
@@ -116,12 +117,6 @@ def _date(values: pd.Series) -> pd.Series:
     return (
         epoch_ms_to_timestamp(pd.to_numeric(values, errors="coerce")).dt.normalize().astype("datetime64[ns]")
     )
-
-
-def size_class(units) -> str:
-    if pd.isna(units) or units < 2:
-        return "UNKNOWN"
-    return "U2" if units == 2 else "U3_4" if units <= 4 else "MF5"
 
 
 def classify(use, units) -> tuple[str, str]:
